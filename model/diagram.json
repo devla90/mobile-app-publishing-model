@@ -1,0 +1,313 @@
+{
+  "description": "The 25 activities of the swimlane diagram: number, lane, stage (index into phases.json/stages), text lines and phases covered.",
+  "lang": "es",
+  "activities": [
+    {
+      "n": 1,
+      "lane": "L1",
+      "stage": 0,
+      "lines": [
+        "Decide titular",
+        "y modelo operativo"
+      ],
+      "phases": [
+        "S0"
+      ]
+    },
+    {
+      "n": 2,
+      "lane": "L5",
+      "stage": 0,
+      "lines": [
+        "Aprueba uso de",
+        "tiendas y terceros"
+      ],
+      "phases": [
+        "S0"
+      ]
+    },
+    {
+      "n": 3,
+      "lane": "L2",
+      "stage": 0,
+      "lines": [
+        "Crea correos y",
+        "cuentas con 2FA"
+      ],
+      "phases": [
+        "S1"
+      ]
+    },
+    {
+      "n": 4,
+      "lane": "L6",
+      "stage": 0,
+      "lines": [
+        "Gestiona D-U-N-S,",
+        "poderes y pagos"
+      ],
+      "phases": [
+        "S1",
+        "S2"
+      ]
+    },
+    {
+      "n": 5,
+      "lane": "L7",
+      "stage": 0,
+      "lines": [
+        "Verifican la",
+        "entidad"
+      ],
+      "phases": [
+        "S2"
+      ]
+    },
+    {
+      "n": 6,
+      "lane": "L1",
+      "stage": 0,
+      "lines": [
+        "Acepta acuerdos",
+        "e invita a TI"
+      ],
+      "phases": [
+        "S3",
+        "S4"
+      ]
+    },
+    {
+      "n": 7,
+      "lane": "L2",
+      "stage": 0,
+      "lines": [
+        "Configura roles",
+        "y accesos"
+      ],
+      "phases": [
+        "S4"
+      ]
+    },
+    {
+      "n": 8,
+      "lane": "L1",
+      "stage": 1,
+      "lines": [
+        "Define IDs y crea",
+        "la app en tiendas"
+      ],
+      "phases": [
+        "S5"
+      ]
+    },
+    {
+      "n": 9,
+      "lane": "L2",
+      "stage": 1,
+      "lines": [
+        "Registra App IDs",
+        "por target"
+      ],
+      "phases": [
+        "S5"
+      ]
+    },
+    {
+      "n": 10,
+      "lane": "L4",
+      "stage": 2,
+      "lines": [
+        "Genera y custodia",
+        "claves de firma"
+      ],
+      "phases": [
+        "S6"
+      ]
+    },
+    {
+      "n": 11,
+      "lane": "L2",
+      "stage": 2,
+      "lines": [
+        "Emite certificados",
+        "y perfiles"
+      ],
+      "phases": [
+        "S6"
+      ]
+    },
+    {
+      "n": 12,
+      "lane": "L2",
+      "stage": 2,
+      "lines": [
+        "Configura push y",
+        "deep links"
+      ],
+      "phases": [
+        "S7"
+      ]
+    },
+    {
+      "n": 13,
+      "lane": "L3",
+      "stage": 3,
+      "lines": [
+        "Compila, firma y",
+        "verifica binario"
+      ],
+      "phases": [
+        "S8",
+        "S9"
+      ]
+    },
+    {
+      "n": 14,
+      "lane": "L4",
+      "stage": 3,
+      "lines": [
+        "Analiza el binario",
+        "(SAST, MAST)"
+      ],
+      "phases": [
+        "S8"
+      ]
+    },
+    {
+      "n": 15,
+      "lane": "L3",
+      "stage": 4,
+      "lines": [
+        "Sube el build y",
+        "prueba en canales"
+      ],
+      "phases": [
+        "S10",
+        "S11"
+      ]
+    },
+    {
+      "n": 16,
+      "lane": "L1",
+      "stage": 5,
+      "lines": [
+        "Prepara ficha y",
+        "notas de versión"
+      ],
+      "phases": [
+        "S12"
+      ]
+    },
+    {
+      "n": 17,
+      "lane": "L5",
+      "stage": 5,
+      "lines": [
+        "Declara privacidad",
+        "y aprueba"
+      ],
+      "phases": [
+        "S12",
+        "S13"
+      ]
+    },
+    {
+      "n": 18,
+      "lane": "L4",
+      "stage": 5,
+      "lines": [
+        "Aprobación de",
+        "seguridad"
+      ],
+      "phases": [
+        "S13"
+      ]
+    },
+    {
+      "n": 19,
+      "lane": "L1",
+      "stage": 5,
+      "lines": [
+        "Decide Go / No-Go"
+      ],
+      "phases": [
+        "S13"
+      ]
+    },
+    {
+      "n": 20,
+      "lane": "L7",
+      "stage": 6,
+      "lines": [
+        "Revisan la versión",
+        "(Apple y Google)"
+      ],
+      "phases": [
+        "S14"
+      ]
+    },
+    {
+      "n": 21,
+      "lane": "L1",
+      "stage": 6,
+      "lines": [
+        "Libera y despliega",
+        "por fases"
+      ],
+      "phases": [
+        "S15"
+      ]
+    },
+    {
+      "n": 22,
+      "lane": "L1",
+      "stage": 7,
+      "lines": [
+        "Monitorea, responde",
+        "reseñas, renueva"
+      ],
+      "phases": [
+        "S16",
+        "S17"
+      ]
+    },
+    {
+      "n": 23,
+      "lane": "L3",
+      "stage": 7,
+      "lines": [
+        "Analiza fallos y",
+        "actualiza SDK"
+      ],
+      "phases": [
+        "S16",
+        "S17"
+      ]
+    },
+    {
+      "n": 24,
+      "lane": "L2",
+      "stage": 7,
+      "lines": [
+        "Renueva y rota",
+        "credenciales"
+      ],
+      "phases": [
+        "S17",
+        "S18"
+      ]
+    },
+    {
+      "n": 25,
+      "lane": "L4",
+      "stage": 7,
+      "lines": [
+        "Atiende incidentes",
+        "de claves"
+      ],
+      "phases": [
+        "S18"
+      ]
+    }
+  ]
+}

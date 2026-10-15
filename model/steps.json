@@ -1,0 +1,1536 @@
+{
+  "description": "The 107 steps. depends_on = cannot start without the output of those steps. variants = variation points that change how the step runs.",
+  "lang": "es",
+  "steps": [
+    {
+      "id": "S0.1",
+      "phase": "S0",
+      "name": "Decidir quién es titular de las cuentas",
+      "platform": "both",
+      "owner": "A07, A20, A22",
+      "inputs": "—",
+      "outputs": "Decisión de titularidad",
+      "depends_on": [],
+      "variants": [
+        "V2"
+      ]
+    },
+    {
+      "id": "S0.2",
+      "phase": "S0",
+      "name": "Aprobar uso de tiendas, consolas y terceros (excepciones de seguridad)",
+      "platform": "both",
+      "owner": "A22, A23, A21",
+      "inputs": "Decisión de S0.1",
+      "outputs": "Aprobaciones",
+      "depends_on": [
+        "S0.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S0.3",
+      "phase": "S0",
+      "name": "Elegir el modelo operativo: una opción por cada punto de variación",
+      "platform": "both",
+      "owner": "A07, A22",
+      "inputs": "—",
+      "outputs": "Instanciación",
+      "depends_on": [
+        "S0.1"
+      ],
+      "variants": [
+        "V3",
+        "V4",
+        "V5",
+        "V6",
+        "V7",
+        "V8",
+        "V9",
+        "V10",
+        "V11",
+        "V12",
+        "V13"
+      ]
+    },
+    {
+      "id": "S1.1",
+      "phase": "S1",
+      "name": "Consultar o solicitar el D-U-N-S",
+      "platform": "both",
+      "owner": "A02 → A27",
+      "inputs": "Datos registrales",
+      "outputs": "C01",
+      "depends_on": [
+        "S0.1"
+      ],
+      "variants": [],
+      "note": "Gratuito. Apple indica hasta 5 días hábiles más 2 para que le llegue; Google, hasta 30 días."
+    },
+    {
+      "id": "S1.2",
+      "phase": "S1",
+      "name": "Alinear nombre y dirección legal entre D&B y registros públicos",
+      "platform": "both",
+      "owner": "A02",
+      "inputs": "C01",
+      "outputs": "C01 consistente",
+      "depends_on": [
+        "S1.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S1.3",
+      "phase": "S1",
+      "name": "Crear correos funcionales en el dominio del titular",
+      "platform": "both",
+      "owner": "A08",
+      "inputs": "—",
+      "outputs": "Buzones",
+      "depends_on": [
+        "S0.1"
+      ],
+      "variants": [],
+      "note": "Evita cuentas personales como titulares."
+    },
+    {
+      "id": "S1.4",
+      "phase": "S1",
+      "name": "Crear Apple Account titular con 2FA",
+      "platform": "ios",
+      "owner": "A08, A03",
+      "inputs": "Buzón",
+      "outputs": "C02, C26",
+      "depends_on": [
+        "S1.3"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S1.5",
+      "phase": "S1",
+      "name": "Crear Google Account owner con 2SV",
+      "platform": "android",
+      "owner": "A08, A04",
+      "inputs": "Buzón",
+      "outputs": "C03, C26",
+      "depends_on": [
+        "S1.3"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S1.6",
+      "phase": "S1",
+      "name": "Tener un sitio web público y funcional en el dominio del titular",
+      "platform": "both",
+      "owner": "A01",
+      "inputs": "—",
+      "outputs": "Sitio web (P23)",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S2.1",
+      "phase": "S2",
+      "name": "Enrolar al titular en Apple Developer Program como organización",
+      "platform": "ios",
+      "owner": "A03 (con poder de A02)",
+      "inputs": "C01, C02",
+      "outputs": "Solicitud",
+      "depends_on": [
+        "S1.2",
+        "S1.4",
+        "S1.6"
+      ],
+      "variants": [
+        "V1"
+      ]
+    },
+    {
+      "id": "S2.2",
+      "phase": "S2",
+      "name": "Verificación de entidad y de autoridad legal",
+      "platform": "ios",
+      "owner": "A28",
+      "inputs": "Solicitud",
+      "outputs": "Aprobación, Team ID",
+      "depends_on": [
+        "S2.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S2.3",
+      "phase": "S2",
+      "name": "Pagar membresía anual (99 USD o exención)",
+      "platform": "ios",
+      "owner": "A03, A16",
+      "inputs": "Aprobación",
+      "outputs": "Membresía activa",
+      "depends_on": [
+        "S2.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S2.4",
+      "phase": "S2",
+      "name": "Crear cuenta de desarrollador Play tipo organización y vincular perfil de pagos",
+      "platform": "android",
+      "owner": "A04",
+      "inputs": "C01, C03",
+      "outputs": "Cuenta",
+      "depends_on": [
+        "S1.2",
+        "S1.5"
+      ],
+      "variants": [
+        "V1"
+      ]
+    },
+    {
+      "id": "S2.5",
+      "phase": "S2",
+      "name": "Verificar identidad de la organización y contactos por OTP",
+      "platform": "android",
+      "owner": "A04, A29",
+      "inputs": "Cuenta",
+      "outputs": "Cuenta verificada",
+      "depends_on": [
+        "S2.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S2.6",
+      "phase": "S2",
+      "name": "Pagar tarifa única de registro (25 USD)",
+      "platform": "android",
+      "owner": "A04, A16",
+      "inputs": "Cuenta",
+      "outputs": "—",
+      "depends_on": [
+        "S2.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S2.7",
+      "phase": "S2",
+      "name": "Verificación de desarrollador Android para distribución fuera de Play",
+      "platform": "android",
+      "owner": "A04",
+      "inputs": "Cuenta",
+      "outputs": "Registro de paquetes",
+      "depends_on": [
+        "S2.5"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S3.1",
+      "phase": "S3",
+      "name": "Aceptar el Apple Developer Program License Agreement",
+      "platform": "ios",
+      "owner": "A03 (revisa A20)",
+      "inputs": "—",
+      "outputs": "F26",
+      "depends_on": [
+        "S2.3"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S3.2",
+      "phase": "S3",
+      "name": "Aceptar el acuerdo de distribución de Google Play",
+      "platform": "android",
+      "owner": "A04 (revisa A20)",
+      "inputs": "—",
+      "outputs": "F26",
+      "depends_on": [
+        "S2.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S3.3",
+      "phase": "S3",
+      "name": "Si hay cobros: Paid Apps Agreement, datos bancarios y formularios fiscales",
+      "platform": "ios",
+      "owner": "A03, A16",
+      "inputs": "—",
+      "outputs": "Acuerdo activo",
+      "depends_on": [
+        "S3.1"
+      ],
+      "variants": [],
+      "note": "Condicional: solo si la app cobra."
+    },
+    {
+      "id": "S3.4",
+      "phase": "S3",
+      "name": "Si hay cobros: perfil de comerciante y método de cobro verificado",
+      "platform": "android",
+      "owner": "A04, A16",
+      "inputs": "—",
+      "outputs": "Cobro verificado",
+      "depends_on": [
+        "S3.2"
+      ],
+      "variants": [],
+      "note": "Condicional: solo si la app cobra."
+    },
+    {
+      "id": "S3.5",
+      "phase": "S3",
+      "name": "Si se distribuye en la UE: estado de comerciante (DSA)",
+      "platform": "both",
+      "owner": "A03, A04",
+      "inputs": "Datos de contacto",
+      "outputs": "Estado verificado",
+      "depends_on": [
+        "S3.1",
+        "S3.2"
+      ],
+      "variants": [],
+      "note": "Condicional: solo en la UE."
+    },
+    {
+      "id": "S4.1",
+      "phase": "S4",
+      "name": "Invitar a los Admin del equipo Apple",
+      "platform": "ios",
+      "owner": "A03",
+      "inputs": "C04",
+      "outputs": "Admins",
+      "depends_on": [
+        "S3.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S4.2",
+      "phase": "S4",
+      "name": "Asignar roles Apple y acceso a Certificates, Identifiers & Profiles",
+      "platform": "ios",
+      "owner": "A05",
+      "inputs": "C04",
+      "outputs": "Matriz de accesos",
+      "depends_on": [
+        "S4.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S4.3",
+      "phase": "S4",
+      "name": "Invitar usuarios Play con permisos por cuenta o app y fecha de expiración",
+      "platform": "android",
+      "owner": "A04, A06",
+      "inputs": "C05",
+      "outputs": "Matriz de accesos",
+      "depends_on": [
+        "S3.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S5.1",
+      "phase": "S5",
+      "name": "Definir bundle ID y package name (permanentes)",
+      "platform": "both",
+      "owner": "A07, A09",
+      "inputs": "Convención de nombres",
+      "outputs": "Identificadores",
+      "depends_on": [
+        "S0.3"
+      ],
+      "variants": [],
+      "note": "No se pueden cambiar después de publicar."
+    },
+    {
+      "id": "S5.2",
+      "phase": "S5",
+      "name": "Registrar un App ID por target (T01–T06) y activar capacidades",
+      "platform": "ios",
+      "owner": "A05 o A09 con acceso",
+      "inputs": "Bundle ID",
+      "outputs": "C09",
+      "depends_on": [
+        "S4.2",
+        "S5.1"
+      ],
+      "variants": [],
+      "note": "Se repite por cada target: app principal y extensiones."
+    },
+    {
+      "id": "S5.3",
+      "phase": "S5",
+      "name": "Crear el registro de app en App Store Connect",
+      "platform": "ios",
+      "owner": "A14",
+      "inputs": "C09, nombre, SKU",
+      "outputs": "App en App Store Connect",
+      "depends_on": [
+        "S5.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S5.4",
+      "phase": "S5",
+      "name": "Crear la app en Play Console",
+      "platform": "android",
+      "owner": "A14",
+      "inputs": "Package name",
+      "outputs": "App en Play",
+      "depends_on": [
+        "S4.3",
+        "S5.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S5.5",
+      "phase": "S5",
+      "name": "Transferir una app existente desde otra cuenta en lugar de crearla",
+      "platform": "both",
+      "owner": "A03/A04 origen y destino",
+      "inputs": "Acuerdos de ambas partes",
+      "outputs": "App transferida",
+      "depends_on": [
+        "S3.1",
+        "S3.2"
+      ],
+      "variants": [
+        "V11"
+      ],
+      "note": "Flujo alternativo: identificador heredado, cambio de Team ID en iOS, upload key del dueño anterior o reset."
+    },
+    {
+      "id": "S6.1",
+      "phase": "S6",
+      "name": "Generar par de claves y CSR",
+      "platform": "ios",
+      "owner": "A12 o A13",
+      "inputs": "—",
+      "outputs": "F01",
+      "depends_on": [
+        "S0.3"
+      ],
+      "variants": [
+        "V4"
+      ]
+    },
+    {
+      "id": "S6.2",
+      "phase": "S6",
+      "name": "Emitir certificado Apple Distribution",
+      "platform": "ios",
+      "owner": "A03 o A05",
+      "inputs": "F01",
+      "outputs": "F02, C06",
+      "depends_on": [
+        "S6.1",
+        "S4.2"
+      ],
+      "variants": [
+        "V4"
+      ],
+      "note": "Solo Account Holder o Admin pueden crearlo. Apple permite un certificado por tipo de distribución por equipo."
+    },
+    {
+      "id": "S6.3",
+      "phase": "S6",
+      "name": "Exportar .p12 y entregarlo a custodia",
+      "platform": "ios",
+      "owner": "A12",
+      "inputs": "F02 + clave privada",
+      "outputs": "F03",
+      "depends_on": [
+        "S6.2"
+      ],
+      "variants": [
+        "V4",
+        "V6"
+      ]
+    },
+    {
+      "id": "S6.4",
+      "phase": "S6",
+      "name": "Registrar dispositivos (solo Ad Hoc o desarrollo)",
+      "platform": "ios",
+      "owner": "A05",
+      "inputs": "UDIDs",
+      "outputs": "Dispositivos",
+      "depends_on": [
+        "S4.2"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S6.5",
+      "phase": "S6",
+      "name": "Crear un perfil App Store Connect por target (y Ad Hoc si aplica)",
+      "platform": "ios",
+      "owner": "A03 o A05",
+      "inputs": "C06, C09",
+      "outputs": "F04, C10, C11",
+      "depends_on": [
+        "S6.2",
+        "S5.2"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S6.6",
+      "phase": "S6",
+      "name": "Emitir certificados y perfiles de desarrollo",
+      "platform": "ios",
+      "owner": "A09",
+      "inputs": "CSR propio",
+      "outputs": "C07, C12",
+      "depends_on": [
+        "S4.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S6.7",
+      "phase": "S6",
+      "name": "Crear clave APNs",
+      "platform": "ios",
+      "owner": "A05",
+      "inputs": "—",
+      "outputs": "F05, C14",
+      "depends_on": [
+        "S5.2"
+      ],
+      "variants": [
+        "V8"
+      ],
+      "note": "La .p8 se descarga una sola vez."
+    },
+    {
+      "id": "S6.8",
+      "phase": "S6",
+      "name": "Crear clave de App Store Connect API (equipo o individual)",
+      "platform": "ios",
+      "owner": "A03 o A05",
+      "inputs": "—",
+      "outputs": "F05, C16",
+      "depends_on": [
+        "S4.1"
+      ],
+      "variants": [
+        "V7",
+        "V12"
+      ]
+    },
+    {
+      "id": "S6.9",
+      "phase": "S6",
+      "name": "Habilitar firma automática con certificados gestionados en la nube",
+      "platform": "ios",
+      "owner": "A05",
+      "inputs": "—",
+      "outputs": "C08",
+      "depends_on": [
+        "S4.2"
+      ],
+      "variants": [
+        "V4"
+      ]
+    },
+    {
+      "id": "S6.10",
+      "phase": "S6",
+      "name": "Generar upload key (keystore)",
+      "platform": "android",
+      "owner": "A12 o A10",
+      "inputs": "—",
+      "outputs": "F11, F12, C17, C21",
+      "depends_on": [
+        "S0.3"
+      ],
+      "variants": [
+        "V6"
+      ]
+    },
+    {
+      "id": "S6.11",
+      "phase": "S6",
+      "name": "Confirmar Play App Signing y registrar el certificado de upload",
+      "platform": "android",
+      "owner": "A04 o A06",
+      "inputs": "F12",
+      "outputs": "C19",
+      "depends_on": [
+        "S5.4",
+        "S6.10"
+      ],
+      "variants": [
+        "V5"
+      ]
+    },
+    {
+      "id": "S6.12",
+      "phase": "S6",
+      "name": "Subir una app signing key propia con PEPK (antes del primer release abierto o de producción)",
+      "platform": "android",
+      "owner": "A12",
+      "inputs": "Clave propia",
+      "outputs": "F13",
+      "depends_on": [
+        "S5.4"
+      ],
+      "variants": [
+        "V5"
+      ]
+    },
+    {
+      "id": "S6.13",
+      "phase": "S6",
+      "name": "Registrar huellas SHA de upload y de app signing en servicios dependientes",
+      "platform": "android",
+      "owner": "A26",
+      "inputs": "C22",
+      "outputs": "Servicios vinculados",
+      "depends_on": [
+        "S6.11"
+      ],
+      "variants": [],
+      "note": "Sin esto fallan login con Google, Maps y deep links."
+    },
+    {
+      "id": "S6.14",
+      "phase": "S6",
+      "name": "Crear cuenta de servicio y darle permisos en Play Console",
+      "platform": "android",
+      "owner": "A06",
+      "inputs": "Proyecto Cloud",
+      "outputs": "F17, C20",
+      "depends_on": [
+        "S4.3"
+      ],
+      "variants": [
+        "V7",
+        "V12"
+      ]
+    },
+    {
+      "id": "S6.15",
+      "phase": "S6",
+      "name": "Inventariar credenciales con dueño, ubicación y vencimiento",
+      "platform": "both",
+      "owner": "A12",
+      "inputs": "C06–C27",
+      "outputs": "F25",
+      "depends_on": [
+        "S6.2",
+        "S6.3",
+        "S6.5",
+        "S6.7",
+        "S6.8",
+        "S6.10",
+        "S6.11",
+        "S6.14"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S7.1",
+      "phase": "S7",
+      "name": "Cargar clave APNs (o certificado) en Firebase o backend",
+      "platform": "ios",
+      "owner": "A26",
+      "inputs": "C14 o C15, Team ID",
+      "outputs": "Push iOS operativo",
+      "depends_on": [
+        "S6.7",
+        "S7.2"
+      ],
+      "variants": [
+        "V8"
+      ]
+    },
+    {
+      "id": "S7.2",
+      "phase": "S7",
+      "name": "Crear proyecto Firebase y registrar apps iOS y Android",
+      "platform": "both",
+      "owner": "A26",
+      "inputs": "Identificadores",
+      "outputs": "F18, C25",
+      "depends_on": [
+        "S5.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S7.3",
+      "phase": "S7",
+      "name": "Probar push en entornos de prueba y producción",
+      "platform": "both",
+      "owner": "A26, A17",
+      "inputs": "Builds",
+      "outputs": "Evidencia",
+      "depends_on": [
+        "S7.1",
+        "S8.3",
+        "S8.6"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S7.4",
+      "phase": "S7",
+      "name": "Publicar archivos de asociación de dominio",
+      "platform": "both",
+      "owner": "A26",
+      "inputs": "Team ID, C22",
+      "outputs": "F19",
+      "depends_on": [
+        "S2.2",
+        "S6.13"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S8.1",
+      "phase": "S8",
+      "name": "Configurar versión, número de build, entitlements, manifiesto de privacidad y configuración Firebase",
+      "platform": "both",
+      "owner": "A09",
+      "inputs": "F18",
+      "outputs": "F06, F08",
+      "depends_on": [
+        "S5.2",
+        "S7.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S8.2",
+      "phase": "S8",
+      "name": "Compilar y archivar iOS",
+      "platform": "ios",
+      "owner": "A10 o A11",
+      "inputs": "F06",
+      "outputs": "F07, F10",
+      "depends_on": [
+        "S8.1"
+      ],
+      "variants": [
+        "V3"
+      ]
+    },
+    {
+      "id": "S8.3",
+      "phase": "S8",
+      "name": "Firmar y exportar el IPA",
+      "platform": "ios",
+      "owner": "A13",
+      "inputs": "F03 o C08, F04, F07, F08",
+      "outputs": "F09",
+      "depends_on": [
+        "S8.2",
+        "S6.5"
+      ],
+      "variants": [
+        "V4"
+      ]
+    },
+    {
+      "id": "S8.4",
+      "phase": "S8",
+      "name": "Analizar el binario (SAST, MAST, dependencias)",
+      "platform": "both",
+      "owner": "A22",
+      "inputs": "F09, F14",
+      "outputs": "Informe",
+      "depends_on": [
+        "S8.3",
+        "S8.6"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S8.5",
+      "phase": "S8",
+      "name": "Compilar AAB de release con ofuscación",
+      "platform": "android",
+      "owner": "A10 o A11",
+      "inputs": "Código",
+      "outputs": "F16, AAB sin firmar",
+      "depends_on": [
+        "S8.1"
+      ],
+      "variants": [
+        "V3"
+      ]
+    },
+    {
+      "id": "S8.6",
+      "phase": "S8",
+      "name": "Firmar el AAB con la upload key",
+      "platform": "android",
+      "owner": "A13",
+      "inputs": "F11, C21",
+      "outputs": "F14",
+      "depends_on": [
+        "S8.5",
+        "S6.10"
+      ],
+      "variants": [
+        "V6"
+      ]
+    },
+    {
+      "id": "S9.1",
+      "phase": "S9",
+      "name": "Comprobar requisitos iOS: Xcode 26 o posterior y destino iOS 13 o posterior",
+      "platform": "ios",
+      "owner": "A10",
+      "inputs": "F09",
+      "outputs": "Conformidad",
+      "depends_on": [
+        "S8.3"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S9.2",
+      "phase": "S9",
+      "name": "Comprobar target API Android: 36 desde el 31 ago 2026 y 64 bits",
+      "platform": "android",
+      "owner": "A10",
+      "inputs": "F14",
+      "outputs": "Conformidad",
+      "depends_on": [
+        "S8.6"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S9.3",
+      "phase": "S9",
+      "name": "Verificar firma y entitlements del binario (codesign, apksigner, bundletool)",
+      "platform": "both",
+      "owner": "A13",
+      "inputs": "F09, F14",
+      "outputs": "Conformidad",
+      "depends_on": [
+        "S8.3",
+        "S8.6"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S10.1",
+      "phase": "S10",
+      "name": "Subir IPA a App Store Connect",
+      "platform": "ios",
+      "owner": "A14 o A11",
+      "inputs": "F09, C16 o C27 o sesión",
+      "outputs": "Build en App Store Connect",
+      "depends_on": [
+        "S9.1",
+        "S9.3",
+        "S5.3"
+      ],
+      "variants": [
+        "V7"
+      ]
+    },
+    {
+      "id": "S10.2",
+      "phase": "S10",
+      "name": "Subir AAB y archivo de mapeo a un track de Play",
+      "platform": "android",
+      "owner": "A14 o A11",
+      "inputs": "F14, F16, C20 o sesión",
+      "outputs": "Release borrador",
+      "depends_on": [
+        "S9.2",
+        "S9.3",
+        "S5.4"
+      ],
+      "variants": [
+        "V7"
+      ],
+      "note": "La primera subida de una app nueva se hace en consola; la API sirve desde la segunda."
+    },
+    {
+      "id": "S10.3",
+      "phase": "S10",
+      "name": "Esperar procesamiento y responder cumplimiento de exportación (cifrado)",
+      "platform": "ios",
+      "owner": "A14",
+      "inputs": "Build",
+      "outputs": "Build listo",
+      "depends_on": [
+        "S10.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S11.1",
+      "phase": "S11",
+      "name": "Distribuir a testers internos por TestFlight",
+      "platform": "ios",
+      "owner": "A14, A17",
+      "inputs": "Build",
+      "outputs": "Pruebas",
+      "depends_on": [
+        "S10.3"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S11.2",
+      "phase": "S11",
+      "name": "Superar Beta App Review para testers externos",
+      "platform": "ios",
+      "owner": "A30",
+      "inputs": "Build, F23",
+      "outputs": "Aprobación beta",
+      "depends_on": [
+        "S11.1",
+        "S12.9"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S11.3",
+      "phase": "S11",
+      "name": "Distribuir a testers externos (builds caducan a los 90 días)",
+      "platform": "ios",
+      "owner": "A14, A18",
+      "inputs": "Aprobación beta",
+      "outputs": "Pruebas",
+      "depends_on": [
+        "S11.2"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S11.4",
+      "phase": "S11",
+      "name": "Promover entre tracks de prueba interna, cerrada y abierta",
+      "platform": "android",
+      "owner": "A14, A17, A18",
+      "inputs": "Release",
+      "outputs": "Pruebas",
+      "depends_on": [
+        "S10.2"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S11.5",
+      "phase": "S11",
+      "name": "Distribuir fuera de tienda (Ad Hoc, APK, plataforma de terceros)",
+      "platform": "both",
+      "owner": "A10",
+      "inputs": "F09 Ad Hoc, F15",
+      "outputs": "Pruebas",
+      "depends_on": [
+        "S8.3",
+        "S8.6"
+      ],
+      "variants": [
+        "V9"
+      ]
+    },
+    {
+      "id": "S11.6",
+      "phase": "S11",
+      "name": "Revisar informe previo al lanzamiento y Android vitals",
+      "platform": "android",
+      "owner": "A17",
+      "inputs": "Release",
+      "outputs": "Hallazgos",
+      "depends_on": [
+        "S11.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S11.7",
+      "phase": "S11",
+      "name": "Emitir conformidad de QA",
+      "platform": "both",
+      "owner": "A17",
+      "inputs": "Pruebas",
+      "outputs": "F24",
+      "depends_on": [
+        "S11.1",
+        "S11.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S12.1",
+      "phase": "S12",
+      "name": "Preparar textos, capturas, icono, URLs de privacidad y soporte",
+      "platform": "both",
+      "owner": "A15",
+      "inputs": "Sitio web",
+      "outputs": "F20",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S12.2",
+      "phase": "S12",
+      "name": "Cargar la ficha en App Store Connect",
+      "platform": "ios",
+      "owner": "A15",
+      "inputs": "F20",
+      "outputs": "Ficha",
+      "depends_on": [
+        "S5.3",
+        "S12.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S12.3",
+      "phase": "S12",
+      "name": "Cargar la ficha principal en Play Console",
+      "platform": "android",
+      "owner": "A15",
+      "inputs": "F20",
+      "outputs": "Ficha",
+      "depends_on": [
+        "S5.4",
+        "S12.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S12.4",
+      "phase": "S12",
+      "name": "Responder App Privacy",
+      "platform": "ios",
+      "owner": "A24",
+      "inputs": "Inventario de datos",
+      "outputs": "F21",
+      "depends_on": [
+        "S5.3"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S12.5",
+      "phase": "S12",
+      "name": "Completar Data safety",
+      "platform": "android",
+      "owner": "A24",
+      "inputs": "Inventario de datos",
+      "outputs": "F21",
+      "depends_on": [
+        "S5.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S12.6",
+      "phase": "S12",
+      "name": "Clasificación por edad (Apple) y cuestionario IARC (Play)",
+      "platform": "both",
+      "owner": "A14",
+      "inputs": "—",
+      "outputs": "F21",
+      "depends_on": [
+        "S5.3",
+        "S5.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S12.7",
+      "phase": "S12",
+      "name": "Resto de declaraciones: cifrado, público objetivo, anuncios, funciones financieras, permisos sensibles, accesibilidad",
+      "platform": "both",
+      "owner": "A14, A21, A24",
+      "inputs": "—",
+      "outputs": "F21",
+      "depends_on": [
+        "S5.3",
+        "S5.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S12.8",
+      "phase": "S12",
+      "name": "Redactar notas de versión por idioma",
+      "platform": "both",
+      "owner": "A15",
+      "inputs": "—",
+      "outputs": "F22",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S12.9",
+      "phase": "S12",
+      "name": "Preparar notas para el revisor y cuenta demo",
+      "platform": "both",
+      "owner": "A14, A22",
+      "inputs": "C24",
+      "outputs": "F23",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S13.1",
+      "phase": "S13",
+      "name": "Aprobación de seguridad",
+      "platform": "both",
+      "owner": "A22",
+      "inputs": "Informe de S8.4, pentest",
+      "outputs": "F24",
+      "depends_on": [
+        "S8.4"
+      ],
+      "variants": [],
+      "note": "El perfil regulatorio detalla los controles concretos."
+    },
+    {
+      "id": "S13.2",
+      "phase": "S13",
+      "name": "Aprobación de cumplimiento regulatorio",
+      "platform": "both",
+      "owner": "A21",
+      "inputs": "F21",
+      "outputs": "F24",
+      "depends_on": [
+        "S12.7"
+      ],
+      "variants": [],
+      "note": "El perfil regulatorio detalla los controles concretos."
+    },
+    {
+      "id": "S13.3",
+      "phase": "S13",
+      "name": "Aprobación legal de términos y política de privacidad",
+      "platform": "both",
+      "owner": "A20",
+      "inputs": "F20",
+      "outputs": "F24",
+      "depends_on": [
+        "S12.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S13.4",
+      "phase": "S13",
+      "name": "Aprobación de riesgos",
+      "platform": "both",
+      "owner": "A23",
+      "inputs": "F24 previas",
+      "outputs": "F24",
+      "depends_on": [
+        "S13.1"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S13.5",
+      "phase": "S13",
+      "name": "Go / No-Go de la versión",
+      "platform": "both",
+      "owner": "A07",
+      "inputs": "F24",
+      "outputs": "Decisión",
+      "depends_on": [
+        "S11.7",
+        "S13.1",
+        "S13.2",
+        "S13.3",
+        "S13.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S14.1",
+      "phase": "S14",
+      "name": "Enviar la versión a App Review",
+      "platform": "ios",
+      "owner": "A14 → A30",
+      "inputs": "Build, F20, F21, F22, F23",
+      "outputs": "Aprobación o rechazo",
+      "depends_on": [
+        "S13.5",
+        "S10.3",
+        "S12.2",
+        "S12.4",
+        "S12.6",
+        "S12.7",
+        "S12.9"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S14.2",
+      "phase": "S14",
+      "name": "Enviar cambios a revisión en Play",
+      "platform": "android",
+      "owner": "A14 → A31",
+      "inputs": "Release, F20, F21, F22, F23",
+      "outputs": "Aprobación o rechazo",
+      "depends_on": [
+        "S13.5",
+        "S11.4",
+        "S12.3",
+        "S12.5",
+        "S12.6",
+        "S12.7"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S14.3",
+      "phase": "S14",
+      "name": "Atender rechazos y volver a enviar",
+      "platform": "both",
+      "owner": "A14, A09",
+      "inputs": "Motivo del rechazo",
+      "outputs": "Corrección",
+      "depends_on": [
+        "S14.1",
+        "S14.2"
+      ],
+      "variants": [],
+      "note": "Según el motivo, vuelve a S8 (binario) o a S12 (ficha y declaraciones)."
+    },
+    {
+      "id": "S15.1",
+      "phase": "S15",
+      "name": "Liberar en App Store: manual, automática o programada; con o sin liberación por fases",
+      "platform": "ios",
+      "owner": "A14",
+      "inputs": "Aprobación, F22",
+      "outputs": "Versión publicada",
+      "depends_on": [
+        "S14.1"
+      ],
+      "variants": [
+        "V10"
+      ]
+    },
+    {
+      "id": "S15.2",
+      "phase": "S15",
+      "name": "Liberar en Play: publicación gestionada y despliegue escalonado por porcentaje",
+      "platform": "android",
+      "owner": "A14",
+      "inputs": "Aprobación, F22",
+      "outputs": "Versión publicada",
+      "depends_on": [
+        "S14.2"
+      ],
+      "variants": [
+        "V10"
+      ]
+    },
+    {
+      "id": "S15.3",
+      "phase": "S15",
+      "name": "Verificar disponibilidad por país y dispositivo",
+      "platform": "both",
+      "owner": "A14",
+      "inputs": "—",
+      "outputs": "Evidencia",
+      "depends_on": [
+        "S15.1",
+        "S15.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S16.1",
+      "phase": "S16",
+      "name": "Vigilar el despliegue; pausar o detener si hay regresiones",
+      "platform": "both",
+      "owner": "A14",
+      "inputs": "Métricas",
+      "outputs": "Decisión",
+      "depends_on": [
+        "S15.1",
+        "S15.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S16.2",
+      "phase": "S16",
+      "name": "Analizar fallos con símbolos (Crashlytics, Organizer, Android vitals)",
+      "platform": "both",
+      "owner": "A09, A17",
+      "inputs": "F10, F16",
+      "outputs": "Incidencias",
+      "depends_on": [
+        "S15.1",
+        "S15.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S16.3",
+      "phase": "S16",
+      "name": "Responder reseñas",
+      "platform": "both",
+      "owner": "A19",
+      "inputs": "—",
+      "outputs": "Respuestas",
+      "depends_on": [
+        "S15.1",
+        "S15.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S16.4",
+      "phase": "S16",
+      "name": "Atender avisos de política y nuevos requisitos de tienda",
+      "platform": "both",
+      "owner": "A14, A21",
+      "inputs": "Avisos",
+      "outputs": "Plan",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S16.5",
+      "phase": "S16",
+      "name": "Actualizar declaraciones cuando cambia el manejo de datos",
+      "platform": "both",
+      "owner": "A24",
+      "inputs": "Cambio",
+      "outputs": "F21",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S16.6",
+      "phase": "S16",
+      "name": "Retirar de venta o despublicar",
+      "platform": "both",
+      "owner": "A14 con A03/A04",
+      "inputs": "Decisión",
+      "outputs": "App retirada",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S17.1",
+      "phase": "S17",
+      "name": "Renovar la membresía Apple",
+      "platform": "ios",
+      "owner": "A03, A16",
+      "inputs": "—",
+      "outputs": "Membresía",
+      "depends_on": [
+        "S2.3"
+      ],
+      "variants": [],
+      "note": "Anual. Si vence, las apps se retiran de la venta."
+    },
+    {
+      "id": "S17.2",
+      "phase": "S17",
+      "name": "Aceptar acuerdos actualizados (bloquean el acceso si no se aceptan)",
+      "platform": "both",
+      "owner": "A03, A04",
+      "inputs": "—",
+      "outputs": "F26",
+      "depends_on": [
+        "S3.1",
+        "S3.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S17.3",
+      "phase": "S17",
+      "name": "Renovar certificado de distribución y regenerar perfiles",
+      "platform": "ios",
+      "owner": "A03 o A05, A12",
+      "inputs": "F25",
+      "outputs": "C06, C10 nuevos",
+      "depends_on": [
+        "S6.2",
+        "S6.5"
+      ],
+      "variants": [
+        "V4"
+      ],
+      "note": "Anual; un perfil por target."
+    },
+    {
+      "id": "S17.4",
+      "phase": "S17",
+      "name": "Renovar certificados APNs TLS o de capacidades",
+      "platform": "ios",
+      "owner": "A05",
+      "inputs": "F25",
+      "outputs": "C15, C18",
+      "depends_on": [
+        "S6.7"
+      ],
+      "variants": [
+        "V8"
+      ]
+    },
+    {
+      "id": "S17.5",
+      "phase": "S17",
+      "name": "Rotar claves .p8, cuentas de servicio y secretos de CI por política",
+      "platform": "both",
+      "owner": "A12, A22",
+      "inputs": "F25",
+      "outputs": "Credenciales nuevas",
+      "depends_on": [
+        "S6.8",
+        "S6.14"
+      ],
+      "variants": [
+        "V12"
+      ]
+    },
+    {
+      "id": "S17.6",
+      "phase": "S17",
+      "name": "Mantener D-U-N-S y perfil de pagos alineados",
+      "platform": "both",
+      "owner": "A02, A04",
+      "inputs": "C01",
+      "outputs": "Cuenta en regla",
+      "depends_on": [
+        "S1.2"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S17.7",
+      "phase": "S17",
+      "name": "Recertificar usuarios, roles y expiraciones",
+      "platform": "both",
+      "owner": "A22, A05, A06",
+      "inputs": "Matriz de accesos",
+      "outputs": "Matriz vigente",
+      "depends_on": [
+        "S4.2",
+        "S4.3"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S17.8",
+      "phase": "S17",
+      "name": "Actualizar target API y SDK según requisitos anuales",
+      "platform": "both",
+      "owner": "A09",
+      "inputs": "Avisos",
+      "outputs": "Código",
+      "depends_on": [
+        "S16.4"
+      ],
+      "variants": []
+    },
+    {
+      "id": "S18.1",
+      "phase": "S18",
+      "name": "Revocar certificado o clave comprometida y reemitir",
+      "platform": "both",
+      "owner": "A05, A12, A22",
+      "inputs": "Incidente",
+      "outputs": "Credencial nueva",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S18.2",
+      "phase": "S18",
+      "name": "Transferir el rol de Account Holder",
+      "platform": "ios",
+      "owner": "A03",
+      "inputs": "Nueva persona con poder",
+      "outputs": "A03 nuevo",
+      "depends_on": [],
+      "variants": []
+    },
+    {
+      "id": "S18.3",
+      "phase": "S18",
+      "name": "Solicitar reset de upload key",
+      "platform": "android",
+      "owner": "A04 o A06",
+      "inputs": "F12 nuevo",
+      "outputs": "C17 nueva",
+      "depends_on": [],
+      "variants": [
+        "V5"
+      ]
+    },
+    {
+      "id": "S18.4",
+      "phase": "S18",
+      "name": "Actualizar la app signing key",
+      "platform": "android",
+      "owner": "A04 o A06",
+      "inputs": "—",
+      "outputs": "C19, C22 nuevas",
+      "depends_on": [],
+      "variants": [
+        "V5"
+      ]
+    },
+    {
+      "id": "S18.5",
+      "phase": "S18",
+      "name": "Transferir una app entre cuentas",
+      "platform": "both",
+      "owner": "A03/A04 de ambas cuentas",
+      "inputs": "—",
+      "outputs": "App transferida",
+      "depends_on": [],
+      "variants": [
+        "V11"
+      ]
+    },
+    {
+      "id": "S18.6",
+      "phase": "S18",
+      "name": "Recuperar una cuenta titular",
+      "platform": "both",
+      "owner": "A08",
+      "inputs": "C26",
+      "outputs": "Acceso",
+      "depends_on": [],
+      "variants": []
+    }
+  ]
+}

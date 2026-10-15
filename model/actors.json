@@ -1,0 +1,246 @@
+{
+  "description": "Generic roles A01-A31. Each step names one or more roles; an instance maps a real owner to each lane.",
+  "lang": "es",
+  "roles": {
+    "A01": {
+      "name": "Titular legal",
+      "lane": "L6"
+    },
+    "A02": {
+      "name": "Representante con poder",
+      "lane": "L6"
+    },
+    "A03": {
+      "name": "Account Holder (Apple)",
+      "lane": "L1"
+    },
+    "A04": {
+      "name": "Account owner (Play Console)",
+      "lane": "L1"
+    },
+    "A05": {
+      "name": "Admin (Apple)",
+      "lane": "L2"
+    },
+    "A06": {
+      "name": "Admin (Play Console)",
+      "lane": "L2"
+    },
+    "A07": {
+      "name": "Sponsor / Product Owner",
+      "lane": "L1"
+    },
+    "A08": {
+      "name": "Gestor de identidades corporativas",
+      "lane": "L2"
+    },
+    "A09": {
+      "name": "Desarrollador",
+      "lane": "L3"
+    },
+    "A10": {
+      "name": "Ingeniero de build / release",
+      "lane": "L3"
+    },
+    "A11": {
+      "name": "Plataforma de CI",
+      "lane": "L3"
+    },
+    "A12": {
+      "name": "Custodio de claves",
+      "lane": "L4"
+    },
+    "A13": {
+      "name": "Firmante técnico",
+      "lane": "L3"
+    },
+    "A14": {
+      "name": "Gestor de releases (tienda)",
+      "lane": "L1"
+    },
+    "A15": {
+      "name": "Contenido de ficha / Marketing",
+      "lane": "L1"
+    },
+    "A16": {
+      "name": "Finanzas",
+      "lane": "L6"
+    },
+    "A17": {
+      "name": "QA",
+      "lane": "L3"
+    },
+    "A18": {
+      "name": "Testers externos / piloto",
+      "lane": "L1"
+    },
+    "A19": {
+      "name": "Soporte al cliente",
+      "lane": "L1"
+    },
+    "A20": {
+      "name": "Legal",
+      "lane": "L5"
+    },
+    "A21": {
+      "name": "Cumplimiento / regulatorio",
+      "lane": "L5"
+    },
+    "A22": {
+      "name": "Seguridad de la información",
+      "lane": "L4"
+    },
+    "A23": {
+      "name": "Riesgos",
+      "lane": "L5"
+    },
+    "A24": {
+      "name": "Privacidad / DPO",
+      "lane": "L5"
+    },
+    "A25": {
+      "name": "Auditor",
+      "lane": "L5"
+    },
+    "A26": {
+      "name": "Operador de servicios backend",
+      "lane": "L2"
+    },
+    "A27": {
+      "name": "Dun & Bradstreet",
+      "lane": "L7"
+    },
+    "A28": {
+      "name": "Apple Developer Relations",
+      "lane": "L7"
+    },
+    "A29": {
+      "name": "Verificación de Google Play",
+      "lane": "L7"
+    },
+    "A30": {
+      "name": "App Review (Apple)",
+      "lane": "L7"
+    },
+    "A31": {
+      "name": "Revisión de Google Play",
+      "lane": "L7"
+    }
+  },
+  "lanes": [
+    {
+      "id": "L1",
+      "name": "Canal Digital",
+      "description": "Negocio: decide, financia, es titular",
+      "roles": [
+        "A03",
+        "A04",
+        "A07",
+        "A14",
+        "A15",
+        "A18",
+        "A19"
+      ]
+    },
+    {
+      "id": "L2",
+      "name": "TI",
+      "description": "Responsable tecnológico",
+      "roles": [
+        "A05",
+        "A06",
+        "A08",
+        "A26"
+      ]
+    },
+    {
+      "id": "L3",
+      "name": "Ejecutor técnico",
+      "description": "",
+      "roles": [
+        "A09",
+        "A10",
+        "A11",
+        "A13",
+        "A17"
+      ]
+    },
+    {
+      "id": "L4",
+      "name": "Seguridad",
+      "description": "Custodia y aprobación",
+      "roles": [
+        "A12",
+        "A22"
+      ]
+    },
+    {
+      "id": "L5",
+      "name": "Cumplimiento, Legal y Riesgos",
+      "description": "Controles y aprobaciones",
+      "roles": [
+        "A20",
+        "A21",
+        "A23",
+        "A24",
+        "A25"
+      ]
+    },
+    {
+      "id": "L6",
+      "name": "Representación legal y Finanzas",
+      "description": "Entidad, poderes y pagos",
+      "roles": [
+        "A01",
+        "A02",
+        "A16"
+      ]
+    },
+    {
+      "id": "L7",
+      "name": "Externos",
+      "description": "Verificadores y revisores",
+      "roles": [
+        "A27",
+        "A28",
+        "A29",
+        "A30",
+        "A31"
+      ]
+    }
+  ],
+  "incompatible_pairs": [
+    {
+      "roles": [
+        "A12",
+        "A13"
+      ],
+      "risk": "Quien usa la clave también la controla y puede firmar un binario alterado sin que nadie lo note",
+      "severity": "high"
+    },
+    {
+      "roles": [
+        "A10",
+        "A14"
+      ],
+      "risk": "Quien compila también decide qué build llega a producción",
+      "severity": "high"
+    },
+    {
+      "roles": [
+        "A09",
+        "A07"
+      ],
+      "risk": "Quien escribe el cambio lo aprueba",
+      "severity": "medium"
+    },
+    {
+      "roles": [
+        "A22",
+        "A13"
+      ],
+      "risk": "El control de seguridad revisa su propio trabajo",
+      "severity": "medium"
+    }
+  ]
+}

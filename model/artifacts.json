@@ -1,0 +1,110 @@
+{
+  "description": "What each step produces and consumes, F01-F26.",
+  "lang": "es",
+  "items": {
+    "F01": {
+      "name": "CSR",
+      "format": ".certSigningRequest"
+    },
+    "F02": {
+      "name": "Certificado emitido",
+      "format": ".cer"
+    },
+    "F03": {
+      "name": "Certificado + clave exportados",
+      "format": ".p12"
+    },
+    "F04": {
+      "name": "Perfil de aprovisionamiento",
+      "format": ".mobileprovision"
+    },
+    "F05": {
+      "name": "Clave privada de servicio Apple",
+      "format": ".p8"
+    },
+    "F06": {
+      "name": "Manifiestos iOS",
+      "format": "Info.plist, .entitlements, PrivacyInfo"
+    },
+    "F07": {
+      "name": "Archivo de compilación",
+      "format": ".xcarchive"
+    },
+    "F08": {
+      "name": "Opciones de exportación",
+      "format": "ExportOptions.plist"
+    },
+    "F09": {
+      "name": "Binario iOS firmado",
+      "format": ".ipa"
+    },
+    "F10": {
+      "name": "Símbolos de depuración",
+      "format": ".dSYM"
+    },
+    "F11": {
+      "name": "Keystore de upload",
+      "format": ".jks / .keystore"
+    },
+    "F12": {
+      "name": "Certificado público de upload",
+      "format": ".pem"
+    },
+    "F13": {
+      "name": "App signing key cifrada",
+      "format": "PEPK .zip"
+    },
+    "F14": {
+      "name": "Paquete Android firmado",
+      "format": ".aab"
+    },
+    "F15": {
+      "name": "APK de prueba o universal",
+      "format": ".apk"
+    },
+    "F16": {
+      "name": "Mapeo y símbolos",
+      "format": "mapping.txt"
+    },
+    "F17": {
+      "name": "Clave de cuenta de servicio",
+      "format": ".json"
+    },
+    "F18": {
+      "name": "Configuración Firebase",
+      "format": "google-services.json / GoogleService-Info.plist"
+    },
+    "F19": {
+      "name": "Asociación de dominio",
+      "format": "apple-app-site-association / assetlinks.json"
+    },
+    "F20": {
+      "name": "Metadatos de ficha",
+      "format": "Textos, capturas, icono, URLs"
+    },
+    "F21": {
+      "name": "Declaraciones de tienda",
+      "format": "App Privacy, Data safety, edad, cifrado…"
+    },
+    "F22": {
+      "name": "Notas de versión",
+      "format": "Texto por idioma"
+    },
+    "F23": {
+      "name": "Notas para el revisor + cuenta demo",
+      "format": "Texto + C24"
+    },
+    "F24": {
+      "name": "Evidencias de aprobación interna",
+      "format": "Actas, pentest, checklist"
+    },
+    "F25": {
+      "name": "Registro de credenciales",
+      "format": "Inventario"
+    },
+    "F26": {
+      "name": "Acuerdos firmados",
+      "format": "Licencias y acuerdos de tienda"
+    }
+  }
+}

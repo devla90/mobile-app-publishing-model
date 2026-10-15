@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Flujo de publicación móvil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: home with one door per user type; tabs Flow, Version, Model, Instantiate, Renewals. White base, one blue accent, one color per lane. */
+:root{
+  --bg:#ffffff; --surface:#ffffff; --soft:#f6f7f9; --ink:#1d2433; --muted:#5b6475; --line:#e4e7ec; --line2:#d0d5dd;
+  --accent:#1f6feb; --accent-soft:#eaf2fe; --accent-ink:#174ea6;
+  --ok:#0e9384; --ok-soft:#e6f6f4; --warn:#dc6803; --warn-soft:#fef1e6; --bad:#d92d20; --bad-soft:#fdecea;
+  --need:#7a5af8; --need-soft:#f1eefe; --enab:#dc6803; --enab-soft:#fef1e6;
+  --ios:#1f6feb; --android:#0e9384; --both:#7a5af8;
+  --l1:#1f6feb; --l2:#0e9384; --l3:#7a5af8; --l4:#d92d20; --l5:#dc6803; --l6:#a3820f; --l7:#667085;
+  --l1s:#eaf2fe; --l2s:#e6f6f4; --l3s:#f1eefe; --l4s:#fdecea; --l5s:#fef1e6; --l6s:#f8f3e0; --l7s:#f0f1f4;
+  --font-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --surface:#151b24; --soft:#1b222d; --ink:#e8ecf1; --muted:#9aa4b2; --line:#263040; --line2:#344056;
+  --accent:#6ea2ff; --accent-soft:#17263d; --accent-ink:#9dc0ff;
+  --ok:#4fc2a8; --ok-soft:#133129; --warn:#f0a35a; --warn-soft:#3a2a14; --bad:#f28b82; --bad-soft:#3b1f1c;
+  --need:#b69cf0; --need-soft:#2b2240; --enab:#f0a35a; --enab-soft:#3a2a14;
+  --ios:#8ea4f5; --android:#7cc884; --both:#b3a4e6;
+  --l1:#8ea4f5; --l2:#7cc884; --l3:#b3a4e6; --l4:#f28b82; --l5:#f0a35a; --l6:#d7c36a; --l7:#9aa4b2;
+  --l1s:#17263d; --l2s:#133129; --l3s:#2b2240; --l4s:#3b1f1c; --l5s:#3a2a14; --l6s:#33301a; --l7s:#232a35;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#151b24; --soft:#1b222d; --ink:#e8ecf1; --muted:#9aa4b2; --line:#263040; --line2:#344056;
+  --accent:#6ea2ff; --accent-soft:#17263d; --accent-ink:#9dc0ff;
+  --ok:#4fc2a8; --ok-soft:#133129; --warn:#f0a35a; --warn-soft:#3a2a14; --bad:#f28b82; --bad-soft:#3b1f1c;
+  --need:#b69cf0; --need-soft:#2b2240; --enab:#f0a35a; --enab-soft:#3a2a14;
+  --ios:#8ea4f5; --android:#7cc884; --both:#b3a4e6;
+  --l1:#8ea4f5; --l2:#7cc884; --l3:#b3a4e6; --l4:#f28b82; --l5:#f0a35a; --l6:#d7c36a; --l7:#9aa4b2;
+  --l1s:#17263d; --l2s:#133129; --l3s:#2b2240; --l4s:#3b1f1c; --l5s:#3a2a14; --l6s:#33301a; --l7s:#232a35;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+h1{font-size:1.5rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:.2rem 0 0;max-width:70ch;font-size:.92rem}
+.mono{font-family:var(--font-mono);font-size:.8em}
+header.top{display:flex;flex-wrap:wrap;gap:16px;align-items:end;justify-content:space-between;margin-bottom:18px}
+.client{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.client label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.client .store{font-size:.75rem;color:var(--muted)}
+select,input[type=search],input[type=text],input[type=date]{font:inherit;font-size:.86rem;padding:6px 9px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);max-width:100%}
+.btn{font:inherit;font-size:.86rem;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:hover{border-color:var(--accent)}
+.home{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 18px}
+@media (max-width:760px){.home{grid-template-columns:minmax(0,1fr)}}
+.door{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:5px;min-height:112px}
+.door:hover,.door:focus-visible{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.door .who{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.door .what{font-size:1.05rem;font-weight:600}
+.door .how{font-size:.84rem;color:var(--muted)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tabs button{font:inherit;font-weight:600;font-size:.9rem;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:8px 12px;cursor:pointer;margin-bottom:-1px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent-ink);border-bottom-color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h3{font-size:1rem;margin:0 0 4px}
+.plain{color:var(--muted);font-size:.88rem}
+.lbl{font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--ink);padding:6px 10px;font:inherit;font-size:.85rem;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.chk{font-size:.85rem;display:inline-flex;gap:6px;align-items:center;color:var(--muted)}
+.pl{font-size:.66rem;font-weight:600;border-radius:4px;padding:1px 5px;border:1px solid currentColor;white-space:nowrap}
+.pl.ios{color:var(--ios)}.pl.android{color:var(--android)}.pl.both{color:var(--both)}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--soft);border:1px solid var(--line)}
+.bar span{display:block;height:100%}
+.alert{background:var(--warn-soft);color:var(--ink);border-left:3px solid var(--warn);padding:8px 12px;border-radius:6px;font-size:.86rem;margin-top:10px}
+.alert b{display:block;margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:.85rem;z-index:9}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+/* Swimlane diagram */
+.swim{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.swim svg{display:block;width:1214px;max-width:none;height:auto}
+.swim .rule{stroke:var(--line);stroke-width:1}
+.swim .hd{font-weight:700;font-size:13px}
+.swim .hs{fill:var(--muted);font-size:10.5px}
+.swim .st{fill:var(--ink);font-weight:600;font-size:12px}
+.swim .sp{fill:var(--muted);font-family:var(--font-mono);font-size:10.5px}
+.swim .arr{fill:none;stroke:var(--line2);stroke-width:1.3}
+.swim .ah{fill:var(--line2)}
+.swim .bx{cursor:pointer}
+.swim .bx rect{stroke-width:1.3}
+.swim .bx text{fill:var(--ink);font-size:11px}
+.swim .bx .num{fill:#fff;font-size:10.5px;font-weight:700;font-family:var(--font-mono)}
+.swim .bx:hover rect,.swim .bx:focus-visible rect{stroke-width:2.4}
+.swim .bx:focus{outline:none}
+.howto{display:flex;flex-wrap:wrap;gap:14px;font-size:.84rem;color:var(--muted);margin-top:10px}
+.howto b{color:var(--ink)}
+.timeline{margin-top:14px}
+.tlrow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr) auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:.88rem}
+.tlrow:first-of-type{border-top:0}
+@media (max-width:560px){.tlrow{grid-template-columns:minmax(0,1fr) auto}.tlrow .trk{grid-column:1/-1}}
+.trk{position:relative;height:12px;background:var(--soft);border-radius:6px;overflow:hidden}
+.trk span{position:absolute;top:0;bottom:0;background:var(--accent);border-radius:6px}
+.trk span.mx{opacity:.25}
+.tlrow .nm small{display:block;color:var(--muted);font-size:.76rem}
+.tm{font-size:.8rem;color:var(--muted);white-space:nowrap}
+.tm b{color:var(--ink);font-variant-numeric:tabular-nums}
+.tlsum{display:flex;gap:16px;flex-wrap:wrap;font-size:.88rem;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.tlsum b{font-size:1.05rem}
+/* Version tracking: milestones */
+.verbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.88rem}
+.verbar b{font-size:1rem}
+.verbar .bar{flex:1;min-width:140px}
+.verbar select{min-width:160px}
+.ms{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.m{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.m.done{border-color:var(--ok)}
+.m.blocked{border-color:var(--warn)}
+.m .head{display:flex;gap:10px;align-items:center}
+.m .num{width:26px;height:26px;border-radius:50%;background:var(--soft);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.78rem;font-weight:600;color:var(--muted);flex:none}
+.m.done .num{background:var(--ok);border-color:var(--ok);color:#fff}
+.m.in_progress .num{background:var(--accent);border-color:var(--accent);color:#fff}
+.m.blocked .num{background:var(--warn);border-color:var(--warn);color:#fff}
+.m .name{font-weight:600;font-size:.95rem;flex:1}
+.m .cnt{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.m .desc{font-size:.82rem;color:var(--muted)}
+.m .chk{display:flex;align-items:flex-start;gap:8px;color:var(--ink);font-size:.86rem;padding:4px 0;border-top:1px solid var(--line)}
+.m .chk input{margin-top:3px;accent-color:var(--accent)}
+.m .chk.done>span{color:var(--muted);text-decoration:line-through}
+.m .chk.done small,.m .chk.done small *{text-decoration:none}
+.m .chk small{display:block;color:var(--muted);font-size:.76rem;text-decoration:none}
+.m .foot{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.m .foot .pl{cursor:pointer;background:none}
+.m .foot .pl.on{background:var(--warn-soft);color:var(--warn)}
+.m .steps{font-size:.76rem;color:var(--muted)}
+.m .steps button{border:0;background:none;color:var(--accent-ink);font:inherit;font-family:var(--font-mono);font-size:.74rem;cursor:pointer;padding:0 3px}
+.m .blknote{width:100%;font:inherit;font-size:.82rem;border:1px solid var(--line2);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--ink)}
+/* Model explorer */
+.ctrls2{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.ctrls2 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctrls2 .lbl{min-width:5.5em}
+.legend2{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.legend2 i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid}
+.legend2 .n{background:var(--need-soft);border-color:var(--need)}
+.legend2 .e{background:var(--enab-soft);border-color:var(--enab)}
+.legend2 .s{background:var(--accent-soft);border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{display:flex;flex-direction:column;gap:12px;min-width:0}
+.freq{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:6px 0 -4px}
+.phase{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.phase>summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:center;padding:10px 12px}
+.phase>summary::-webkit-details-marker{display:none}
+.phase>summary .pid{font-family:var(--font-mono);font-size:.76rem;color:var(--accent-ink);font-weight:600;width:2.6em}
+.phase>summary .pname{font-weight:600;flex:1}
+.phase>summary .pcount{font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.steps{list-style:none;margin:0;padding:0 6px 8px}
+.step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start;padding:7px 8px;border-radius:7px;cursor:pointer;border:1px solid transparent}
+.step:hover{background:var(--soft)}
+.step:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.step .sname{font-size:.92rem;line-height:1.3}
+.step .sname small{display:block;font-family:var(--font-mono);font-size:.7rem;color:var(--muted);margin-top:1px}
+.step .marks{display:flex;gap:4px;align-items:center;padding-top:3px}
+.step.sel{background:var(--accent-soft);border-color:var(--accent)}
+.step.need{background:var(--need-soft)}
+.step.enab{background:var(--enab-soft)}
+.vtag{font-family:var(--font-mono);font-size:.66rem;color:var(--warn)}
+.rev{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.rev.clear{background:var(--ok)}.rev.doubt{background:var(--warn)}
+.detail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0;max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:860px){.detail{position:static;max-height:none}}
+.crumb{font-size:.78rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.crumbline{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.8rem;color:var(--muted)}
+.crumbline .sep{opacity:.5}
+.crumbline .pos{margin-left:auto;font-variant-numeric:tabular-nums}
+.detail h2{font-size:1.25rem;margin:.3rem 0 .8rem;text-wrap:balance}
+.detail h2 .mono{display:block;font-size:.72rem;color:var(--muted);font-weight:500;margin-bottom:2px}
+.kv{display:grid;grid-template-columns:8.5em minmax(0,1fr);gap:10px 12px;margin:0}
+@media (max-width:480px){.kv{grid-template-columns:minmax(0,1fr)}.kv dt{margin-bottom:-6px}}
+.kv dt{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;padding-top:4px}
+.kv dd{margin:0;min-width:0}
+.chip{display:inline-flex;gap:6px;align-items:baseline;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:6px;padding:3px 8px;margin:2px 4px 2px 0;font:inherit;font-size:.85rem;cursor:pointer;text-align:left}
+.chip b{font-family:var(--font-mono);font-size:.74rem;font-weight:600;color:var(--accent-ink)}
+.chip:hover{border-color:var(--accent)}
+.chip small{color:var(--muted);font-family:var(--font-mono);font-size:.7rem;margin-left:auto;padding-left:8px}
+.chip.need{border-color:var(--need);background:var(--need-soft)}
+.chip.enab{border-color:var(--enab);background:var(--enab-soft)}
+.chip.var b{color:var(--warn)}
+.rolechip{display:inline-flex;flex-direction:column;align-items:flex-start;border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:5px 10px;margin:3px 6px 3px 0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+.rolechip:hover{border-color:var(--accent)}
+.rolechip b{font-weight:600;font-size:.88rem}
+.rolechip span{font-size:.72rem;color:var(--muted)}
+.flow3{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:start;margin-top:14px}
+@media (max-width:560px){.flow3{grid-template-columns:minmax(0,1fr)}.flow3 .arrow{display:none}}
+.flow3 .col h4{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:600}
+.flow3 .col .chip{display:flex;width:100%;margin:0 0 6px}
+.flow3 .mid{align-self:center;color:var(--muted);font-size:1.2rem;padding:0 4px}
+.none{font-size:.82rem;color:var(--muted);font-style:italic}
+.box{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}
+.box h3{font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.revbtns{display:flex;gap:8px;flex-wrap:wrap}
+.revbtns button[aria-pressed="true"].clear{background:var(--ok);border-color:var(--ok);color:#fff}
+.revbtns button[aria-pressed="true"].doubt{background:var(--warn);border-color:var(--warn);color:#fff}
+textarea{width:100%;min-height:70px;font:inherit;font-size:.88rem;border:1px solid var(--line2);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);margin-top:8px}
+.nav{display:flex;justify-content:space-between;gap:8px;margin-top:16px}
+.vopts{margin:6px 0 0;padding-left:1.1em;font-size:.88rem}
+.note{font-size:.85rem;color:var(--muted);background:var(--soft);border-radius:8px;padding:8px 10px;margin-top:10px}
+.lookup{display:flex;flex-direction:column;gap:6px}
+.filterchip{display:inline-flex;gap:6px;align-items:center;background:var(--accent-soft);border:1px solid var(--accent);border-radius:999px;padding:4px 10px;font-size:.82rem}
+.filterchip button{border:0;background:none;color:var(--ink);cursor:pointer;font:inherit;padding:0 2px}
+/* Instantiate */
+.inst{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;align-items:start}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px 12px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.frow:first-of-type{border-top:0}
+@media (max-width:480px){.frow{grid-template-columns:minmax(0,1fr)}}
+.frow .k{font-size:.88rem}
+.frow .k small{display:block;color:var(--muted);font-size:.76rem}
+.frow .k i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.frow select,.frow input{width:100%}
+.savebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.diff{font-size:.86rem}
+.diff li{margin:3px 0}
+/* Renewals */
+.renw{display:flex;flex-direction:column;gap:12px}
+.renintro{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.rensum{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem}
+.rensum span b{font-size:1.1rem;font-variant-numeric:tabular-nums;margin-right:4px}
+.rengrp{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rengrp h3{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--soft)}
+.ren{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto auto;gap:10px 14px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.ren:last-child{border-bottom:0}
+@media (max-width:760px){.ren{grid-template-columns:minmax(0,1fr) auto}.ren .cyc{grid-column:1/-1}}
+.ren .nm{font-weight:600;font-size:.92rem}
+.ren .nm small{display:block;font-weight:400;color:var(--muted);font-size:.78rem}
+.ren .cyc{font-size:.82rem;color:var(--muted)}
+.due{font-size:.78rem;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;min-width:9em;text-align:center}
+.due.na{background:var(--soft);color:var(--muted);font-weight:400}
+.due.ok{background:var(--ok-soft);color:var(--ok)}
+.due.soon{background:var(--warn-soft);color:var(--warn)}
+.due.late{background:var(--bad);color:#fff}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Flujo de publicación de apps móviles</h1>
+      <p class="sub">Modelo base de Canal Digital. Qué hace cada área, en qué orden y qué necesita cada paso.</p>
+    </div>
+    <div class="client">
+      <label for="clientSel">Cliente</label>
+      <select id="clientSel"><option value="">Modelo base (sin instanciar)</option></select>
+      <button class="btn" id="newClientBtn" type="button">Nuevo cliente</button>
+      <span id="newClientBox" hidden><input type="text" id="newClientName" placeholder="Nombre del cliente o producto"> <button class="btn primary" id="createClientBtn" type="button">Crear</button></span>
+      <span class="store" id="storeTxt"></span>
+    </div>
+  </header>
+
+  <nav class="home" id="home" aria-label="Accesos">
+    <button class="door" data-door="ov"><span class="who">Para negocio</span><span class="what">Ver el flujo</span><span class="how">Quién hace qué y en qué orden, con tiempos estimados. Para presentar y alinear.</span></button>
+    <button class="door" data-door="vr"><span class="who">Para operar un lanzamiento</span><span class="what">Seguir una versión</span><span class="how">Diez hitos por versión, cada uno con lo que debe estar listo. Se marca una sola vez.</span></button>
+    <button class="door" data-door="dt"><span class="who">Para revisar o instanciar</span><span class="what">Explorar el modelo</span><span class="how">Todos los pasos con dependencias, roles, credenciales y variantes. Instanciación por cliente.</span></button>
+  </nav>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tabOv" aria-selected="true" aria-controls="ovView">Ver el flujo</button>
+    <button role="tab" id="tabVr" aria-selected="false" aria-controls="vrView">Seguir una versión</button>
+    <button role="tab" id="tabDt" aria-selected="false" aria-controls="dtView">Explorar el modelo</button>
+    <button role="tab" id="tabIn" aria-selected="false" aria-controls="inView">Instanciar</button>
+    <button role="tab" id="tabRn" aria-selected="false" aria-controls="rnView">Renovaciones</button>
+  </div>
+
+  <section id="ovView" role="tabpanel">
+    <div class="swim"><svg id="swim" role="img" aria-label="Diagrama de carriles: qué hace cada área en cada etapa del flujo"></svg></div>
+    <div class="howto"><span><b>Columnas:</b> áreas. <b>Filas:</b> etapas, de arriba hacia abajo.</span><span><b>Sigue los números:</b> es el orden habitual.</span><span><b>Toca una caja</b> para ver sus pasos.</span><span>Si la tienda rechaza (20), se vuelve a construir (13) o a ajustar la ficha (16).</span></div>
+    <div id="pairAlerts"></div>
+    <div class="card timeline" id="timeline"></div>
+  </section>
+
+  <section id="vrView" role="tabpanel" hidden>
+    <div class="verbar" id="verbar"></div>
+    <div class="ms" id="ms"></div>
+  </section>
+
+  <section id="dtView" role="tabpanel" hidden>
+    <div class="ctrls2 card" role="group" aria-label="Filtros">
+      <div class="row"><span class="lbl">Ver</span>
+        <div class="seg" id="platSeg"><button data-p="all" aria-pressed="true">Ambas</button><button data-p="ios" aria-pressed="false">iOS</button><button data-p="android" aria-pressed="false">Android</button></div>
+        <select id="laneSel" aria-label="Área"><option value="">Todas las áreas</option></select>
+        <select id="roleSel" aria-label="Rol"><option value="">Todos los roles</option></select>
+        <span id="fchip"></span>
+      </div>
+      <div class="row"><span class="lbl">Buscar</span>
+        <input type="search" id="q" placeholder="Paso, rol, credencial o término" aria-label="Buscar" style="flex:1;min-width:180px">
+        <label class="chk"><input type="checkbox" id="onlyVar"> Con variante</label>
+        <label class="chk"><input type="checkbox" id="onlyDoubt"> Solo con duda</label>
+        <button class="btn" id="copyBtn" type="button">Copiar dudas</button>
+      </div>
+      <div class="row"><span class="lbl"></span><span class="legend2"><span><i class="s"></i>Paso abierto</span><span><i class="n"></i>Lo necesita antes</span><span><i class="e"></i>Lo habilita después</span></span></div>
+    </div>
+    <div class="grid">
+      <nav class="rail" id="rail" aria-label="Fases y pasos"></nav>
+      <section class="detail" id="detail" aria-live="polite"></section>
+    </div>
+  </section>
+
+  <section id="inView" role="tabpanel" hidden>
+    <div id="instBox"></div>
+  </section>
+
+  <section id="rnView" role="tabpanel" hidden>
+    <div class="renw">
+      <div class="renintro"><p class="plain">Lo que vence o se revisa durante la vida de la app. Anota la fecha de cada elemento y la página calcula el próximo vencimiento.</p><div class="rensum" id="rensum"></div></div>
+      <div id="renlist"></div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const T={"_comment": "UI strings for the generated page, diagram and diff. Placeholders in braces ({n}, {client}) are filled at runtime. Model content lives in model/*.json, not here.", "lang": "es", "title": "Flujo de publicación móvil", "title_client_suffix": " · {client}", "h1": "Flujo de publicación de apps móviles", "subtitle": "Modelo base de Canal Digital. Qué hace cada área, en qué orden y qué necesita cada paso.", "client_label": "Cliente", "client_base_option": "Modelo base (sin instanciar)", "new_client": "Nuevo cliente", "client_name_placeholder": "Nombre del cliente o producto", "create": "Crear", "door_ov_who": "Para negocio", "door_ov_what": "Ver el flujo", "door_ov_how": "Quién hace qué y en qué orden, con tiempos estimados. Para presentar y alinear.", "door_vr_who": "Para operar un lanzamiento", "door_vr_what": "Seguir una versión", "door_vr_how": "Diez hitos por versión, cada uno con lo que debe estar listo. Se marca una sola vez.", "door_dt_who": "Para revisar o instanciar", "door_dt_what": "Explorar el modelo", "door_dt_how": "Todos los pasos con dependencias, roles, credenciales y variantes. Instanciación por cliente.", "doors_aria": "Accesos", "tab_ov": "Ver el flujo", "tab_vr": "Seguir una versión", "tab_dt": "Explorar el modelo", "tab_in": "Instanciar", "tab_rn": "Renovaciones", "swim_aria": "Diagrama de carriles: qué hace cada área en cada etapa del flujo", "howto_cols": "<b>Columnas:</b> áreas. <b>Filas:</b> etapas, de arriba hacia abajo.", "howto_numbers": "<b>Sigue los números:</b> es el orden habitual.", "howto_tap": "<b>Toca una caja</b> para ver sus pasos.", "howto_reject": "Si la tienda rechaza (20), se vuelve a construir (13) o a ajustar la ficha (16).", "filters_aria": "Filtros", "filter_view": "Ver", "plat_both": "Ambas", "plat_ios": "iOS", "plat_android": "Android", "lane_aria": "Área", "lane_all": "Todas las áreas", "role_aria": "Rol", "role_all": "Todos los roles", "search_label": "Buscar", "search_placeholder": "Paso, rol, credencial o término", "only_variant": "Con variante", "only_doubt": "Solo con duda", "copy_doubts": "Copiar dudas", "legend_open": "Paso abierto", "legend_need": "Lo necesita antes", "legend_enab": "Lo habilita después", "rail_aria": "Fases y pasos", "ren_intro": "Lo que vence o se revisa durante la vida de la app. Anota la fecha de cada elemento y la página calcula el próximo vencimiento.", "ms_status": {"done": "Hecho", "in_progress": "En curso", "blocked": "Bloqueado", "pending": "Pendiente"}, "store_shared": "Guardado compartido", "store_readonly": "Solo lectura (compartido)", "store_local": "Guardado en este navegador", "lane_sub": {"L1": "Negocio, dueño del flujo", "L2": "Responde por la tecnología", "L3": "TI interno o tercero (V14)", "L4": "Custodia de claves", "L5": "Controles", "L6": "Entidad y pagos", "L7": "Tiendas y D&B"}, "lane_sub_long": {"L1": "Negocio · dueño del flujo", "L2": "Responde por la tecnología", "L3": "TI interno o tercero (V14)", "L4": "Custodia de claves", "L5": "Controles y aprobaciones", "L6": "Entidad, poderes y pagos", "L7": "Apple, Google, D&B"}, "severity": {"high": "Alta", "medium": "Media"}, "pair_alert": "Roles incompatibles bajo la misma entidad: {a} y {b} ({lane}). Severidad {sev}.", "pair_alert_tail": " Debe justificarse por escrito en la instanciación.", "tl_title": "Cuánto tarda", "tl_intro": "Rangos estimados en días calendario por fase. La barra clara es el máximo; la oscura, el mínimo.", "tl_days": "días", "tl_first": "la primera publicación", "tl_each": "cada versión siguiente", "tl_parallel": "Las fases en paralelo acortan el total real.", "ver_need_client": "Para seguir una versión, elige o crea un cliente arriba. El modelo base no lleva seguimiento.", "ver_create_client": "Crear cliente", "ver_aria": "Versión", "ver_none": "Sin versiones", "ver_new": "Nueva versión", "ver_name_placeholder": "Nombre, p. ej. 1.4.0", "ver_progress": "{md} de {mt} hitos · {cd} de {ct} verificaciones", "ver_blocked_one": "1 bloqueado", "ver_blocked_many": "{n} bloqueados", "ver_first": "Crea la primera versión para empezar a marcar.", "ms_step": "Paso", "ms_unblock": "Desbloquear", "ms_block": "Marcar bloqueado", "ms_phases": "Fases", "ms_blocknote": "Por qué está bloqueado y quién lo destraba", "inst_title": "Instanciar el modelo para un cliente", "inst_intro": "Elige un cliente arriba o crea uno. La instanciación asigna un responsable real a cada área, elige una opción por variante y fija las fechas de renovación. Alimenta el diagrama, las alertas de roles y el calendario.", "inst_client": "Cliente", "inst_name": "Nombre", "inst_lanes_title": "Áreas: quién ocupa cada carril", "inst_lanes_intro": "Escribe el equipo o empresa real. Si dos carriles tienen el mismo nombre, se revisan los pares de roles incompatibles.", "inst_vars_title": "Variantes: una opción por punto de variación", "inst_vars_intro": "Ninguna es la por defecto; lo que no se elige queda abierto.", "inst_unset": "Sin elegir", "inst_save": "Guardar instanciación", "inst_ren_hint": "Las fechas de renovación se anotan en la pestaña Renovaciones.", "inst_diff_title": "Qué cambia respecto al base", "inst_diff_none": "Nada todavía: la instanciación coincide con el modelo base.", "inst_saved": "Instanciación guardada", "ren_nodate": "Sin fecha", "ren_overdue": "Venció hace {n} d", "ren_due_in": "Vence en {n} d", "ren_reviewed": "Revisado {d}", "ren_renewed_by": "Renueva: ", "ren_every": "Cada {n} meses", "ren_warn": " · avisar {n} d antes", "ren_event": "Por evento o por política", "ren_next": " · próximo {d}", "ren_last_issue": "Última emisión", "ren_last_change": "Último cambio", "ren_sum_overdue": "vencidos", "ren_sum_soon": "próximos", "ren_sum_ok": "al día", "ren_sum_nodate": "sin fecha", "ren_noclient": "Sin cliente: las fechas quedan en este navegador.", "rail_none": "Ningún paso coincide con los filtros.", "rail_others": " y otros", "rev_unreviewed": "sin revisar", "step_none": "Ninguno: puede empezar cuando se decida", "step_pos": "Paso {i} de {n}", "step_phase": "fase", "step_days": "días", "step_who": "Quién", "step_with": "Con qué", "step_produces": "Produce", "step_depends": "Depende de", "step_variant_chosen": "Opción elegida en la instanciación, si la hay.", "step_variant_each": "Cada cliente elige una opción; cambia cómo se ejecuta este paso.", "step_before": "Antes necesita", "step_after": "Después habilita", "rev_title": "¿Se entiende este paso?", "rev_clear": "Está claro", "rev_doubt": "Tengo una duda", "rev_remove": "Quitar marca", "note_label": "Nota", "nav_prev": "← Anterior", "nav_next": "Siguiente", "ent_area": "Área: ", "ent_owner_in": "Responsable en {n} pasos.", "ent_validity": "Duración: ", "ent_format": "Formato: ", "ent_produced_in": "Se produce en", "ent_consumed_in": "Se consume en", "ent_variation": "Punto de variación. Cada cliente elige una opción.", "ent_chosen": " · elegida", "ent_steps_change": "Pasos que cambian", "back_to": "Volver a ", "filter_remove": "Quitar filtro", "copy_none": "Sin dudas ni notas registradas.", "copy_title": "Dudas y notas", "copy_hint": "Selecciona el texto y cópialo.", "copy_done": "Copiadas {n} dudas o notas", "copy_empty": "No hay dudas registradas", "copy_note": "nota", "copy_nonote": "(sin nota)", "svg_title": "Flujo de publicación de apps móviles", "svg_client_title": "Flujo de publicación · {client}", "svg_subtitle": "Qué hace cada frente en cada etapa. Siga los números: es el orden habitual del flujo.", "svg_notes": ["Si la tienda rechaza la versión (20), se vuelve a construir (13) o a ajustar la ficha (16).", "La última etapa es continua: sus actividades (22 a 25) ocurren en paralelo durante la vida de la app.", "Canal Digital decide y es titular de las cuentas; TI responde por la tecnología; el ejecutor técnico puede ser TI interno o un tercero (V14)."], "diff_title": "{client}: qué cambia respecto al modelo base", "diff_profile": "Perfil regulatorio: ", "diff_undefined": "no definido", "diff_lanes": "Carriles", "diff_h_lane": "Carril", "diff_h_base": "Base", "diff_h_client": "Cliente", "diff_variants": "Variantes elegidas", "diff_h_variant": "Variante", "diff_h_option": "Opción", "diff_unset": "Sin elegir: ", "diff_pairs": "Alertas de segregación de roles", "diff_pair_line": "- **{a}** y **{b}** bajo la misma entidad ({lane}). Severidad {sev}. {risk}.", "diff_none": "Ninguna.", "diff_decisions": "Decisiones", "diff_h_date": "Fecha", "diff_h_decision": "Decisión", "diff_h_owner": "Responsable", "diff_h_rationale": "Motivo"};
+const A={"A01": "Titular legal", "A02": "Representante con poder", "A03": "Account Holder (Apple)", "A04": "Account owner (Play Console)", "A05": "Admin (Apple)", "A06": "Admin (Play Console)", "A07": "Sponsor / Product Owner", "A08": "Gestor de identidades corporativas", "A09": "Desarrollador", "A10": "Ingeniero de build / release", "A11": "Plataforma de CI", "A12": "Custodio de claves", "A13": "Firmante técnico", "A14": "Gestor de releases (tienda)", "A15": "Contenido de ficha / Marketing", "A16": "Finanzas", "A17": "QA", "A18": "Testers externos / piloto", "A19": "Soporte al cliente", "A20": "Legal", "A21": "Cumplimiento / regulatorio", "A22": "Seguridad de la información", "A23": "Riesgos", "A24": "Privacidad / DPO", "A25": "Auditor", "A26": "Operador de servicios backend", "A27": "Dun & Bradstreet", "A28": "Apple Developer Relations", "A29": "Verificación de Google Play", "A30": "App Review (Apple)", "A31": "Revisión de Google Play"};
+const C={"C01": ["Número D-U-N-S", "Sin caducidad; datos legales deben coincidir"], "C02": ["Apple Account del Account Holder", "Permanente; 2FA"], "C03": ["Google Account del owner", "Permanente; 2SV"], "C04": ["Apple Accounts del equipo", "Permanente"], "C05": ["Google Accounts de usuarios Play", "Expiración opcional"], "C06": ["Certificado Apple Distribution + clave privada", "1 año; uno por tipo por equipo"], "C07": ["Certificado Apple Development", "1 año"], "C08": ["Certificado gestionado en la nube", "Gestionado por Apple"], "C09": ["App ID (bundle ID) + capacidades", "Permanente; uno por target"], "C10": ["Perfil App Store Connect", "Hasta 1 año o con C06"], "C11": ["Perfil Ad Hoc", "Hasta 1 año"], "C12": ["Perfil Development", "Hasta 1 año"], "C13": ["Intermedio Apple WWDR", "Hasta 20 feb 2030"], "C14": ["Clave APNs (.p8)", "No vence; revocable"], "C15": ["Certificado APNs TLS", "1 año"], "C16": ["Clave App Store Connect API (.p8)", "No vence; revocable"], "C17": ["Upload key (keystore)", "Fijada al generarla; reseteable"], "C18": ["Certificados de capacidades", "Apple Pay 25 meses; otros variables"], "C19": ["App signing key", "No vence; actualizable; irrecuperable si es propia y se pierde"], "C20": ["Cuenta de servicio Google (JSON)", "Según política"], "C21": ["Contraseñas de keystore y alias", "Iguales a C17"], "C22": ["Huellas SHA-1 / SHA-256", "Las de C17 y C19"], "C23": ["Secretos del pipeline", "Política interna"], "C24": ["Cuenta demo para revisores", "Mantener viva"], "C25": ["Configuración Firebase", "Hasta rotar"], "C26": ["Códigos de recuperación 2FA", "Hasta usar"], "C27": ["Contraseña específica de app", "Hasta revocar"]};
+const F={"F01": ["CSR", ".certSigningRequest"], "F02": ["Certificado emitido", ".cer"], "F03": ["Certificado + clave exportados", ".p12"], "F04": ["Perfil de aprovisionamiento", ".mobileprovision"], "F05": ["Clave privada de servicio Apple", ".p8"], "F06": ["Manifiestos iOS", "Info.plist, .entitlements, PrivacyInfo"], "F07": ["Archivo de compilación", ".xcarchive"], "F08": ["Opciones de exportación", "ExportOptions.plist"], "F09": ["Binario iOS firmado", ".ipa"], "F10": ["Símbolos de depuración", ".dSYM"], "F11": ["Keystore de upload", ".jks / .keystore"], "F12": ["Certificado público de upload", ".pem"], "F13": ["App signing key cifrada", "PEPK .zip"], "F14": ["Paquete Android firmado", ".aab"], "F15": ["APK de prueba o universal", ".apk"], "F16": ["Mapeo y símbolos", "mapping.txt"], "F17": ["Clave de cuenta de servicio", ".json"], "F18": ["Configuración Firebase", "google-services.json / GoogleService-Info.plist"], "F19": ["Asociación de dominio", "apple-app-site-association / assetlinks.json"], "F20": ["Metadatos de ficha", "Textos, capturas, icono, URLs"], "F21": ["Declaraciones de tienda", "App Privacy, Data safety, edad, cifrado…"], "F22": ["Notas de versión", "Texto por idioma"], "F23": ["Notas para el revisor + cuenta demo", "Texto + C24"], "F24": ["Evidencias de aprobación interna", "Actas, pentest, checklist"], "F25": ["Registro de credenciales", "Inventario"], "F26": ["Acuerdos firmados", "Licencias y acuerdos de tienda"]};
+const V={"V1": ["Tipo de cuenta", ["a) Organización", "b) Personal"]], "V2": ["Titularidad de las cuentas", ["a) Cuenta propia del titular", "b) Cuenta central de un grupo", "c) Cuenta de un proveedor"]], "V3": ["Dónde se compila", ["a) Local", "b) CI propio", "c) CI operado por un tercero", "d) CI de la plataforma (Xcode Cloud)"]], "V4": ["Cómo se firma iOS", ["a) Manual con .p12 + perfil", "b) Firma automática en la nube", "c) Firma en CI con API key", "d) Delegada al tercero que compila"]], "V5": ["Firma de la app Android", ["a) Play App Signing, clave de Google", "b) Play App Signing, clave propia subida", "c) Play App Signing, clave en Cloud KMS propio", "d) Sin Play App Signing"]], "V6": ["Custodia de la upload key", ["a) El titular custodia y entrega", "b) El que compila la genera y custodia", "c) En HSM/KMS, nunca exportada"]], "V7": ["Cómo se sube", ["a) Manual en consola", "b) Herramienta (Xcode, Transporter)", "c) API automatizada"]], "V8": ["Push en iOS", ["a) Clave APNs (token)", "b) Certificado APNs TLS"]], "V9": ["Pruebas previas", ["a) Canales de tienda", "b) Fuera de tienda", "c) Ambas"]], "V10": ["Lanzamiento", ["a) Manual", "b) Automático", "c) Programado; con fases o despliegue escalonado"]], "V11": ["Origen de la app", ["a) App nueva (modelado)", "b) Actualizar una app de otra cuenta (flujo alternativo)"]], "V12": ["Autenticación de máquinas", ["a) Clave de equipo / JSON", "b) Clave individual / federación sin clave descargable"]], "V13": ["Canal de distribución", ["a) Tiendas públicas (modelado)", "b) Canales privados (previsto)", "c) Tiendas alternativas (previsto)", "d) Enterprise (excluido)"]], "V14": ["Modelo de ejecución tecnológica", ["a) TI interno ejecuta", "b) Un tercero gobernado por TI", "c) Un tercero contratado por el negocio"]]};
+const LANES=[["L1", "Canal Digital", "Negocio: decide, financia, es titular", ["A03", "A04", "A07", "A14", "A15", "A18", "A19"]], ["L2", "TI", "Responsable tecnológico", ["A05", "A06", "A08", "A26"]], ["L3", "Ejecutor técnico", "", ["A09", "A10", "A11", "A13", "A17"]], ["L4", "Seguridad", "Custodia y aprobación", ["A12", "A22"]], ["L5", "Cumplimiento, Legal y Riesgos", "Controles y aprobaciones", ["A20", "A21", "A23", "A24", "A25"]], ["L6", "Representación legal y Finanzas", "Entidad, poderes y pagos", ["A01", "A02", "A16"]], ["L7", "Externos", "Verificadores y revisores", ["A27", "A28", "A29", "A30", "A31"]]];
+const laneOfRole=Object.fromEntries(LANES.flatMap(l=>l[3].map(a=>[a,l[0]])));
+const laneName=id=>{const l=LANES.find(x=>x[0]===id);return l?l[1]:""};
+const PH=[["S0", "Gobierno", "owner"], ["S1", "Identidad legal y cuentas base", "owner"], ["S2", "Alta en los programas", "owner"], ["S3", "Acuerdos, impuestos y cobros", "owner"], ["S4", "Accesos y roles", "owner"], ["S5", "Identidad de la app", "app"], ["S6", "Firma y credenciales", "app"], ["S7", "Servicios dependientes", "app"], ["S8", "Build", "version"], ["S9", "Verificación previa a la subida", "version"], ["S10", "Subida a la tienda", "version"], ["S11", "Pruebas en canal", "version"], ["S12", "Ficha y declaraciones", "version"], ["S13", "Aprobaciones internas", "version"], ["S14", "Revisión de la tienda", "version"], ["S15", "Publicación", "version"], ["S16", "Operación posterior", "version"], ["S17", "Renovaciones y caducidades", "cycle"], ["S18", "Incidentes y cambios mayores", "cycle"]];
+const FREQ={"owner": "Una vez por titular", "app": "Una vez por app", "version": "En cada versión", "cycle": "Cíclico o por evento"};
+const S=[["S0.1", "Decidir quién es titular de las cuentas", "both", "A07, A20, A22", "—", "Decisión de titularidad", [], "V2", ""], ["S0.2", "Aprobar uso de tiendas, consolas y terceros (excepciones de seguridad)", "both", "A22, A23, A21", "Decisión de S0.1", "Aprobaciones", ["S0.1"], "", ""], ["S0.3", "Elegir el modelo operativo: una opción por cada punto de variación", "both", "A07, A22", "—", "Instanciación", ["S0.1"], "V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13", ""], ["S1.1", "Consultar o solicitar el D-U-N-S", "both", "A02 → A27", "Datos registrales", "C01", ["S0.1"], "", "Gratuito. Apple indica hasta 5 días hábiles más 2 para que le llegue; Google, hasta 30 días."], ["S1.2", "Alinear nombre y dirección legal entre D&B y registros públicos", "both", "A02", "C01", "C01 consistente", ["S1.1"], "", ""], ["S1.3", "Crear correos funcionales en el dominio del titular", "both", "A08", "—", "Buzones", ["S0.1"], "", "Evita cuentas personales como titulares."], ["S1.4", "Crear Apple Account titular con 2FA", "ios", "A08, A03", "Buzón", "C02, C26", ["S1.3"], "", ""], ["S1.5", "Crear Google Account owner con 2SV", "android", "A08, A04", "Buzón", "C03, C26", ["S1.3"], "", ""], ["S1.6", "Tener un sitio web público y funcional en el dominio del titular", "both", "A01", "—", "Sitio web (P23)", [], "", ""], ["S2.1", "Enrolar al titular en Apple Developer Program como organización", "ios", "A03 (con poder de A02)", "C01, C02", "Solicitud", ["S1.2", "S1.4", "S1.6"], "V1", ""], ["S2.2", "Verificación de entidad y de autoridad legal", "ios", "A28", "Solicitud", "Aprobación, Team ID", ["S2.1"], "", ""], ["S2.3", "Pagar membresía anual (99 USD o exención)", "ios", "A03, A16", "Aprobación", "Membresía activa", ["S2.2"], "", ""], ["S2.4", "Crear cuenta de desarrollador Play tipo organización y vincular perfil de pagos", "android", "A04", "C01, C03", "Cuenta", ["S1.2", "S1.5"], "V1", ""], ["S2.5", "Verificar identidad de la organización y contactos por OTP", "android", "A04, A29", "Cuenta", "Cuenta verificada", ["S2.4"], "", ""], ["S2.6", "Pagar tarifa única de registro (25 USD)", "android", "A04, A16", "Cuenta", "—", ["S2.4"], "", ""], ["S2.7", "Verificación de desarrollador Android para distribución fuera de Play", "android", "A04", "Cuenta", "Registro de paquetes", ["S2.5"], "V9", ""], ["S3.1", "Aceptar el Apple Developer Program License Agreement", "ios", "A03 (revisa A20)", "—", "F26", ["S2.3"], "", ""], ["S3.2", "Aceptar el acuerdo de distribución de Google Play", "android", "A04 (revisa A20)", "—", "F26", ["S2.4"], "", ""], ["S3.3", "Si hay cobros: Paid Apps Agreement, datos bancarios y formularios fiscales", "ios", "A03, A16", "—", "Acuerdo activo", ["S3.1"], "", "Condicional: solo si la app cobra."], ["S3.4", "Si hay cobros: perfil de comerciante y método de cobro verificado", "android", "A04, A16", "—", "Cobro verificado", ["S3.2"], "", "Condicional: solo si la app cobra."], ["S3.5", "Si se distribuye en la UE: estado de comerciante (DSA)", "both", "A03, A04", "Datos de contacto", "Estado verificado", ["S3.1", "S3.2"], "", "Condicional: solo en la UE."], ["S4.1", "Invitar a los Admin del equipo Apple", "ios", "A03", "C04", "Admins", ["S3.1"], "", ""], ["S4.2", "Asignar roles Apple y acceso a Certificates, Identifiers & Profiles", "ios", "A05", "C04", "Matriz de accesos", ["S4.1"], "", ""], ["S4.3", "Invitar usuarios Play con permisos por cuenta o app y fecha de expiración", "android", "A04, A06", "C05", "Matriz de accesos", ["S3.2"], "", ""], ["S5.1", "Definir bundle ID y package name (permanentes)", "both", "A07, A09", "Convención de nombres", "Identificadores", ["S0.3"], "", "No se pueden cambiar después de publicar."], ["S5.2", "Registrar un App ID por target (T01–T06) y activar capacidades", "ios", "A05 o A09 con acceso", "Bundle ID", "C09", ["S4.2", "S5.1"], "", "Se repite por cada target: app principal y extensiones."], ["S5.3", "Crear el registro de app en App Store Connect", "ios", "A14", "C09, nombre, SKU", "App en App Store Connect", ["S5.2"], "", ""], ["S5.4", "Crear la app en Play Console", "android", "A14", "Package name", "App en Play", ["S4.3", "S5.1"], "", ""], ["S5.5", "Transferir una app existente desde otra cuenta en lugar de crearla", "both", "A03/A04 origen y destino", "Acuerdos de ambas partes", "App transferida", ["S3.1", "S3.2"], "V11", "Flujo alternativo: identificador heredado, cambio de Team ID en iOS, upload key del dueño anterior o reset."], ["S6.1", "Generar par de claves y CSR", "ios", "A12 o A13", "—", "F01", ["S0.3"], "V4", ""], ["S6.2", "Emitir certificado Apple Distribution", "ios", "A03 o A05", "F01", "F02, C06", ["S6.1", "S4.2"], "V4", "Solo Account Holder o Admin pueden crearlo. Apple permite un certificado por tipo de distribución por equipo."], ["S6.3", "Exportar .p12 y entregarlo a custodia", "ios", "A12", "F02 + clave privada", "F03", ["S6.2"], "V4,V6", ""], ["S6.4", "Registrar dispositivos (solo Ad Hoc o desarrollo)", "ios", "A05", "UDIDs", "Dispositivos", ["S4.2"], "V9", ""], ["S6.5", "Crear un perfil App Store Connect por target (y Ad Hoc si aplica)", "ios", "A03 o A05", "C06, C09", "F04, C10, C11", ["S6.2", "S5.2"], "V9", ""], ["S6.6", "Emitir certificados y perfiles de desarrollo", "ios", "A09", "CSR propio", "C07, C12", ["S4.2"], "", ""], ["S6.7", "Crear clave APNs", "ios", "A05", "—", "F05, C14", ["S5.2"], "V8", "La .p8 se descarga una sola vez."], ["S6.8", "Crear clave de App Store Connect API (equipo o individual)", "ios", "A03 o A05", "—", "F05, C16", ["S4.1"], "V7,V12", ""], ["S6.9", "Habilitar firma automática con certificados gestionados en la nube", "ios", "A05", "—", "C08", ["S4.2"], "V4", ""], ["S6.10", "Generar upload key (keystore)", "android", "A12 o A10", "—", "F11, F12, C17, C21", ["S0.3"], "V6", ""], ["S6.11", "Confirmar Play App Signing y registrar el certificado de upload", "android", "A04 o A06", "F12", "C19", ["S5.4", "S6.10"], "V5", ""], ["S6.12", "Subir una app signing key propia con PEPK (antes del primer release abierto o de producción)", "android", "A12", "Clave propia", "F13", ["S5.4"], "V5", ""], ["S6.13", "Registrar huellas SHA de upload y de app signing en servicios dependientes", "android", "A26", "C22", "Servicios vinculados", ["S6.11"], "", "Sin esto fallan login con Google, Maps y deep links."], ["S6.14", "Crear cuenta de servicio y darle permisos en Play Console", "android", "A06", "Proyecto Cloud", "F17, C20", ["S4.3"], "V7,V12", ""], ["S6.15", "Inventariar credenciales con dueño, ubicación y vencimiento", "both", "A12", "C06–C27", "F25", ["S6.2", "S6.3", "S6.5", "S6.7", "S6.8", "S6.10", "S6.11", "S6.14"], "", ""], ["S7.1", "Cargar clave APNs (o certificado) en Firebase o backend", "ios", "A26", "C14 o C15, Team ID", "Push iOS operativo", ["S6.7", "S7.2"], "V8", ""], ["S7.2", "Crear proyecto Firebase y registrar apps iOS y Android", "both", "A26", "Identificadores", "F18, C25", ["S5.1"], "", ""], ["S7.3", "Probar push en entornos de prueba y producción", "both", "A26, A17", "Builds", "Evidencia", ["S7.1", "S8.3", "S8.6"], "", ""], ["S7.4", "Publicar archivos de asociación de dominio", "both", "A26", "Team ID, C22", "F19", ["S2.2", "S6.13"], "", ""], ["S8.1", "Configurar versión, número de build, entitlements, manifiesto de privacidad y configuración Firebase", "both", "A09", "F18", "F06, F08", ["S5.2", "S7.2"], "", ""], ["S8.2", "Compilar y archivar iOS", "ios", "A10 o A11", "F06", "F07, F10", ["S8.1"], "V3", ""], ["S8.3", "Firmar y exportar el IPA", "ios", "A13", "F03 o C08, F04, F07, F08", "F09", ["S8.2", "S6.5"], "V4", ""], ["S8.4", "Analizar el binario (SAST, MAST, dependencias)", "both", "A22", "F09, F14", "Informe", ["S8.3", "S8.6"], "", ""], ["S8.5", "Compilar AAB de release con ofuscación", "android", "A10 o A11", "Código", "F16, AAB sin firmar", ["S8.1"], "V3", ""], ["S8.6", "Firmar el AAB con la upload key", "android", "A13", "F11, C21", "F14", ["S8.5", "S6.10"], "V6", ""], ["S9.1", "Comprobar requisitos iOS: Xcode 26 o posterior y destino iOS 13 o posterior", "ios", "A10", "F09", "Conformidad", ["S8.3"], "", ""], ["S9.2", "Comprobar target API Android: 36 desde el 31 ago 2026 y 64 bits", "android", "A10", "F14", "Conformidad", ["S8.6"], "", ""], ["S9.3", "Verificar firma y entitlements del binario (codesign, apksigner, bundletool)", "both", "A13", "F09, F14", "Conformidad", ["S8.3", "S8.6"], "", ""], ["S10.1", "Subir IPA a App Store Connect", "ios", "A14 o A11", "F09, C16 o C27 o sesión", "Build en App Store Connect", ["S9.1", "S9.3", "S5.3"], "V7", ""], ["S10.2", "Subir AAB y archivo de mapeo a un track de Play", "android", "A14 o A11", "F14, F16, C20 o sesión", "Release borrador", ["S9.2", "S9.3", "S5.4"], "V7", "La primera subida de una app nueva se hace en consola; la API sirve desde la segunda."], ["S10.3", "Esperar procesamiento y responder cumplimiento de exportación (cifrado)", "ios", "A14", "Build", "Build listo", ["S10.1"], "", ""], ["S11.1", "Distribuir a testers internos por TestFlight", "ios", "A14, A17", "Build", "Pruebas", ["S10.3"], "V9", ""], ["S11.2", "Superar Beta App Review para testers externos", "ios", "A30", "Build, F23", "Aprobación beta", ["S11.1", "S12.9"], "V9", ""], ["S11.3", "Distribuir a testers externos (builds caducan a los 90 días)", "ios", "A14, A18", "Aprobación beta", "Pruebas", ["S11.2"], "V9", ""], ["S11.4", "Promover entre tracks de prueba interna, cerrada y abierta", "android", "A14, A17, A18", "Release", "Pruebas", ["S10.2"], "V9", ""], ["S11.5", "Distribuir fuera de tienda (Ad Hoc, APK, plataforma de terceros)", "both", "A10", "F09 Ad Hoc, F15", "Pruebas", ["S8.3", "S8.6"], "V9", ""], ["S11.6", "Revisar informe previo al lanzamiento y Android vitals", "android", "A17", "Release", "Hallazgos", ["S11.4"], "", ""], ["S11.7", "Emitir conformidad de QA", "both", "A17", "Pruebas", "F24", ["S11.1", "S11.4"], "", ""], ["S12.1", "Preparar textos, capturas, icono, URLs de privacidad y soporte", "both", "A15", "Sitio web", "F20", [], "", ""], ["S12.2", "Cargar la ficha en App Store Connect", "ios", "A15", "F20", "Ficha", ["S5.3", "S12.1"], "", ""], ["S12.3", "Cargar la ficha principal en Play Console", "android", "A15", "F20", "Ficha", ["S5.4", "S12.1"], "", ""], ["S12.4", "Responder App Privacy", "ios", "A24", "Inventario de datos", "F21", ["S5.3"], "", ""], ["S12.5", "Completar Data safety", "android", "A24", "Inventario de datos", "F21", ["S5.4"], "", ""], ["S12.6", "Clasificación por edad (Apple) y cuestionario IARC (Play)", "both", "A14", "—", "F21", ["S5.3", "S5.4"], "", ""], ["S12.7", "Resto de declaraciones: cifrado, público objetivo, anuncios, funciones financieras, permisos sensibles, accesibilidad", "both", "A14, A21, A24", "—", "F21", ["S5.3", "S5.4"], "", ""], ["S12.8", "Redactar notas de versión por idioma", "both", "A15", "—", "F22", [], "", ""], ["S12.9", "Preparar notas para el revisor y cuenta demo", "both", "A14, A22", "C24", "F23", [], "", ""], ["S13.1", "Aprobación de seguridad", "both", "A22", "Informe de S8.4, pentest", "F24", ["S8.4"], "", "El perfil regulatorio detalla los controles concretos."], ["S13.2", "Aprobación de cumplimiento regulatorio", "both", "A21", "F21", "F24", ["S12.7"], "", "El perfil regulatorio detalla los controles concretos."], ["S13.3", "Aprobación legal de términos y política de privacidad", "both", "A20", "F20", "F24", ["S12.1"], "", ""], ["S13.4", "Aprobación de riesgos", "both", "A23", "F24 previas", "F24", ["S13.1"], "", ""], ["S13.5", "Go / No-Go de la versión", "both", "A07", "F24", "Decisión", ["S11.7", "S13.1", "S13.2", "S13.3", "S13.4"], "", ""], ["S14.1", "Enviar la versión a App Review", "ios", "A14 → A30", "Build, F20, F21, F22, F23", "Aprobación o rechazo", ["S13.5", "S10.3", "S12.2", "S12.4", "S12.6", "S12.7", "S12.9"], "", ""], ["S14.2", "Enviar cambios a revisión en Play", "android", "A14 → A31", "Release, F20, F21, F22, F23", "Aprobación o rechazo", ["S13.5", "S11.4", "S12.3", "S12.5", "S12.6", "S12.7"], "", ""], ["S14.3", "Atender rechazos y volver a enviar", "both", "A14, A09", "Motivo del rechazo", "Corrección", ["S14.1", "S14.2"], "", "Según el motivo, vuelve a S8 (binario) o a S12 (ficha y declaraciones)."], ["S15.1", "Liberar en App Store: manual, automática o programada; con o sin liberación por fases", "ios", "A14", "Aprobación, F22", "Versión publicada", ["S14.1"], "V10", ""], ["S15.2", "Liberar en Play: publicación gestionada y despliegue escalonado por porcentaje", "android", "A14", "Aprobación, F22", "Versión publicada", ["S14.2"], "V10", ""], ["S15.3", "Verificar disponibilidad por país y dispositivo", "both", "A14", "—", "Evidencia", ["S15.1", "S15.2"], "", ""], ["S16.1", "Vigilar el despliegue; pausar o detener si hay regresiones", "both", "A14", "Métricas", "Decisión", ["S15.1", "S15.2"], "", ""], ["S16.2", "Analizar fallos con símbolos (Crashlytics, Organizer, Android vitals)", "both", "A09, A17", "F10, F16", "Incidencias", ["S15.1", "S15.2"], "", ""], ["S16.3", "Responder reseñas", "both", "A19", "—", "Respuestas", ["S15.1", "S15.2"], "", ""], ["S16.4", "Atender avisos de política y nuevos requisitos de tienda", "both", "A14, A21", "Avisos", "Plan", [], "", ""], ["S16.5", "Actualizar declaraciones cuando cambia el manejo de datos", "both", "A24", "Cambio", "F21", [], "", ""], ["S16.6", "Retirar de venta o despublicar", "both", "A14 con A03/A04", "Decisión", "App retirada", [], "", ""], ["S17.1", "Renovar la membresía Apple", "ios", "A03, A16", "—", "Membresía", ["S2.3"], "", "Anual. Si vence, las apps se retiran de la venta."], ["S17.2", "Aceptar acuerdos actualizados (bloquean el acceso si no se aceptan)", "both", "A03, A04", "—", "F26", ["S3.1", "S3.2"], "", ""], ["S17.3", "Renovar certificado de distribución y regenerar perfiles", "ios", "A03 o A05, A12", "F25", "C06, C10 nuevos", ["S6.2", "S6.5"], "V4", "Anual; un perfil por target."], ["S17.4", "Renovar certificados APNs TLS o de capacidades", "ios", "A05", "F25", "C15, C18", ["S6.7"], "V8", ""], ["S17.5", "Rotar claves .p8, cuentas de servicio y secretos de CI por política", "both", "A12, A22", "F25", "Credenciales nuevas", ["S6.8", "S6.14"], "V12", ""], ["S17.6", "Mantener D-U-N-S y perfil de pagos alineados", "both", "A02, A04", "C01", "Cuenta en regla", ["S1.2"], "", ""], ["S17.7", "Recertificar usuarios, roles y expiraciones", "both", "A22, A05, A06", "Matriz de accesos", "Matriz vigente", ["S4.2", "S4.3"], "", ""], ["S17.8", "Actualizar target API y SDK según requisitos anuales", "both", "A09", "Avisos", "Código", ["S16.4"], "", ""], ["S18.1", "Revocar certificado o clave comprometida y reemitir", "both", "A05, A12, A22", "Incidente", "Credencial nueva", [], "", ""], ["S18.2", "Transferir el rol de Account Holder", "ios", "A03", "Nueva persona con poder", "A03 nuevo", [], "", ""], ["S18.3", "Solicitar reset de upload key", "android", "A04 o A06", "F12 nuevo", "C17 nueva", [], "V5", ""], ["S18.4", "Actualizar la app signing key", "android", "A04 o A06", "—", "C19, C22 nuevas", [], "V5", ""], ["S18.5", "Transferir una app entre cuentas", "both", "A03/A04 de ambas cuentas", "—", "App transferida", [], "V11", ""], ["S18.6", "Recuperar una cuenta titular", "both", "A08", "C26", "Acceso", [], "", ""]].map(r=>({id:r[0],name:r[1],plat:r[2],resp:r[3],inp:r[4],out:r[5],deps:r[6],vars:r[7]?r[7].split(","):[],note:r[8]||"",ph:r[0].split(".")[0]}));
+const byId=Object.fromEntries(S.map(s=>[s.id,s]));S.forEach(s=>s.enables=[]);S.forEach(s=>s.deps.forEach(d=>byId[d]&&byId[d].enables.push(s.id)));
+const roleIds=s=>[...new Set((s.resp.match(/A\d\d/g)||[]))];const order=S.map(s=>s.id);
+const lanesOf=s=>[...new Set(roleIds(s).map(a=>laneOfRole[a]))];const leadLane=s=>laneOfRole[roleIds(s)[0]];
+const STAGES=[["Cuentas y acuerdos", ["S0", "S1", "S2", "S3", "S4"]], ["Identidad de la app", ["S5"]], ["Firma y servicios", ["S6", "S7"]], ["Construcción", ["S8", "S9"]], ["Subida y pruebas", ["S10", "S11"]], ["Ficha y aprobaciones", ["S12", "S13"]], ["Revisión y publicación", ["S14", "S15"]], ["Operación y renovación", ["S16", "S17", "S18"]]];
+const BOX=[[1, "L1", 0, ["Decide titular", "y modelo operativo"], ["S0"]], [2, "L5", 0, ["Aprueba uso de", "tiendas y terceros"], ["S0"]], [3, "L2", 0, ["Crea correos y", "cuentas con 2FA"], ["S1"]], [4, "L6", 0, ["Gestiona D-U-N-S,", "poderes y pagos"], ["S1", "S2"]], [5, "L7", 0, ["Verifican la", "entidad"], ["S2"]], [6, "L1", 0, ["Acepta acuerdos", "e invita a TI"], ["S3", "S4"]], [7, "L2", 0, ["Configura roles", "y accesos"], ["S4"]], [8, "L1", 1, ["Define IDs y crea", "la app en tiendas"], ["S5"]], [9, "L2", 1, ["Registra App IDs", "por target"], ["S5"]], [10, "L4", 2, ["Genera y custodia", "claves de firma"], ["S6"]], [11, "L2", 2, ["Emite certificados", "y perfiles"], ["S6"]], [12, "L2", 2, ["Configura push y", "deep links"], ["S7"]], [13, "L3", 3, ["Compila, firma y", "verifica binario"], ["S8", "S9"]], [14, "L4", 3, ["Analiza el binario", "(SAST, MAST)"], ["S8"]], [15, "L3", 4, ["Sube el build y", "prueba en canales"], ["S10", "S11"]], [16, "L1", 5, ["Prepara ficha y", "notas de versión"], ["S12"]], [17, "L5", 5, ["Declara privacidad", "y aprueba"], ["S12", "S13"]], [18, "L4", 5, ["Aprobación de", "seguridad"], ["S13"]], [19, "L1", 5, ["Decide Go / No-Go"], ["S13"]], [20, "L7", 6, ["Revisan la versión", "(Apple y Google)"], ["S14"]], [21, "L1", 6, ["Libera y despliega", "por fases"], ["S15"]], [22, "L1", 7, ["Monitorea, responde", "reseñas, renueva"], ["S16", "S17"]], [23, "L3", 7, ["Analiza fallos y", "actualiza SDK"], ["S16", "S17"]], [24, "L2", 7, ["Renueva y rota", "credenciales"], ["S17", "S18"]], [25, "L4", 7, ["Atiende incidentes", "de claves"], ["S18"]]];
+const VER_PH=["S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16"];
+const REN=[["R01", "Membresía Apple Developer", "Cuentas y acuerdos", 12, 60, "Sin subidas ni TestFlight; las apps se retiran de la venta", "A03, A16", "S17.1"], ["R02", "Acuerdos Apple actualizados", "Cuentas y acuerdos", 0, 0, "Acceso restringido a consolas y API hasta aceptar", "A03", "S17.2"], ["R03", "Acuerdos y políticas de Google Play", "Cuentas y acuerdos", 0, 0, "Restricción de la cuenta o de apps", "A04", "S17.2"], ["R05", "D-U-N-S y perfil de pagos alineados", "Cuentas y acuerdos", 0, 0, "Play restringe la cuenta y retira las apps", "A02, A04", "S17.6"], ["R06", "Contactos verificados de la cuenta Play", "Cuentas y acuerdos", 6, 15, "Google puede retirar apps si no responden", "A04", "S17.6"], ["R07", "Dominio y sitio web del titular", "Cuentas y acuerdos", 12, 90, "URLs de privacidad caídas; deep links rotos", "A01, A26", ""], ["R08", "Recertificación de usuarios y roles", "Identidad y accesos", 6, 15, "Accesos huérfanos de personas o proveedores que ya no están", "A22, A05, A06", "S17.7"], ["R10", "2FA de cuentas titulares y códigos de recuperación", "Identidad y accesos", 0, 0, "Pérdida de acceso a las cuentas titulares", "A08", "S18.6"], ["R11", "Persona que ocupa Account Holder u owner", "Identidad y accesos", 0, 0, "Nadie puede renovar ni aceptar acuerdos", "A03, A04", "S18.2"], ["R12", "Certificado Apple Distribution", "Firma iOS", 12, 30, "No se pueden subir builds; la app publicada sigue", "A03 o A05", "S17.3"], ["R13", "Perfiles App Store (uno por target)", "Firma iOS", 12, 30, "No se puede exportar el IPA", "A03 o A05", "S17.3"], ["R14", "Certificados y perfiles de desarrollo", "Firma iOS", 12, 15, "No se puede depurar en dispositivo", "A09", "S6.6"], ["R16", "Certificado intermedio Apple WWDR", "Firma iOS", 0, 180, "Cadena de firma inválida en CI desactualizado (vence 20 feb 2030)", "A11, A12", "S17.3"], ["R17", "Certificado APNs TLS (solo si se usa)", "Servicios", 12, 30, "El push deja de entregarse", "A05, A26", "S17.4"], ["R18", "Clave APNs .p8 (rotación por política)", "Servicios", 0, 0, "Solo si se revoca", "A12, A26", "S17.5"], ["R19", "Certificados de capacidades (Apple Pay 25 meses)", "Servicios", 25, 60, "La capacidad falla", "A05", "S17.4"], ["R22", "Clave App Store Connect API (rotación por política)", "Automatización", 0, 0, "El CI pierde acceso si se revoca sin reemplazo", "A03 o A05, A12", "S17.5"], ["R23", "Cuenta de servicio Google (clave JSON)", "Automatización", 0, 15, "El CI no puede publicar", "A06, A12", "S17.5"], ["R24", "Secretos del pipeline y contraseñas de keystore", "Automatización", 0, 0, "Exposición de credenciales", "A11, A12", "S17.5"], ["R26", "Upload key (revisión del inventario)", "Firma Android", 12, 0, "Días sin poder subir si se pierde (reset con Google)", "A04 o A06, A12", "S18.3"], ["R28", "Huellas SHA registradas en servicios", "Firma Android", 0, 0, "Login, mapas, push o deep links fallan tras cambiar clave", "A26", "S6.13"], ["R29", "SDK mínimo para subir a App Store", "Requisitos de tienda", 12, 180, "No se aceptan subidas (último: Xcode 26 desde 28 abr 2026)", "A09, A10", "S17.8"], ["R30", "Target API de Google Play", "Requisitos de tienda", 12, 180, "No se aceptan actualizaciones (último: API 36 desde 31 ago 2026)", "A09, A10", "S17.8"], ["R31", "Cuestionarios de tienda (edad, privacidad, Data safety)", "Requisitos de tienda", 0, 0, "Bloqueo de envíos de actualizaciones", "A14, A24", "S16.5"], ["R32", "Builds de TestFlight (90 días)", "Requisitos de tienda", 3, 15, "Los testers no pueden instalar ese build", "A14", "S11.3"]];
+const PAIRS=[["A12", "A13", "Quien usa la clave también la controla y puede firmar un binario alterado sin que nadie lo note", "high"], ["A10", "A14", "Quien compila también decide qué build llega a producción", "high"], ["A09", "A07", "Quien escribe el cambio lo aprueba", "medium"], ["A22", "A13", "El control de seguridad revisa su propio trabajo", "medium"]];
+const TIME={"S0": [3, 15, "Agenda de los aprobadores internos"], "S1": [2, 30, "Si el D-U-N-S ya existe, días; si hay que solicitarlo, hasta 30"], "S2": [5, 20, "Verificación de Apple y Google; la llamada de Apple suele tardar días"], "S3": [1, 5, "Solo si hay cobros se suman datos fiscales y bancarios"], "S4": [1, 3, ""], "S5": [1, 2, ""], "S6": [2, 7, "Depende de quién custodia y de la entrega al que firma"], "S7": [2, 5, ""], "S8": [1, 3, "Por versión; con CI, horas"], "S9": [0, 1, ""], "S10": [0, 1, "Procesamiento de Apple: minutos a horas"], "S11": [3, 15, "Beta App Review de Apple 1 a 3 días; ciclos de prueba según alcance"], "S12": [2, 10, "Textos y capturas suelen ser el cuello de botella"], "S13": [2, 10, "Agenda de los comités de aprobación"], "S14": [1, 7, "Apple suele responder en 24 a 48 h; Google de horas a 7 días"], "S15": [0, 7, "Según despliegue por fases"], "S16": [0, 0, "Continuo"], "S17": [0, 0, "Cíclico"], "S18": [0, 0, "Por evento"]};
+const MS=[["m1", "Build listo", "El binario de release existe, firmado y conforme.", ["S8", "S9"], [["c1", "Build compilado y firmado con la configuración de producción", "S8.3"], ["c2", "Requisitos de SDK vigentes: Xcode 26 o posterior; target API 36", "S9.2"], ["c3", "Firma y entitlements verificados", "S9.3"]]], ["m2", "Subido a las tiendas", "El build está en App Store Connect y en un track de Play.", ["S10"], [["c4", "IPA procesado; cumplimiento de exportación respondido", "S10.3"], ["c5", "AAB subido con archivo de mapeo; dSYM subidos", "S10.2"]]], ["m3", "Probado en canal", "Testers internos o cerrados lo probaron con la firma real.", ["S11"], [["c6", "Distribuido en TestFlight y track interno o cerrado", "S11.4"], ["c7", "Push, deep links y login probados con la firma de tienda", "S7.3"], ["c8", "Conformidad de QA emitida", "S11.7"]]], ["m4", "Ficha y declaraciones", "Lo que verá el usuario y lo que exigen las tiendas.", ["S12"], [["c9", "Ficha completa: textos, capturas, icono, URLs de privacidad y soporte", "S12.2"], ["c10", "Notas de versión por idioma", "S12.8"], ["c11", "App Privacy y Data safety coherentes con la política", "S12.5"], ["c12", "Clasificación por edad vigente (Apple e IARC)", "S12.6"], ["c13", "Funciones financieras y resto de declaraciones", "S12.7"]]], ["m5", "Revisor preparado", "Lo que necesita el revisor de la tienda para entrar.", ["S12"], [["c14", "Cuenta demo viva; OTP o biometría resueltos para el revisor", "S12.9"], ["c15", "Archivos de asociación de dominio publicados", "S7.4"]]], ["m6", "Aprobaciones internas", "Seguridad, Cumplimiento, Legal y Riesgos; Go / No-Go.", ["S13"], [["c16", "Aprobación de Seguridad con el análisis del binario", "S13.1"], ["c17", "Cumplimiento, Legal y Riesgos aprobados", "S13.4"], ["c18", "Renovaciones vigentes durante la ventana de revisión", "S17.1"], ["c19", "Go / No-Go registrado", "S13.5"]]], ["m7", "Enviado a revisión", "La versión está en manos de Apple y Google.", ["S14"], [["c20", "Enviado a App Review", "S14.1"], ["c21", "Enviado a revisión de Play", "S14.2"]]], ["m8", "Aprobado por las tiendas", "Ambas tiendas aprobaron; si hubo rechazo, se corrigió.", ["S14"], [["c22", "Aprobado por Apple", "S14.1"], ["c23", "Aprobado por Google", "S14.2"]]], ["m9", "Publicado", "La versión está disponible y el despliegue, bajo control.", ["S15"], [["c24", "Plan de liberación definido: manual, automática o programada; porcentaje inicial", "S15.1"], ["c25", "Liberado y disponibilidad verificada por país y dispositivo", "S15.3"]]], ["m10", "En operación", "Seguimiento después de publicar.", ["S16"], [["c26", "Despliegue vigilado; fallos revisados con símbolos", "S16.2"], ["c27", "Reseñas atendidas", "S16.3"]]]];
+window.claude={use:async()=>null};
+const PRESET_CLIENT=null;
+
+// Page logic. Model data (A, C, F, V, LANES, PH, S, ...) and UI strings (T) are injected by build.py before this file.
+// tf(key, vars) fills {placeholders} in a UI string.
+const tf=(k,vars)=>Object.entries(vars||{}).reduce((s,[a,b])=>s.split("{"+a+"}").join(b),T[k]);
+const LC={L1:"--l1",L2:"--l2",L3:"--l3",L4:"--l4",L5:"--l5",L6:"--l6",L7:"--l7"};
+const MSTAT=T.ms_status;
+const PLAT_LABEL={ios:T.plat_ios,android:T.plat_android,both:T.plat_both};
+
+// ---------- Page state
+let st={plat:"all",role:"",lane:"",phases:[],q:"",onlyVar:false,onlyDoubt:false,sel:"S0.1",view:null,tab:"ov",client:"",version:""};
+let rev={};try{rev=JSON.parse(localStorage.getItem("mapm-rev")||"{}")}catch(e){rev={}}
+const save=()=>{try{localStorage.setItem("mapm-rev",JSON.stringify(rev))}catch(e){}};
+try{const h=location.hash.slice(1);if(byId[h])st.sel=h}catch(e){}
+
+// ---------- Storage: shared db with local fallback
+// clients/{id} = {name, lanes:{L1..L7:text}, variants:{V1..V14:key}, ren:{R01:date}, createdAt}
+// clients/{id}/versions/{vid} = {name, checks:{c1:1}, status:{m1:"blk"}, notes:{m1:text}, createdAt}
+let db=null,dbUser=null,canWrite=true;
+let clients={},versions={};
+const LS=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
+const LSW=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+function loadLocal(){clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(typeof PRESET_CLIENT!=="undefined"&&PRESET_CLIENT&&!clients.preset){clients.preset=PRESET_CLIENT;LSW("mapm-clients",clients)}if(typeof PRESET_CLIENT!=="undefined"&&PRESET_CLIENT&&!st.client)st.client="preset"}
+const uid=()=>Math.random().toString(36).slice(2,10);
+async function putClient(id,data){clients[id]=data;if(db&&canWrite){try{await db.doc("clients/"+id).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-clients",clients)}
+async function putVersion(cid,vid,data){versions[cid]=versions[cid]||{};versions[cid][vid]=data;if(db&&canWrite){try{await db.doc("clients/"+cid+"/versions/"+vid).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-versions",versions)}
+function setStore(){storeTxt.textContent=db?(canWrite?T.store_shared:T.store_readonly):T.store_local}
+let unsubV=null;
+function subscribeVersions(cid){if(unsubV){unsubV();unsubV=null}if(!db||!cid)return;
+  unsubV=db.collection("clients/"+cid+"/versions").onSnapshot(snap=>{versions[cid]={};snap.docs.forEach(d=>versions[cid][d.id]=d.data());if(st.version&&!versions[cid][st.version])st.version="";if(!st.version){const ids=Object.keys(versions[cid]);if(ids.length)st.version=ids.sort((a,b)=>(versions[cid][b].createdAt||"").localeCompare(versions[cid][a].createdAt||""))[0]}render()},e=>{});}
+
+// ---------- Active instance
+const cur=()=>clients[st.client]||null;
+function laneLabel(id){const c=cur();if(c&&c.lanes&&c.lanes[id])return c.lanes[id];const l=LANES.find(x=>x[0]===id);return l?l[1]:""}
+function laneSub(id){const c=cur();if(c&&c.lanes&&c.lanes[id])return LANES.find(x=>x[0]===id)[1];return T.lane_sub[id]}
+const variantOf=v=>{const c=cur();return c&&c.variants&&c.variants[v]||""};
+
+// ---------- Helpers
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function linkify(t){return esc(t).replace(/\b([ACF]\d{2}|S\d{1,2}\.\d{1,2})\b/g,m=>{const k=m[0];let lab="";
+  if(k==="A")lab=A[m];else if(k==="C")lab=C[m]&&C[m][0];else if(k==="F")lab=F[m]&&F[m][0];else lab=byId[m]&&byId[m].name;
+  if(!lab)return m;return `<button class="chip" data-go="${k==="S"?"step":k}:${m}"><b>${m}</b>${k==="S"?"":esc(lab)}</button>`})}
+function toast(t){const el=document.getElementById("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2400)}
+function setTab(t){st.tab=t;[["ov",tabOv,ovView],["vr",tabVr,vrView],["dt",tabDt,dtView],["in",tabIn,inView],["rn",tabRn,rnView]].forEach(([k,b,v])=>{b.setAttribute("aria-selected",k===t);v.hidden=k!==t})}
+function go(id,scroll){st.sel=id;st.view=null;try{history.replaceState(null,"","#"+id)}catch(e){}setTab("dt");render();
+  if(scroll){const el=rail.querySelector(`[data-id="${CSS.escape(id)}"]`);el&&el.scrollIntoView({block:"nearest"})}
+  if(matchMedia("(max-width:860px)").matches&&scroll!==false)detail.scrollIntoView({block:"start"})}
+
+// ---------- Swimlane diagram (one color per lane)
+function renderSwim(){
+  const X0=110,CW=156,BW=146,BH1=40,BH2=52,GAP=10,HEAD=84,PADR=14;
+  const col=Object.fromEntries(LANES.map((l,i)=>[l[0],i]));
+  const rows=STAGES.map((_,r)=>{let mx=1;LANES.forEach(l=>{const n=BOX.filter(b=>b[2]===r&&b[1]===l[0]);let h=n.reduce((a,b)=>a+(b[3].length>1?BH2:BH1)+GAP,0)-GAP;mx=Math.max(mx,h)});return Math.max(mx,BH2)+2*PADR});
+  const rowY=[];let y=HEAD;rows.forEach(h=>{rowY.push(y);y+=h});const H=y+12,W=X0+LANES.length*CW+12;
+  const pos={};STAGES.forEach((_,r)=>LANES.forEach(l=>{let yy=rowY[r]+PADR;BOX.filter(b=>b[2]===r&&b[1]===l[0]).forEach(b=>{const h=b[3].length>1?BH2:BH1;pos[b[0]]={x:X0+col[l[0]]*CW+(CW-BW)/2,y:yy,w:BW,h};yy+=h+GAP})}));
+  let s=`<defs><marker id="sw-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>`;
+  LANES.forEach((l,i)=>{const x=X0+i*CW;s+=`<rect x="${x+6}" y="10" width="${CW-12}" height="60" rx="8" fill="var(${LC[l[0]]}s)"/><rect x="${x+6}" y="10" width="${CW-12}" height="4" rx="2" fill="var(${LC[l[0]]})"/>`});
+  rowY.forEach(ry=>{s+=`<line class="rule" x1="0" x2="${W}" y1="${ry}" y2="${ry}"/>`});
+  LANES.forEach((l,i)=>{const cx=X0+i*CW+CW/2;const name=laneLabel(l[0]);const words=name.split(" ");const two=name.length>16&&words.length>1;const l1=two?words.slice(0,Math.ceil(words.length/2)).join(" "):name,l2=two?words.slice(Math.ceil(words.length/2)).join(" "):"";
+    s+=`<text class="hd" x="${cx}" y="${l2?30:36}" text-anchor="middle" fill="var(${LC[l[0]]})">${esc(l1)}</text>${l2?`<text class="hd" x="${cx}" y="45" text-anchor="middle" fill="var(${LC[l[0]]})">${esc(l2)}</text>`:""}<text class="hs" x="${cx}" y="${l2?60:54}" text-anchor="middle">${esc(laneSub(l[0]).slice(0,26))}</text>`});
+  STAGES.forEach(([n,phs],r)=>{const words=n.split(" ");const a=words.slice(0,Math.ceil(words.length/2)).join(" "),b=words.slice(Math.ceil(words.length/2)).join(" ");
+    s+=`<text class="st" x="12" y="${rowY[r]+PADR+12}">${esc(a)}</text><text class="st" x="12" y="${rowY[r]+PADR+27}">${esc(b)}</text><text class="sp" x="12" y="${rowY[r]+PADR+43}">${phs.length>1?phs[0]+"–"+phs.at(-1):phs[0]}</text>`});
+  for(let n=1;n<22;n++){const a=pos[n],b=pos[n+1];if(!a||!b)continue;const ba=BOX[n-1],bb=BOX[n];
+    const ac={x:a.x+a.w/2,y:a.y+a.h/2},bc={x:b.x+b.w/2,y:b.y+b.h/2};let p;
+    if(ba[2]===bb[2]&&a.x!==b.x){const lo=Math.min(a.x,b.x),hi=Math.max(a.x,b.x),y1=Math.min(ac.y,bc.y),y2=Math.max(ac.y,bc.y);
+      if(BOX.some(o=>{const q=pos[o[0]];return o!==ba&&o!==bb&&q.x>lo&&q.x<hi&&q.y<=y2&&q.y+q.h>=y1}))continue;
+      const sx=b.x>a.x?a.x+a.w:a.x,ex=b.x>a.x?b.x:b.x+b.w,dx=(ex-sx)/2;p=`M${sx} ${ac.y}C${sx+dx} ${ac.y} ${ex-dx} ${bc.y} ${ex} ${bc.y}`}
+    else{const sy=a.y+a.h,ey=b.y,dy=Math.max(18,(ey-sy)/2);p=`M${ac.x} ${sy}C${ac.x} ${sy+dy} ${bc.x} ${ey-dy} ${bc.x} ${ey}`}
+    s+=`<path class="arr" d="${p}" marker-end="url(#sw-ah)"/>`}
+  BOX.forEach(([n,lid,r,lines])=>{const p=pos[n];const c=`var(${LC[lid]})`;
+    s+=`<g class="bx" tabindex="0" role="button" data-box="${n}" aria-label="${n}. ${esc(lines.join(" "))}, ${esc(laneLabel(lid))}"><rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="8" fill="var(${LC[lid]}s)" stroke="${c}"/><circle cx="${p.x+13}" cy="${p.y+14}" r="9" fill="${c}"/><text class="num" x="${p.x+13}" y="${p.y+17.5}" text-anchor="middle">${n}</text>${lines.map((t,k)=>`<text x="${p.x+28}" y="${p.y+18+k*15}">${esc(t)}</text>`).join("")}</g>`});
+  swim.setAttribute("viewBox",`0 0 ${W} ${H}`);swim.style.width=W+"px";swim.innerHTML=s;
+}
+function openBox(n){const b=BOX.find(x=>x[0]===n);if(!b)return;st.lane=b[1];st.phases=b[4];laneSel.value=b[1];b[4].forEach(p=>openPh.add(p));
+  const first=S.find(s=>b[4].includes(s.ph)&&lanesOf(s).includes(b[1]));if(first)go(first.id,false);else{setTab("dt");render()}window.scrollTo({top:0})}
+function renderPairs(){
+  const el=document.getElementById("pairAlerts");const c=cur();
+  const norm=t=>(t||"").trim().toLowerCase();
+  const same=(a,b)=>{const la=laneOfRole[a],lb=laneOfRole[b];if(la===lb)return true;if(!c||!c.lanes)return false;const na=norm(c.lanes[la]),nb=norm(c.lanes[lb]);return na&&na===nb};
+  const hits=PAIRS.filter(([a,b])=>same(a,b));
+  el.innerHTML=hits.map(([a,b,risk,sev])=>`<div class="alert"><b>${esc(tf("pair_alert",{a:A[a],b:A[b],lane:laneLabel(laneOfRole[a]),sev:T.severity[sev]||sev}))}</b>${esc(risk)}.${esc(T.pair_alert_tail)}</div>`).join("");
+}
+function renderTimeline(){
+  const el=document.getElementById("timeline");const first=PH.filter(p=>!["S16","S17","S18"].includes(p[0]));const max=Math.max(...first.map(p=>TIME[p[0]][1]));
+  let mn=0,mx=0,vmn=0,vmx=0;
+  const rows=first.map(([pid,pn,fq])=>{const[a,b,why]=TIME[pid];mn+=a;mx+=b;if(VER_PH.includes(pid)){vmn+=a;vmx+=b}
+    return `<div class="tlrow"><div class="nm">${esc(pn)}<small>${pid} · ${esc(FREQ[fq])}${why?" · "+esc(why):""}</small></div><div class="trk"><span class="mx" style="left:0;width:${b/max*100}%"></span><span style="left:0;width:${a/max*100}%"></span></div><div class="tm"><b>${a}–${b}</b> ${T.tl_days}</div></div>`}).join("");
+  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div>${rows}<div class="tlsum"><span><b>${mn}–${mx} ${T.tl_days}</b> ${T.tl_first}</span><span><b>${vmn}–${vmx} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_parallel}</span></div>`;
+}
+
+// ---------- Track a version (milestones)
+const verData=()=>st.client&&st.version&&versions[st.client]&&versions[st.client][st.version]||null;
+function msState(m,v){const checks=m[4];const done=checks.filter(c=>v&&v.checks&&v.checks[c[0]]).length;const manual=v&&v.status&&v.status[m[0]];
+  if(manual==="blk")return["blocked",done];if(done===checks.length)return["done",done];if(done>0||manual==="in_progress")return["in_progress",done];return["pending",done]}
+function renderVer(){
+  const c=cur();
+  if(!c){verbar.innerHTML=`<span>${T.ver_need_client}</span><button class="btn primary" id="goInst" type="button">${T.ver_create_client}</button>`;ms.innerHTML="";return}
+  const vs=versions[st.client]||{};const ids=Object.keys(vs).sort((a,b)=>(vs[b].createdAt||"").localeCompare(vs[a].createdAt||""));
+  if(!st.version&&ids.length)st.version=ids[0];
+  const v=verData();
+  const total=MS.reduce((a,m)=>a+m[4].length,0),done=MS.reduce((a,m)=>a+msState(m,v)[1],0);
+  const msDone=MS.filter(m=>msState(m,v)[0]==="done").length,blk=MS.filter(m=>msState(m,v)[0]==="blocked");
+  verbar.innerHTML=`<b>${esc(c.name)}</b><select id="verSel" aria-label="${T.ver_aria}">${ids.map(i=>`<option value="${i}" ${i===st.version?"selected":""}>${esc(vs[i].name)}</option>`).join("")}${ids.length?"":`<option value="">${T.ver_none}</option>`}</select><button class="btn" id="newVer" type="button">${T.ver_new}</button><span id="newVerBox" hidden><input type="text" id="newVerName" placeholder="${T.ver_name_placeholder}" style="max-width:160px"> <button class="btn primary" id="createVer" type="button">${T.create}</button></span>${v?`<span>${tf("ver_progress",{md:msDone,mt:MS.length,cd:done,ct:total})}</span><div class="bar"><span style="width:${done/total*100}%;background:var(--ok)"></span></div>${blk.length?`<span style="color:var(--warn);font-weight:600">${blk.length>1?tf("ver_blocked_many",{n:blk.length}):T.ver_blocked_one}</span>`:""}`:`<span class="plain">${T.ver_first}</span>`}`;
+  if(!v){ms.innerHTML="";return}
+  ms.innerHTML=MS.map((m,i)=>{const[stt,dn]=msState(m,v);
+    return `<div class="m ${stt}" data-ms="${m[0]}"><div class="head"><span class="num">${i+1}</span><span class="name">${esc(m[1])}</span><span class="cnt">${dn}/${m[4].length} · ${MSTAT[stt]}</span></div><div class="desc">${esc(m[2])}</div>
+    ${m[4].map(([cid,txt,step])=>`<label class="chk ${v.checks&&v.checks[cid]?"done":""}"><input type="checkbox" data-ck="${cid}" ${v.checks&&v.checks[cid]?"checked":""} ${canWrite?"":"disabled"}><span>${esc(txt)}<small>${T.ms_step} <button class="chip" data-go="step:${step}" style="padding:0 5px;font-size:.7rem">${step}</button></small></span></label>`).join("")}
+    <div class="foot"><button class="pl ${stt==="blocked"?"on":""}" data-blk="${m[0]}" type="button" ${canWrite?"":"disabled"}>${stt==="blocked"?T.ms_unblock:T.ms_block}</button><span class="steps">${T.ms_phases} ${m[3].map(p=>`<button data-go="phase:${p}">${p}</button>`).join("")}</span></div>
+    ${stt==="blocked"?`<input class="blknote" type="text" data-note="${m[0]}" placeholder="${T.ms_blocknote}" value="${esc(v.notes&&v.notes[m[0]]||"")}" ${canWrite?"":"disabled"}>`:""}</div>`}).join("");
+}
+function newVersion(){const box=document.getElementById("newVerBox");if(box){box.hidden=false;document.getElementById("newVerName").focus()}}
+async function createVersion(name){const c=cur();if(!c||!name)return;const vid=uid();await putVersion(st.client,vid,{name,checks:{},status:{},notes:{},createdAt:new Date().toISOString()});st.version=vid;render()}
+
+// ---------- Instantiate
+function renderInst(){
+  const c=cur();
+  if(!c){instBox.innerHTML=`<div class="card"><h3>${T.inst_title}</h3><p class="plain">${T.inst_intro}</p><button class="btn primary" id="goNew" type="button">${T.new_client}</button></div>`;return}
+  const lanes=c.lanes||{},vars=c.variants||{};
+  const diff=[];LANES.forEach(l=>{if(lanes[l[0]]&&lanes[l[0]]!==l[1])diff.push(`${l[1]} → ${lanes[l[0]]}`)});
+  Object.entries(vars).forEach(([k,v])=>{if(v){const d=V[k];const opt=d[1].find(o=>o.startsWith(v+")"));diff.push(`${k} ${d[0]}: ${opt||v}`)}});
+  instBox.innerHTML=`<div class="inst">
+  <div class="card"><h3>${T.inst_client}</h3><div class="frow"><div class="k">${T.inst_name}</div><input type="text" id="instName" value="${esc(c.name)}" ${canWrite?"":"disabled"}></div>
+    <h3 style="margin-top:14px">${T.inst_lanes_title}</h3><p class="plain">${T.inst_lanes_intro}</p>
+    ${LANES.map(l=>`<div class="frow"><div class="k"><i style="background:var(${LC[l[0]]})"></i>${esc(l[1])}<small>${esc(laneSub(l[0]))}</small></div><input type="text" data-lane="${l[0]}" placeholder="${esc(l[1])}" value="${esc(lanes[l[0]]||"")}" ${canWrite?"":"disabled"}></div>`).join("")}</div>
+  <div class="card"><h3>${T.inst_vars_title}</h3><p class="plain">${T.inst_vars_intro}</p>
+    ${Object.entries(V).map(([k,d])=>`<div class="frow"><div class="k">${esc(d[0])}<small>${k}</small></div><select data-var="${k}" ${canWrite?"":"disabled"}><option value="">${T.inst_unset}</option>${d[1].map(o=>`<option value="${o[0]}" ${vars[k]===o[0]?"selected":""}>${esc(o)}</option>`).join("")}</select></div>`).join("")}
+    <div class="savebar"><button class="btn primary" id="saveInst" type="button" ${canWrite?"":"disabled"}>${T.inst_save}</button><span class="plain">${T.inst_ren_hint}</span></div></div>
+  <div class="card"><h3>${T.inst_diff_title}</h3>${diff.length?`<ul class="diff">${diff.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`:`<p class="plain">${T.inst_diff_none}</p>`}</div></div>`;
+}
+async function saveInst(){const c=cur();if(!c)return;const data={...c,name:instName.value.trim()||c.name,lanes:{},variants:{}};
+  instBox.querySelectorAll("[data-lane]").forEach(i=>{if(i.value.trim())data.lanes[i.dataset.lane]=i.value.trim()});
+  instBox.querySelectorAll("[data-var]").forEach(s=>{if(s.value)data.variants[s.dataset.var]=s.value});
+  await putClient(st.client,data);render();toast(T.inst_saved)}
+function newClient(){const box=document.getElementById("newClientBox");box.hidden=false;document.getElementById("newClientName").focus()}
+async function createClient(name){if(!name)return;const id=uid();await putClient(id,{name,lanes:{},variants:{},ren:{},createdAt:new Date().toISOString()});st.client=id;st.version="";subscribeVersions(id);document.getElementById("newClientBox").hidden=true;document.getElementById("newClientName").value="";setTab("in");render()}
+
+// ---------- Renewals
+const DAY=864e5;
+function renderRen(){
+  const c=cur();const ren=c?(c.ren||{}):(LS("mapm-ren")||{});
+  const today=new Date();today.setHours(0,0,0,0);const groups=[...new Set(REN.map(r=>r[2]))];let h="",late=0,soon=0,ok=0;
+  groups.forEach(g=>{h+=`<div class="rengrp"><h3>${esc(g)}</h3>`;
+    REN.filter(r=>r[2]===g).forEach(([id,nm,_,cyc,ant,eff,who,step])=>{const d=ren[id];let cls="na",txt=T.ren_nodate,due="";
+      if(d){const base=new Date(d+"T00:00:00");let next=base;if(cyc){next=new Date(base);next.setMonth(next.getMonth()+cyc);while(next<today)next.setMonth(next.getMonth()+cyc)}
+        const days=Math.round((next-today)/DAY);if(cyc){if(days<0){cls="late";txt=tf("ren_overdue",{n:-days});late++}else if(days<=ant){cls="soon";txt=tf("ren_due_in",{n:days});soon++}else{cls="ok";txt=tf("ren_due_in",{n:days});ok++}}else{cls="ok";txt=tf("ren_reviewed",{d});ok++}due=next.toISOString().slice(0,10)}
+      h+=`<div class="ren"><div class="nm">${esc(nm)}<small>${eff?esc(eff)+". ":""}${who?esc(T.ren_renewed_by)+esc(who):""}${step?` · <button class="chip" data-go="step:${step}" style="padding:0 6px;font-size:.74rem">${step}</button>`:""}</small></div><div class="cyc">${cyc?`${tf("ren_every",{n:cyc})}${ant?tf("ren_warn",{n:ant}):""}`:T.ren_event}${due&&cyc?tf("ren_next",{d:due}):""}</div><label class="plain" style="font-size:.78rem">${cyc?T.ren_last_issue:T.ren_last_change} <input type="date" data-ren="${id}" value="${d||""}" ${c&&!canWrite?"disabled":""}></label><span class="due ${cls}">${txt}</span></div>`});
+    h+=`</div>`});
+  renlist.innerHTML=h;rensum.innerHTML=`<span><b style="color:var(--bad)">${late}</b>${T.ren_sum_overdue}</span><span><b style="color:var(--warn)">${soon}</b>${T.ren_sum_soon}</span><span><b style="color:var(--ok)">${ok}</b>${T.ren_sum_ok}</span><span><b>${REN.length-late-soon-ok}</b>${T.ren_sum_nodate}</span>${c?"":`<span class="plain">${T.ren_noclient}</span>`}`;
+}
+async function setRen(id,val){const c=cur();if(c){const ren={...(c.ren||{})};if(val)ren[id]=val;else delete ren[id];await putClient(st.client,{...c,ren})}else{const r=LS("mapm-ren")||{};if(val)r[id]=val;else delete r[id];LSW("mapm-ren",r)}renderRen()}
+
+// ---------- Explore the model
+function visible(s){
+  if(st.plat!=="all"&&s.plat!==st.plat&&s.plat!=="both")return false;
+  if(st.role&&!roleIds(s).includes(st.role))return false;
+  if(st.lane&&!lanesOf(s).includes(st.lane))return false;
+  if(st.phases.length&&!st.phases.includes(s.ph))return false;
+  if(st.onlyVar&&!s.vars.length)return false;
+  if(st.onlyDoubt&&(rev[s.id]||{}).s!=="doubt")return false;
+  if(st.q){const q=st.q.toLowerCase();const hay=(s.id+" "+s.name+" "+s.resp+" "+s.inp+" "+s.out+" "+s.note+" "+roleIds(s).map(r=>A[r]).join(" ")).toLowerCase();if(!hay.includes(q))return false}
+  return true}
+const openPh=new Set(["S0"]);
+function renderRail(){
+  const sel=byId[st.sel];const need=new Set(sel?sel.deps:[]);const enab=new Set(sel?sel.enables:[]);if(sel)openPh.add(sel.ph);
+  let html="",lastF="";
+  PH.forEach(([pid,pname,fq])=>{const steps=S.filter(s=>s.ph===pid&&visible(s));if(!steps.length)return;
+    if(fq!==lastF){html+=`<div class="freq">${FREQ[fq]}</div>`;lastF=fq}
+    const done=steps.filter(s=>(rev[s.id]||{}).s==="clear").length;const filt=st.q||st.role||st.lane||st.phases.length||st.onlyVar||st.onlyDoubt;
+    const open=filt||openPh.has(pid)||steps.some(s=>need.has(s.id)||enab.has(s.id));
+    html+=`<details class="phase" data-ph="${pid}" ${open?"open":""}><summary><span class="pid">${pid}</span><span class="pname">${esc(pname)}</span><span class="pcount">${done}/${steps.length}</span></summary><ul class="steps">`;
+    steps.forEach(s=>{const cls=s.id===st.sel?"sel":need.has(s.id)?"need":enab.has(s.id)?"enab":"";const r=(rev[s.id]||{}).s||"";
+      html+=`<li class="step ${cls}" tabindex="0" data-id="${s.id}" aria-current="${s.id===st.sel}"><span class="sname">${esc(s.name)}<small>${s.id} · ${esc(roleIds(s).map(a=>A[a]).slice(0,2).join(", "))}${roleIds(s).length>2?T.rail_others:""}</small></span><span class="marks">${s.vars.length?`<span class="vtag">${s.vars.length>3?"V*":s.vars.join(" ")}</span>`:""}<span class="pl ${s.plat}">${PLAT_LABEL[s.plat]}</span><span class="rev ${r}" title="${r||T.rev_unreviewed}"></span></span></li>`});
+    html+=`</ul></details>`});
+  rail.innerHTML=html||`<p class="plain">${T.rail_none}</p>`;
+}
+function stepChips(ids,cls){return ids.length?ids.map(i=>`<button class="chip ${cls}" data-go="step:${i}">${esc(byId[i].name)}<small>${i}</small></button>`).join(""):`<span class="none">${T.step_none}</span>`}
+function renderStep(){
+  const s=byId[st.sel];if(!s)return;const r=rev[s.id]||{};const i=order.indexOf(s.id);const ph=PH.find(p=>p[0]===s.ph);const roles=roleIds(s);
+  const inPh=S.filter(x=>x.ph===s.ph);const posIn=inPh.indexOf(s)+1;const stage=STAGES.find(g=>g[1].includes(s.ph));const tm=TIME[s.ph];
+  detail.innerHTML=`<div class="crumbline"><span>${esc(FREQ[ph[2]])}</span><span class="sep">›</span><span>${stage?esc(stage[0]):""}</span><span class="sep">›</span><span>${esc(ph[1])}</span>${tm&&tm[1]?`<span class="sep">·</span><span class="tm">${T.step_phase} <b>${tm[0]}–${tm[1]}</b> ${T.step_days}</span>`:""}<span class="pos">${tf("step_pos",{i:posIn,n:inPh.length})}</span></div>
+  <h2><span class="mono">${s.id} · <span class="pl ${s.plat}">${PLAT_LABEL[s.plat]}</span></span>${esc(s.name)}</h2>
+  <dl class="kv"><dt>${T.step_who}</dt><dd>${roles.map(a=>`<button class="rolechip" data-go="A:${a}"><b>${esc(A[a])}</b><span>${esc(laneLabel(laneOfRole[a]))} · ${a}</span></button>`).join("")}<div class="plain" style="margin-top:4px">${esc(s.resp)}</div></dd>
+    <dt>${T.step_with}</dt><dd>${linkify(s.inp)}</dd><dt>${T.step_produces}</dt><dd>${linkify(s.out)}</dd>
+    ${s.vars.length?`<dt>${T.step_depends}</dt><dd>${s.vars.map(v=>{const ch=variantOf(v);const opt=ch?V[v][1].find(o=>o.startsWith(ch+")")):"";return `<button class="chip var" data-go="V:${v}"><b>${v}</b>${esc(V[v][0])}${opt?` <small>${esc(opt)}</small>`:""}</button>`}).join("")}<div class="plain" style="margin-top:2px">${cur()?T.step_variant_chosen:T.step_variant_each}</div></dd>`:""}</dl>
+  <div class="flow3"><div class="col"><h4>${T.step_before}</h4>${stepChips(s.deps,"need")}</div><div class="mid arrow">→</div><div class="col"><h4>${T.step_after}</h4>${stepChips(s.enables,"enab")}</div></div>
+  ${s.note?`<div class="note">${linkify(s.note)}</div>`:""}
+  <div class="box"><h3>${T.rev_title}</h3><div class="revbtns"><button class="btn clear" data-rev="clear" aria-pressed="${r.s==="clear"}">${T.rev_clear}</button><button class="btn doubt" data-rev="doubt" aria-pressed="${r.s==="doubt"}">${T.rev_doubt}</button>${r.s?`<button class="btn" data-rev="">${T.rev_remove}</button>`:""}</div>
+    <label for="note-${s.id.replace(".","-")}" class="plain" style="display:block;margin-top:10px">${T.note_label}</label><textarea id="note-${s.id.replace(".","-")}" data-note>${esc(r.n||"")}</textarea></div>
+  <div class="nav"><button class="btn" data-nav="-1" ${i===0?"disabled":""} title="${i>0?esc(byId[order[i-1]].name):""}">${T.nav_prev}${i>0?` <span class="mono">${order[i-1]}</span>`:""}</button><button class="btn" data-nav="1" ${i===order.length-1?"disabled":""} title="${i<order.length-1?esc(byId[order[i+1]].name):""}">${T.nav_next}${i<order.length-1?` <span class="mono">${order[i+1]}</span>`:""} →</button></div>`;
+}
+function stepsWith(pred){return S.filter(pred).map(s=>s.id)}
+function renderEntity(kind,id){let title="",body="";
+  if(kind==="A"){const resp=stepsWith(s=>roleIds(s).includes(id));title=A[id];body=`<p class="plain">${id} · ${T.ent_area}${esc(laneLabel(laneOfRole[id]))}. ${tf("ent_owner_in",{n:resp.length})}</p><div class="lookup">${stepChips(resp,"")}</div>`}
+  else if(kind==="C"||kind==="F"){const d=(kind==="C"?C:F)[id];const prod=stepsWith(s=>new RegExp("\\b"+id+"\\b").test(s.out));const cons=stepsWith(s=>new RegExp("\\b"+id+"\\b").test(s.inp+" "+s.note));title=d[0];body=`<p class="plain">${id} · ${kind==="C"?T.ent_validity:T.ent_format}${esc(d[1])}</p><dl class="kv"><dt>${T.ent_produced_in}</dt><dd>${stepChips(prod,"need")}</dd><dt>${T.ent_consumed_in}</dt><dd>${stepChips(cons,"enab")}</dd></dl>`}
+  else if(kind==="V"){const d=V[id];const used=stepsWith(s=>s.vars.includes(id));const ch=variantOf(id);title=d[0];body=`<p class="plain">${id} · ${T.ent_variation}</p><ul class="vopts">${d[1].map(o=>`<li ${ch&&o.startsWith(ch+")")?'style="font-weight:600;color:var(--accent-ink)"':""}>${esc(o)}${ch&&o.startsWith(ch+")")?T.ent_chosen:""}</li>`).join("")}</ul><div class="box"><h3>${T.ent_steps_change}</h3>${stepChips(used,"")}</div>`}
+  detail.innerHTML=`<div class="crumb"><button class="chip" data-go="step:${st.sel}"><b>←</b>${T.back_to}${esc(byId[st.sel].name)}</button></div><h2>${esc(title)}</h2>${body}`}
+function renderFilterChip(){const ph=st.phases.length===1?`${st.phases[0]} ${PH.find(p=>p[0]===st.phases[0])[1]}`:st.phases.join(", ");fchip.innerHTML=st.phases.length?`<span class="filterchip">${st.lane?esc(laneLabel(st.lane))+" · ":""}${esc(ph)}<button type="button" data-clear aria-label="${T.filter_remove}">✕</button></span>`:""}
+function renderClients(){const ids=Object.keys(clients).sort((a,b)=>(clients[a].name||"").localeCompare(clients[b].name||""));clientSel.innerHTML=`<option value="">${T.client_base_option}</option>`+ids.map(i=>`<option value="${i}" ${i===st.client?"selected":""}>${esc(clients[i].name)}</option>`).join("")}
+
+// ---------- Global render
+function render(){renderClients();renderSwim();renderPairs();renderTimeline();renderVer();renderInst();renderRen();renderFilterChip();renderRail();st.view?renderEntity(...st.view):renderStep()}
+
+// ---------- Events
+clientSel.addEventListener("change",()=>{st.client=clientSel.value;st.version="";subscribeVersions(st.client);render()});
+newClientBtn.addEventListener("click",newClient);
+document.getElementById("createClientBtn").addEventListener("click",()=>createClient(document.getElementById("newClientName").value.trim()));
+document.getElementById("newClientName").addEventListener("keydown",e=>{if(e.key==="Enter")createClient(e.target.value.trim())});
+home.addEventListener("click",e=>{const d=e.target.closest("[data-door]");if(!d)return;setTab(d.dataset.door);document.querySelector(".tabs").scrollIntoView({block:"start"})});
+[["ov",tabOv],["vr",tabVr],["dt",tabDt],["in",tabIn],["rn",tabRn]].forEach(([k,b])=>b.addEventListener("click",()=>setTab(k)));
+swim.addEventListener("click",e=>{const g=e.target.closest("[data-box]");if(g)openBox(Number(g.dataset.box))});
+swim.addEventListener("keydown",e=>{const g=e.target.closest("[data-box]");if(g&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openBox(Number(g.dataset.box))}});
+verbar.addEventListener("click",e=>{if(e.target.closest("#newVer"))newVersion();if(e.target.closest("#goInst"))newClient();if(e.target.closest("#createVer"))createVersion(document.getElementById("newVerName").value.trim())});
+verbar.addEventListener("keydown",e=>{if(e.target.id==="newVerName"&&e.key==="Enter")createVersion(e.target.value.trim())});
+verbar.addEventListener("change",e=>{if(e.target.id==="verSel"){st.version=e.target.value;render()}});
+ms.addEventListener("change",async e=>{const i=e.target.closest("[data-ck]");if(!i)return;const v=verData();if(!v)return;const checks={...(v.checks||{})};if(i.checked)checks[i.dataset.ck]=1;else delete checks[i.dataset.ck];await putVersion(st.client,st.version,{...v,checks});render()});
+ms.addEventListener("click",async e=>{
+  const g=e.target.closest("[data-go]");if(g){e.preventDefault();const[k,id]=g.dataset.go.split(":");if(k==="phase"){st.phases=[id];openPh.add(id);const f=S.find(s=>s.ph===id);if(f)go(f.id,true)}else go(id,true);return}
+  const b=e.target.closest("[data-blk]");if(b){const v=verData();if(!v)return;const status={...(v.status||{})};if(status[b.dataset.blk]==="blk")delete status[b.dataset.blk];else status[b.dataset.blk]="blk";await putVersion(st.client,st.version,{...v,status});render()}});
+ms.addEventListener("change",async e=>{const n=e.target.closest("[data-note]");if(!n)return;const v=verData();if(!v)return;await putVersion(st.client,st.version,{...v,notes:{...(v.notes||{}),[n.dataset.note]:n.value}})});
+instBox.addEventListener("click",e=>{if(e.target.closest("#saveInst"))saveInst();if(e.target.closest("#goNew"))newClient()});
+renlist.addEventListener("change",e=>{const i=e.target.closest("[data-ren]");if(i)setRen(i.dataset.ren,i.value)});
+renlist.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(!g)return;const[k,id]=g.dataset.go.split(":");go(id,true)});
+rail.addEventListener("click",e=>{const li=e.target.closest(".step");if(li)go(li.dataset.id,false)});
+rail.addEventListener("keydown",e=>{const li=e.target.closest(".step");if(li&&(e.key==="Enter"||e.key===" ")){e.preventDefault();go(li.dataset.id,false)}});
+rail.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches("details.phase")){d.open?openPh.add(d.dataset.ph):openPh.delete(d.dataset.ph)}},true);
+detail.addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]");if(g){const[k,id]=g.dataset.go.split(":");if(k==="step")go(id,true);else{st.view=[k,id];render()}return}
+  const r=e.target.closest("[data-rev]");if(r){const c=rev[st.sel]||{};const v=r.dataset.rev;rev[st.sel]={...c,s:v||undefined};if(!v&&!c.n)delete rev[st.sel];save();render();return}
+  const n=e.target.closest("[data-nav]");if(n){const i=order.indexOf(st.sel)+Number(n.dataset.nav);if(order[i])go(order[i],true)}});
+detail.addEventListener("input",e=>{if(e.target.matches("[data-note]")){const c=rev[st.sel]||{};rev[st.sel]={...c,n:e.target.value};save()}});
+platSeg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;st.plat=b.dataset.p;platSeg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));render()});
+Object.entries(A).forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=`${k} · ${v}`;roleSel.appendChild(o)});
+LANES.forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=`${k} · ${v}`;laneSel.appendChild(o)});
+roleSel.addEventListener("change",()=>{st.role=roleSel.value;render()});
+laneSel.addEventListener("change",()=>{st.lane=laneSel.value;render()});
+fchip.addEventListener("click",e=>{if(e.target.closest("[data-clear]")){st.phases=[];st.lane="";laneSel.value="";render()}});
+q.addEventListener("input",()=>{st.q=q.value.trim();renderRail()});
+onlyVar.addEventListener("change",()=>{st.onlyVar=onlyVar.checked;renderRail()});
+onlyDoubt.addEventListener("change",()=>{st.onlyDoubt=onlyDoubt.checked;renderRail()});
+copyBtn.addEventListener("click",()=>{const lines=S.filter(s=>(rev[s.id]||{}).s==="doubt"||((rev[s.id]||{}).n||"").trim()).map(s=>`${s.id} ${s.name} [${(rev[s.id]||{}).s||T.copy_note}]: ${((rev[s.id]||{}).n||"").trim()||T.copy_nonote}`);const txt=lines.length?lines.join("\n"):T.copy_none;
+  const show=()=>{st.view=null;detail.innerHTML=`<h2>${T.copy_title}</h2><p class="plain">${T.copy_hint}</p><textarea readonly style="min-height:220px">${esc(txt)}</textarea>`};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>toast(lines.length?tf("copy_done",{n:lines.length}):T.copy_empty),show);else show()});
+(async()=>{
+  loadLocal();render();
+  try{db=await claude.use("db")}catch(e){db=null}
+  if(db){
+    try{const u=await claude.use("user");dbUser=u;if(u){const w=await u.can("data.write");if(w===false)canWrite=false}}catch(e){}
+    db.collection("clients").onSnapshot(snap=>{clients={};snap.docs.forEach(d=>clients[d.id]=d.data());if(st.client&&!clients[st.client])st.client="";render()},e=>{});
+  }
+  setStore();render();
+})();
+</script>
+
+</body>
+</html>

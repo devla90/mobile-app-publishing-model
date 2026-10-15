@@ -1,0 +1,274 @@
+{
+  "description": "Phases S0-S18 with frequency, grouped into 8 stages for the diagram. Estimated durations in calendar days.",
+  "lang": "es",
+  "frequencies": {
+    "owner": "Una vez por titular",
+    "app": "Una vez por app",
+    "version": "En cada versión",
+    "cycle": "Cíclico o por evento"
+  },
+  "phases": [
+    {
+      "id": "S0",
+      "name": "Gobierno",
+      "frequency": "owner",
+      "duration": {
+        "min": 3,
+        "max": 15,
+        "depends_on": "Agenda de los aprobadores internos"
+      }
+    },
+    {
+      "id": "S1",
+      "name": "Identidad legal y cuentas base",
+      "frequency": "owner",
+      "duration": {
+        "min": 2,
+        "max": 30,
+        "depends_on": "Si el D-U-N-S ya existe, días; si hay que solicitarlo, hasta 30"
+      }
+    },
+    {
+      "id": "S2",
+      "name": "Alta en los programas",
+      "frequency": "owner",
+      "duration": {
+        "min": 5,
+        "max": 20,
+        "depends_on": "Verificación de Apple y Google; la llamada de Apple suele tardar días"
+      }
+    },
+    {
+      "id": "S3",
+      "name": "Acuerdos, impuestos y cobros",
+      "frequency": "owner",
+      "duration": {
+        "min": 1,
+        "max": 5,
+        "depends_on": "Solo si hay cobros se suman datos fiscales y bancarios"
+      }
+    },
+    {
+      "id": "S4",
+      "name": "Accesos y roles",
+      "frequency": "owner",
+      "duration": {
+        "min": 1,
+        "max": 3,
+        "depends_on": ""
+      }
+    },
+    {
+      "id": "S5",
+      "name": "Identidad de la app",
+      "frequency": "app",
+      "duration": {
+        "min": 1,
+        "max": 2,
+        "depends_on": ""
+      }
+    },
+    {
+      "id": "S6",
+      "name": "Firma y credenciales",
+      "frequency": "app",
+      "duration": {
+        "min": 2,
+        "max": 7,
+        "depends_on": "Depende de quién custodia y de la entrega al que firma"
+      }
+    },
+    {
+      "id": "S7",
+      "name": "Servicios dependientes",
+      "frequency": "app",
+      "duration": {
+        "min": 2,
+        "max": 5,
+        "depends_on": ""
+      }
+    },
+    {
+      "id": "S8",
+      "name": "Build",
+      "frequency": "version",
+      "duration": {
+        "min": 1,
+        "max": 3,
+        "depends_on": "Por versión; con CI, horas"
+      }
+    },
+    {
+      "id": "S9",
+      "name": "Verificación previa a la subida",
+      "frequency": "version",
+      "duration": {
+        "min": 0,
+        "max": 1,
+        "depends_on": ""
+      }
+    },
+    {
+      "id": "S10",
+      "name": "Subida a la tienda",
+      "frequency": "version",
+      "duration": {
+        "min": 0,
+        "max": 1,
+        "depends_on": "Procesamiento de Apple: minutos a horas"
+      }
+    },
+    {
+      "id": "S11",
+      "name": "Pruebas en canal",
+      "frequency": "version",
+      "duration": {
+        "min": 3,
+        "max": 15,
+        "depends_on": "Beta App Review de Apple 1 a 3 días; ciclos de prueba según alcance"
+      }
+    },
+    {
+      "id": "S12",
+      "name": "Ficha y declaraciones",
+      "frequency": "version",
+      "duration": {
+        "min": 2,
+        "max": 10,
+        "depends_on": "Textos y capturas suelen ser el cuello de botella"
+      }
+    },
+    {
+      "id": "S13",
+      "name": "Aprobaciones internas",
+      "frequency": "version",
+      "duration": {
+        "min": 2,
+        "max": 10,
+        "depends_on": "Agenda de los comités de aprobación"
+      }
+    },
+    {
+      "id": "S14",
+      "name": "Revisión de la tienda",
+      "frequency": "version",
+      "duration": {
+        "min": 1,
+        "max": 7,
+        "depends_on": "Apple suele responder en 24 a 48 h; Google de horas a 7 días"
+      }
+    },
+    {
+      "id": "S15",
+      "name": "Publicación",
+      "frequency": "version",
+      "duration": {
+        "min": 0,
+        "max": 7,
+        "depends_on": "Según despliegue por fases"
+      }
+    },
+    {
+      "id": "S16",
+      "name": "Operación posterior",
+      "frequency": "version",
+      "duration": {
+        "min": 0,
+        "max": 0,
+        "depends_on": "Continuo"
+      }
+    },
+    {
+      "id": "S17",
+      "name": "Renovaciones y caducidades",
+      "frequency": "cycle",
+      "duration": {
+        "min": 0,
+        "max": 0,
+        "depends_on": "Cíclico"
+      }
+    },
+    {
+      "id": "S18",
+      "name": "Incidentes y cambios mayores",
+      "frequency": "cycle",
+      "duration": {
+        "min": 0,
+        "max": 0,
+        "depends_on": "Por evento"
+      }
+    }
+  ],
+  "stages": [
+    {
+      "name": "Cuentas y acuerdos",
+      "phases": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ]
+    },
+    {
+      "name": "Identidad de la app",
+      "phases": [
+        "S5"
+      ]
+    },
+    {
+      "name": "Firma y servicios",
+      "phases": [
+        "S6",
+        "S7"
+      ]
+    },
+    {
+      "name": "Construcción",
+      "phases": [
+        "S8",
+        "S9"
+      ]
+    },
+    {
+      "name": "Subida y pruebas",
+      "phases": [
+        "S10",
+        "S11"
+      ]
+    },
+    {
+      "name": "Ficha y aprobaciones",
+      "phases": [
+        "S12",
+        "S13"
+      ]
+    },
+    {
+      "name": "Revisión y publicación",
+      "phases": [
+        "S14",
+        "S15"
+      ]
+    },
+    {
+      "name": "Operación y renovación",
+      "phases": [
+        "S16",
+        "S17",
+        "S18"
+      ]
+    }
+  ],
+  "per_version_phases": [
+    "S8",
+    "S9",
+    "S10",
+    "S11",
+    "S12",
+    "S13",
+    "S14",
+    "S15",
+    "S16"
+  ]
+}

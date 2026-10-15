@@ -1,0 +1,36 @@
+{
+  "client": "Ejemplo",
+  "lang": "es",
+  "description": "Instance template. Copy this folder per client. Write only what differs from the base model; everything else is inherited.",
+  "regulatory_profile": "PR-<SECTOR>-<PAIS>",
+  "lanes": {
+    "L1": "Canales Digitales",
+    "L2": "Equipo técnico de Canales Digitales",
+    "L3": "Proveedor X",
+    "L4": "Ciberseguridad",
+    "L5": "Legal, Cumplimiento y Riesgos",
+    "L6": "Representación legal y Finanzas",
+    "L7": "Apple, Google, D&B"
+  },
+  "variants": {
+    "V1": "a",
+    "V2": "a",
+    "V3": "c",
+    "V7": "c",
+    "V8": "a",
+    "V13": "a",
+    "V14": "b"
+  },
+  "renewals": {
+    "R01": "2026-11-01",
+    "R12": "2026-11-15"
+  },
+  "decisions": [
+    {
+      "date": "2026-10-14",
+      "decision": "El titular de las cuentas es la entidad, no el proveedor",
+      "owner": "Canales Digitales",
+      "rationale": "Apple exige que las apps financieras las publique la propia entidad (guía 3.2.1)"
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "description": "The 10 per-version tracking milestones. Each check links to the step that backs it.",
+  "lang": "es",
+  "milestones": [
+    {
+      "id": "m1",
+      "name": "Build listo",
+      "description": "El binario de release existe, firmado y conforme.",
+      "phases": [
+        "S8",
+        "S9"
+      ],
+      "checks": [
+        {
+          "id": "c1",
+          "text": "Build compilado y firmado con la configuración de producción",
+          "step": "S8.3"
+        },
+        {
+          "id": "c2",
+          "text": "Requisitos de SDK vigentes: Xcode 26 o posterior; target API 36",
+          "step": "S9.2"
+        },
+        {
+          "id": "c3",
+          "text": "Firma y entitlements verificados",
+          "step": "S9.3"
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "name": "Subido a las tiendas",
+      "description": "El build está en App Store Connect y en un track de Play.",
+      "phases": [
+        "S10"
+      ],
+      "checks": [
+        {
+          "id": "c4",
+          "text": "IPA procesado; cumplimiento de exportación respondido",
+          "step": "S10.3"
+        },
+        {
+          "id": "c5",
+          "text": "AAB subido con archivo de mapeo; dSYM subidos",
+          "step": "S10.2"
+        }
+      ]
+    },
+    {
+      "id": "m3",
+      "name": "Probado en canal",
+      "description": "Testers internos o cerrados lo probaron con la firma real.",
+      "phases": [
+        "S11"
+      ],
+      "checks": [
+        {
+          "id": "c6",
+          "text": "Distribuido en TestFlight y track interno o cerrado",
+          "step": "S11.4"
+        },
+        {
+          "id": "c7",
+          "text": "Push, deep links y login probados con la firma de tienda",
+          "step": "S7.3"
+        },
+        {
+          "id": "c8",
+          "text": "Conformidad de QA emitida",
+          "step": "S11.7"
+        }
+      ]
+    },
+    {
+      "id": "m4",
+      "name": "Ficha y declaraciones",
+      "description": "Lo que verá el usuario y lo que exigen las tiendas.",
+      "phases": [
+        "S12"
+      ],
+      "checks": [
+        {
+          "id": "c9",
+          "text": "Ficha completa: textos, capturas, icono, URLs de privacidad y soporte",
+          "step": "S12.2"
+        },
+        {
+          "id": "c10",
+          "text": "Notas de versión por idioma",
+          "step": "S12.8"
+        },
+        {
+          "id": "c11",
+          "text": "App Privacy y Data safety coherentes con la política",
+          "step": "S12.5"
+        },
+        {
+          "id": "c12",
+          "text": "Clasificación por edad vigente (Apple e IARC)",
+          "step": "S12.6"
+        },
+        {
+          "id": "c13",
+          "text": "Funciones financieras y resto de declaraciones",
+          "step": "S12.7"
+        }
+      ]
+    },
+    {
+      "id": "m5",
+      "name": "Revisor preparado",
+      "description": "Lo que necesita el revisor de la tienda para entrar.",
+      "phases": [
+        "S12"
+      ],
+      "checks": [
+        {
+          "id": "c14",
+          "text": "Cuenta demo viva; OTP o biometría resueltos para el revisor",
+          "step": "S12.9"
+        },
+        {
+          "id": "c15",
+          "text": "Archivos de asociación de dominio publicados",
+          "step": "S7.4"
+        }
+      ]
+    },
+    {
+      "id": "m6",
+      "name": "Aprobaciones internas",
+      "description": "Seguridad, Cumplimiento, Legal y Riesgos; Go / No-Go.",
+      "phases": [
+        "S13"
+      ],
+      "checks": [
+        {
+          "id": "c16",
+          "text": "Aprobación de Seguridad con el análisis del binario",
+          "step": "S13.1"
+        },
+        {
+          "id": "c17",
+          "text": "Cumplimiento, Legal y Riesgos aprobados",
+          "step": "S13.4"
+        },
+        {
+          "id": "c18",
+          "text": "Renovaciones vigentes durante la ventana de revisión",
+          "step": "S17.1"
+        },
+        {
+          "id": "c19",
+          "text": "Go / No-Go registrado",
+          "step": "S13.5"
+        }
+      ]
+    },
+    {
+      "id": "m7",
+      "name": "Enviado a revisión",
+      "description": "La versión está en manos de Apple y Google.",
+      "phases": [
+        "S14"
+      ],
+      "checks": [
+        {
+          "id": "c20",
+          "text": "Enviado a App Review",
+          "step": "S14.1"
+        },
+        {
+          "id": "c21",
+          "text": "Enviado a revisión de Play",
+          "step": "S14.2"
+        }
+      ]
+    },
+    {
+      "id": "m8",
+      "name": "Aprobado por las tiendas",
+      "description": "Ambas tiendas aprobaron; si hubo rechazo, se corrigió.",
+      "phases": [
+        "S14"
+      ],
+      "checks": [
+        {
+          "id": "c22",
+          "text": "Aprobado por Apple",
+          "step": "S14.1"
+        },
+        {
+          "id": "c23",
+          "text": "Aprobado por Google",
+          "step": "S14.2"
+        }
+      ]
+    },
+    {
+      "id": "m9",
+      "name": "Publicado",
+      "description": "La versión está disponible y el despliegue, bajo control.",
+      "phases": [
+        "S15"
+      ],
+      "checks": [
+        {
+          "id": "c24",
+          "text": "Plan de liberación definido: manual, automática o programada; porcentaje inicial",
+          "step": "S15.1"
+        },
+        {
+          "id": "c25",
+          "text": "Liberado y disponibilidad verificada por país y dispositivo",
+          "step": "S15.3"
+        }
+      ]
+    },
+    {
+      "id": "m10",
+      "name": "En operación",
+      "description": "Seguimiento después de publicar.",
+      "phases": [
+        "S16"
+      ],
+      "checks": [
+        {
+          "id": "c26",
+          "text": "Despliegue vigilado; fallos revisados con símbolos",
+          "step": "S16.2"
+        },
+        {
+          "id": "c27",
+          "text": "Reseñas atendidas",
+          "step": "S16.3"
+        }
+      ]
+    }
+  ]
+}

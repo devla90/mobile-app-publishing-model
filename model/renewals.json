@@ -1,0 +1,256 @@
+{
+  "description": "Renewal map. cycle_months 0 = event- or policy-driven. lead_days = how far ahead to warn.",
+  "lang": "es",
+  "items": [
+    {
+      "id": "R01",
+      "name": "Membresía Apple Developer",
+      "group": "Cuentas y acuerdos",
+      "cycle_months": 12,
+      "lead_days": 60,
+      "if_expired": "Sin subidas ni TestFlight; las apps se retiran de la venta",
+      "renewed_by": "A03, A16",
+      "step": "S17.1"
+    },
+    {
+      "id": "R02",
+      "name": "Acuerdos Apple actualizados",
+      "group": "Cuentas y acuerdos",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Acceso restringido a consolas y API hasta aceptar",
+      "renewed_by": "A03",
+      "step": "S17.2"
+    },
+    {
+      "id": "R03",
+      "name": "Acuerdos y políticas de Google Play",
+      "group": "Cuentas y acuerdos",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Restricción de la cuenta o de apps",
+      "renewed_by": "A04",
+      "step": "S17.2"
+    },
+    {
+      "id": "R05",
+      "name": "D-U-N-S y perfil de pagos alineados",
+      "group": "Cuentas y acuerdos",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Play restringe la cuenta y retira las apps",
+      "renewed_by": "A02, A04",
+      "step": "S17.6"
+    },
+    {
+      "id": "R06",
+      "name": "Contactos verificados de la cuenta Play",
+      "group": "Cuentas y acuerdos",
+      "cycle_months": 6,
+      "lead_days": 15,
+      "if_expired": "Google puede retirar apps si no responden",
+      "renewed_by": "A04",
+      "step": "S17.6"
+    },
+    {
+      "id": "R07",
+      "name": "Dominio y sitio web del titular",
+      "group": "Cuentas y acuerdos",
+      "cycle_months": 12,
+      "lead_days": 90,
+      "if_expired": "URLs de privacidad caídas; deep links rotos",
+      "renewed_by": "A01, A26",
+      "step": ""
+    },
+    {
+      "id": "R08",
+      "name": "Recertificación de usuarios y roles",
+      "group": "Identidad y accesos",
+      "cycle_months": 6,
+      "lead_days": 15,
+      "if_expired": "Accesos huérfanos de personas o proveedores que ya no están",
+      "renewed_by": "A22, A05, A06",
+      "step": "S17.7"
+    },
+    {
+      "id": "R10",
+      "name": "2FA de cuentas titulares y códigos de recuperación",
+      "group": "Identidad y accesos",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Pérdida de acceso a las cuentas titulares",
+      "renewed_by": "A08",
+      "step": "S18.6"
+    },
+    {
+      "id": "R11",
+      "name": "Persona que ocupa Account Holder u owner",
+      "group": "Identidad y accesos",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Nadie puede renovar ni aceptar acuerdos",
+      "renewed_by": "A03, A04",
+      "step": "S18.2"
+    },
+    {
+      "id": "R12",
+      "name": "Certificado Apple Distribution",
+      "group": "Firma iOS",
+      "cycle_months": 12,
+      "lead_days": 30,
+      "if_expired": "No se pueden subir builds; la app publicada sigue",
+      "renewed_by": "A03 o A05",
+      "step": "S17.3"
+    },
+    {
+      "id": "R13",
+      "name": "Perfiles App Store (uno por target)",
+      "group": "Firma iOS",
+      "cycle_months": 12,
+      "lead_days": 30,
+      "if_expired": "No se puede exportar el IPA",
+      "renewed_by": "A03 o A05",
+      "step": "S17.3"
+    },
+    {
+      "id": "R14",
+      "name": "Certificados y perfiles de desarrollo",
+      "group": "Firma iOS",
+      "cycle_months": 12,
+      "lead_days": 15,
+      "if_expired": "No se puede depurar en dispositivo",
+      "renewed_by": "A09",
+      "step": "S6.6"
+    },
+    {
+      "id": "R16",
+      "name": "Certificado intermedio Apple WWDR",
+      "group": "Firma iOS",
+      "cycle_months": 0,
+      "lead_days": 180,
+      "if_expired": "Cadena de firma inválida en CI desactualizado (vence 20 feb 2030)",
+      "renewed_by": "A11, A12",
+      "step": "S17.3"
+    },
+    {
+      "id": "R17",
+      "name": "Certificado APNs TLS (solo si se usa)",
+      "group": "Servicios",
+      "cycle_months": 12,
+      "lead_days": 30,
+      "if_expired": "El push deja de entregarse",
+      "renewed_by": "A05, A26",
+      "step": "S17.4"
+    },
+    {
+      "id": "R18",
+      "name": "Clave APNs .p8 (rotación por política)",
+      "group": "Servicios",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Solo si se revoca",
+      "renewed_by": "A12, A26",
+      "step": "S17.5"
+    },
+    {
+      "id": "R19",
+      "name": "Certificados de capacidades (Apple Pay 25 meses)",
+      "group": "Servicios",
+      "cycle_months": 25,
+      "lead_days": 60,
+      "if_expired": "La capacidad falla",
+      "renewed_by": "A05",
+      "step": "S17.4"
+    },
+    {
+      "id": "R22",
+      "name": "Clave App Store Connect API (rotación por política)",
+      "group": "Automatización",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "El CI pierde acceso si se revoca sin reemplazo",
+      "renewed_by": "A03 o A05, A12",
+      "step": "S17.5"
+    },
+    {
+      "id": "R23",
+      "name": "Cuenta de servicio Google (clave JSON)",
+      "group": "Automatización",
+      "cycle_months": 0,
+      "lead_days": 15,
+      "if_expired": "El CI no puede publicar",
+      "renewed_by": "A06, A12",
+      "step": "S17.5"
+    },
+    {
+      "id": "R24",
+      "name": "Secretos del pipeline y contraseñas de keystore",
+      "group": "Automatización",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Exposición de credenciales",
+      "renewed_by": "A11, A12",
+      "step": "S17.5"
+    },
+    {
+      "id": "R26",
+      "name": "Upload key (revisión del inventario)",
+      "group": "Firma Android",
+      "cycle_months": 12,
+      "lead_days": 0,
+      "if_expired": "Días sin poder subir si se pierde (reset con Google)",
+      "renewed_by": "A04 o A06, A12",
+      "step": "S18.3"
+    },
+    {
+      "id": "R28",
+      "name": "Huellas SHA registradas en servicios",
+      "group": "Firma Android",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Login, mapas, push o deep links fallan tras cambiar clave",
+      "renewed_by": "A26",
+      "step": "S6.13"
+    },
+    {
+      "id": "R29",
+      "name": "SDK mínimo para subir a App Store",
+      "group": "Requisitos de tienda",
+      "cycle_months": 12,
+      "lead_days": 180,
+      "if_expired": "No se aceptan subidas (último: Xcode 26 desde 28 abr 2026)",
+      "renewed_by": "A09, A10",
+      "step": "S17.8"
+    },
+    {
+      "id": "R30",
+      "name": "Target API de Google Play",
+      "group": "Requisitos de tienda",
+      "cycle_months": 12,
+      "lead_days": 180,
+      "if_expired": "No se aceptan actualizaciones (último: API 36 desde 31 ago 2026)",
+      "renewed_by": "A09, A10",
+      "step": "S17.8"
+    },
+    {
+      "id": "R31",
+      "name": "Cuestionarios de tienda (edad, privacidad, Data safety)",
+      "group": "Requisitos de tienda",
+      "cycle_months": 0,
+      "lead_days": 0,
+      "if_expired": "Bloqueo de envíos de actualizaciones",
+      "renewed_by": "A14, A24",
+      "step": "S16.5"
+    },
+    {
+      "id": "R32",
+      "name": "Builds de TestFlight (90 días)",
+      "group": "Requisitos de tienda",
+      "cycle_months": 3,
+      "lead_days": 15,
+      "if_expired": "Los testers no pueden instalar ese build",
+      "renewed_by": "A14",
+      "step": "S11.3"
+    }
+  ]
+}

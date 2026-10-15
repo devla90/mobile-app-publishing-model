@@ -1,0 +1,150 @@
+{
+  "description": "Portals, consoles and APIs P01-P24. Those marked as a variant exist only if the client picks that option.",
+  "lang": "es",
+  "items": {
+    "P01": {
+      "name": "Dun & Bradstreet",
+      "platform": "both",
+      "url": "https://www.dnb.com/duns/get-a-duns.html",
+      "purpose": "Consultar o solicitar el D-U-N-S de la entidad"
+    },
+    "P02": {
+      "name": "Apple Account",
+      "platform": "ios",
+      "url": "https://account.apple.com",
+      "purpose": "Identidad de cada persona en Apple; 2FA obligatorio"
+    },
+    "P03": {
+      "name": "Apple Developer (cuenta)",
+      "platform": "ios",
+      "url": "https://developer.apple.com/account",
+      "purpose": "Membresía, renovación, acuerdos del programa, Team ID"
+    },
+    "P04": {
+      "name": "Certificates, Identifiers & Profiles",
+      "platform": "ios",
+      "url": "https://developer.apple.com/account/resources",
+      "purpose": "Certificados, App IDs, capacidades, dispositivos, perfiles, claves"
+    },
+    "P05": {
+      "name": "App Store Connect",
+      "platform": "ios",
+      "url": "https://appstoreconnect.apple.com",
+      "purpose": "Usuarios y roles, apps, builds, TestFlight, ficha, revisión, acuerdos, impuestos y banca"
+    },
+    "P06": {
+      "name": "App Store Connect API",
+      "platform": "ios",
+      "url": "https://developer.apple.com/app-store-connect/api/",
+      "purpose": "Automatizar builds, TestFlight, metadatos, envíos y perfiles"
+    },
+    "P07": {
+      "name": "Apple Developer app",
+      "platform": "ios",
+      "url": "https://apps.apple.com/us/app/apple-developer/id640199958",
+      "purpose": "Enrolamiento y renovación desde iPhone o Mac"
+    },
+    "P08": {
+      "name": "Xcode",
+      "platform": "ios",
+      "url": "https://developer.apple.com/xcode/",
+      "purpose": "Compilar, archivar, firmar, subir"
+    },
+    "P09": {
+      "name": "Transporter",
+      "platform": "ios",
+      "url": "https://apps.apple.com/us/app/transporter/id1450874784",
+      "purpose": "Subir IPA a App Store Connect fuera de Xcode"
+    },
+    "P10": {
+      "name": "TestFlight",
+      "platform": "ios",
+      "url": "https://developer.apple.com/testflight/",
+      "purpose": "Distribución beta interna y externa"
+    },
+    "P11": {
+      "name": "Apple Push Notification service",
+      "platform": "ios",
+      "url": "api.push.apple.com · api.sandbox.push.apple.com",
+      "purpose": "Entrega de notificaciones push a iOS"
+    },
+    "P12": {
+      "name": "Google Account / Workspace",
+      "platform": "android",
+      "url": "https://accounts.google.com",
+      "purpose": "Identidad del owner y usuarios de Play; 2SV"
+    },
+    "P13": {
+      "name": "Google Play Console",
+      "platform": "android",
+      "url": "https://play.google.com/console",
+      "purpose": "Cuenta de desarrollador, usuarios, apps, firma, tracks, ficha, declaraciones, publicación"
+    },
+    "P14": {
+      "name": "Google Payments Center",
+      "platform": "android",
+      "url": "https://payments.google.com",
+      "purpose": "Perfil de pagos con nombre y dirección legal; Google valida aquí la organización"
+    },
+    "P15": {
+      "name": "Google Play Developer API",
+      "platform": "android",
+      "url": "https://developers.google.com/android-publisher",
+      "purpose": "Automatizar subida de AAB, tracks, ficha, firma"
+    },
+    "P16": {
+      "name": "Google Cloud Console",
+      "platform": "android",
+      "url": "https://console.cloud.google.com",
+      "purpose": "Proyecto y cuenta de servicio para la API de Play; KMS si se autohospeda la firma"
+    },
+    "P17": {
+      "name": "Firebase Console",
+      "platform": "both",
+      "url": "https://console.firebase.google.com",
+      "purpose": "FCM, Crashlytics, App Distribution; registro de huellas SHA y clave APNs"
+    },
+    "P18": {
+      "name": "Android Developer Console",
+      "platform": "android",
+      "url": "https://android.google.com/developerconsole",
+      "purpose": "Verificación de desarrollador para apps distribuidas fuera de Play"
+    },
+    "P19": {
+      "name": "Android Studio y SDK",
+      "platform": "android",
+      "url": "https://developer.android.com/studio",
+      "purpose": "Compilar AAB/APK, generar keystore, firmar, verificar"
+    },
+    "P20": {
+      "name": "Plataforma de CI (variante)",
+      "platform": "both",
+      "url": "Según proveedor",
+      "purpose": "Compilar, firmar y subir de forma automatizada: propia, de terceros o Xcode Cloud"
+    },
+    "P21": {
+      "name": "Almacén de secretos / HSM / KMS (variante)",
+      "platform": "both",
+      "url": "Según proveedor",
+      "purpose": "Guardar claves privadas, contraseñas y tokens con control de acceso y auditoría"
+    },
+    "P22": {
+      "name": "Distribución de prueba fuera de tienda (variante)",
+      "platform": "both",
+      "url": "Firebase App Distribution, TestFairy u otras",
+      "purpose": "Repartir builds de prueba sin pasar por TestFlight ni tracks de Play"
+    },
+    "P23": {
+      "name": "Sitio web del titular",
+      "platform": "both",
+      "url": "Dominio propio",
+      "purpose": "Política de privacidad, URL de soporte, apple-app-site-association y assetlinks.json"
+    },
+    "P24": {
+      "name": "Gestor de contraseñas / bóveda de cuentas",
+      "platform": "both",
+      "url": "Corporativo",
+      "purpose": "Custodia de credenciales de cuentas titulares y códigos 2FA de recuperación"
+    }
+  }
+}

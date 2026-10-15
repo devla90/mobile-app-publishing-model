@@ -1,0 +1,244 @@
+{
+  "description": "Variation points V1-V14. No option is the default; each client picks one.",
+  "lang": "es",
+  "items": {
+    "V1": {
+      "name": "Tipo de cuenta",
+      "options": [
+        {
+          "key": "a",
+          "text": "Organización"
+        },
+        {
+          "key": "b",
+          "text": "Personal"
+        }
+      ]
+    },
+    "V2": {
+      "name": "Titularidad de las cuentas",
+      "options": [
+        {
+          "key": "a",
+          "text": "Cuenta propia del titular"
+        },
+        {
+          "key": "b",
+          "text": "Cuenta central de un grupo"
+        },
+        {
+          "key": "c",
+          "text": "Cuenta de un proveedor"
+        }
+      ]
+    },
+    "V3": {
+      "name": "Dónde se compila",
+      "options": [
+        {
+          "key": "a",
+          "text": "Local"
+        },
+        {
+          "key": "b",
+          "text": "CI propio"
+        },
+        {
+          "key": "c",
+          "text": "CI operado por un tercero"
+        },
+        {
+          "key": "d",
+          "text": "CI de la plataforma (Xcode Cloud)"
+        }
+      ]
+    },
+    "V4": {
+      "name": "Cómo se firma iOS",
+      "options": [
+        {
+          "key": "a",
+          "text": "Manual con .p12 + perfil"
+        },
+        {
+          "key": "b",
+          "text": "Firma automática en la nube"
+        },
+        {
+          "key": "c",
+          "text": "Firma en CI con API key"
+        },
+        {
+          "key": "d",
+          "text": "Delegada al tercero que compila"
+        }
+      ]
+    },
+    "V5": {
+      "name": "Firma de la app Android",
+      "options": [
+        {
+          "key": "a",
+          "text": "Play App Signing, clave de Google"
+        },
+        {
+          "key": "b",
+          "text": "Play App Signing, clave propia subida"
+        },
+        {
+          "key": "c",
+          "text": "Play App Signing, clave en Cloud KMS propio"
+        },
+        {
+          "key": "d",
+          "text": "Sin Play App Signing"
+        }
+      ]
+    },
+    "V6": {
+      "name": "Custodia de la upload key",
+      "options": [
+        {
+          "key": "a",
+          "text": "El titular custodia y entrega"
+        },
+        {
+          "key": "b",
+          "text": "El que compila la genera y custodia"
+        },
+        {
+          "key": "c",
+          "text": "En HSM/KMS, nunca exportada"
+        }
+      ]
+    },
+    "V7": {
+      "name": "Cómo se sube",
+      "options": [
+        {
+          "key": "a",
+          "text": "Manual en consola"
+        },
+        {
+          "key": "b",
+          "text": "Herramienta (Xcode, Transporter)"
+        },
+        {
+          "key": "c",
+          "text": "API automatizada"
+        }
+      ]
+    },
+    "V8": {
+      "name": "Push en iOS",
+      "options": [
+        {
+          "key": "a",
+          "text": "Clave APNs (token)"
+        },
+        {
+          "key": "b",
+          "text": "Certificado APNs TLS"
+        }
+      ]
+    },
+    "V9": {
+      "name": "Pruebas previas",
+      "options": [
+        {
+          "key": "a",
+          "text": "Canales de tienda"
+        },
+        {
+          "key": "b",
+          "text": "Fuera de tienda"
+        },
+        {
+          "key": "c",
+          "text": "Ambas"
+        }
+      ]
+    },
+    "V10": {
+      "name": "Lanzamiento",
+      "options": [
+        {
+          "key": "a",
+          "text": "Manual"
+        },
+        {
+          "key": "b",
+          "text": "Automático"
+        },
+        {
+          "key": "c",
+          "text": "Programado; con fases o despliegue escalonado"
+        }
+      ]
+    },
+    "V11": {
+      "name": "Origen de la app",
+      "options": [
+        {
+          "key": "a",
+          "text": "App nueva (modelado)"
+        },
+        {
+          "key": "b",
+          "text": "Actualizar una app de otra cuenta (flujo alternativo)"
+        }
+      ]
+    },
+    "V12": {
+      "name": "Autenticación de máquinas",
+      "options": [
+        {
+          "key": "a",
+          "text": "Clave de equipo / JSON"
+        },
+        {
+          "key": "b",
+          "text": "Clave individual / federación sin clave descargable"
+        }
+      ]
+    },
+    "V13": {
+      "name": "Canal de distribución",
+      "options": [
+        {
+          "key": "a",
+          "text": "Tiendas públicas (modelado)"
+        },
+        {
+          "key": "b",
+          "text": "Canales privados (previsto)"
+        },
+        {
+          "key": "c",
+          "text": "Tiendas alternativas (previsto)"
+        },
+        {
+          "key": "d",
+          "text": "Enterprise (excluido)"
+        }
+      ]
+    },
+    "V14": {
+      "name": "Modelo de ejecución tecnológica",
+      "options": [
+        {
+          "key": "a",
+          "text": "TI interno ejecuta"
+        },
+        {
+          "key": "b",
+          "text": "Un tercero gobernado por TI"
+        },
+        {
+          "key": "c",
+          "text": "Un tercero contratado por el negocio"
+        }
+      ]
+    }
+  }
+}
