@@ -34,7 +34,7 @@ Open `dist/index.html` in a browser. With GitHub Pages pointed at the build work
 - **This repository** is the base model: versioned, shareable, with no real client data. The page it generates keeps tracking state only in the browser of whoever opens it.
 - **The Claude artifact** (optional) is the day-to-day operations tool: same model, with tracking shared across the team and access roles. It is regenerated from here when the model changes. See [docs/deployment.md](docs/deployment.md).
 
-Instances of real clients with internal information must not be pushed to a public repository. Keep this repository as the base and the instances in a private repository or in the artifact.
+Instances of real clients with internal information must not be pushed to a public repository. Keep this repository as the base and the instances in a private repository or in the artifact. See [Private client instances](docs/deployment.md#private-client-instances).
 
 ## Maintaining it with AI
 

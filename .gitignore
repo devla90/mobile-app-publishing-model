@@ -7,6 +7,11 @@ __pycache__/
 .DS_Store
 report.txt
 
-# Real client instances hold internal information. Keep them out of a public repo:
-# clients/*/
-# !clients/example/
+# Real client instances hold internal information. Only the template and its
+# generated output are versioned. See docs/deployment.md#private-client-instances.
+clients/*
+!clients/example/
+dist/clients/*
+!dist/clients/example/
+dist/diff-*.md
+!dist/diff-example.md

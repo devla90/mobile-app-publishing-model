@@ -34,7 +34,7 @@ Abre `dist/index.html` en el navegador. Con GitHub Pages apuntando al workflow d
 - **Este repositorio** es el modelo base: versionado, compartible, sin datos de clientes reales. La página que genera guarda el seguimiento solo en el navegador de quien la abre.
 - **El artefacto de Claude** (opcional) es la herramienta de operación diaria: mismo modelo, con seguimiento compartido entre el equipo y roles de acceso. Se regenera desde aquí cuando el modelo cambia. Ver `docs/deployment.md`.
 
-Las instanciaciones de clientes reales con información interna no deben subirse a un repositorio público. Mantén este repositorio como base y las instancias en un repositorio privado o en el artefacto.
+Las instanciaciones de clientes reales con información interna no deben subirse a un repositorio público. Mantén este repositorio como base y las instancias en un repositorio privado o en el artefacto. Ver [Private client instances](docs/deployment.md#private-client-instances).
 
 ## Mantenimiento con IA
 

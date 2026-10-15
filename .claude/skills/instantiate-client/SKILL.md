@@ -35,3 +35,4 @@ Do not read `model/steps.json`.
 - `model/` is never modified from an instantiation. If the client needs a step that does not exist, that is `edit-model` work.
 - No personal names; areas or companies only.
 - No instance with internal data is pushed to a public repository. Warn if the repository is public.
+- For a real client, create the instance in its private overlay repository and symlink it into `clients/`; `.gitignore` keeps it and its `dist/` output out of the base. See `docs/deployment.md#private-client-instances`.
