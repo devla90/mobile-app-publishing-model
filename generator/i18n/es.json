@@ -20,7 +20,7 @@
   "door_vr_how": "Diez hitos por versión, cada uno con lo que debe estar listo. Se marca una sola vez.",
   "door_dt_who": "Para revisar o instanciar",
   "door_dt_what": "Explorar el modelo",
-  "door_dt_how": "Todos los pasos con dependencias, roles, credenciales y variantes. Instanciación por cliente.",
+  "door_dt_how": "Todos los pasos con dependencias, roles, credenciales y variantes. Para consultar, revisar o instanciar; el avance de una versión se marca en Seguir una versión.",
   "doors_aria": "Accesos",
 
   "tab_ov": "Ver el flujo",
@@ -35,6 +35,7 @@
   "howto_tap": "<b>Toca una caja</b> para ver sus pasos.",
   "howto_reject": "Si la tienda rechaza (20), se vuelve a construir (13) o a ajustar la ficha (16).",
 
+  "dt_intro": "Aquí está el modelo completo: no todo ocurre en cada versión. Cada paso indica su fase y frecuencia (una vez por titular, por app, en cada versión o cíclico). Para marcar el avance de un lanzamiento usa <b>Seguir una versión</b>.",
   "filters_aria": "Filtros",
   "filter_view": "Ver",
   "plat_both": "Ambas",
@@ -145,7 +146,8 @@
   "step_variant_each": "Cada cliente elige una opción; cambia cómo se ejecuta este paso.",
   "step_before": "Antes necesita",
   "step_after": "Después habilita",
-  "rev_title": "¿Se entiende este paso?",
+  "rev_title": "Revisión del modelo: ¿se entiende este paso?",
+  "rev_hint": "Esta marca es solo para revisar el modelo y reunir dudas con «Copiar dudas». No cambia el flujo ni el avance de ninguna versión.",
   "rev_clear": "Está claro",
   "rev_doubt": "Tengo una duda",
   "rev_remove": "Quitar marca",
