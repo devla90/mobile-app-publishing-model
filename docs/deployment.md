@@ -46,6 +46,8 @@ python3 generator/validate.py && python3 generator/build.py --no-png
 
 Edits made through the link land in the private repository; commit them there. The output goes to `dist/clients/<id>/` and `dist/diff-<id>.md`, which are ignored. Copy them into the private repository if they must be shared.
 
+`generator/validate.py` fails if any file under `clients/`, `dist/clients/` or `dist/diff-*.md` other than `example` is in the git index, so a forced `git add -f` is caught before the commit and in CI. Before pushing to a public remote, `git status --ignored` should list each real instance as ignored (`!!`).
+
 Before pushing the base, confirm nothing leaked:
 
 ```bash

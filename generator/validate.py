@@ -4,7 +4,7 @@
 Usage: python3 generator/validate.py
 Exit code 1 on any problem. Run it before every commit; the build workflow runs it too.
 """
-import json, re, sys
+import json, re, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -108,6 +108,17 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
     for r, d in inst.get("renewals", {}).items():
         if r not in renewal_ids: say(f"{rel}: unknown renewal {r}")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(d)): say(f"{rel}: renewal {r} date must be YYYY-MM-DD")
+
+# Real client instances must never be versioned (docs/deployment.md#private-client-instances).
+# Checks the git index, so a forced `git add -f` is caught before the commit. Skipped outside a git checkout.
+try:
+    tracked = subprocess.run(["git", "ls-files", "--", "clients", "dist/clients", "dist/diff-*.md"], cwd=ROOT,
+                             capture_output=True, text=True, check=True).stdout.split()
+except (OSError, subprocess.CalledProcessError):
+    tracked = []
+for p in tracked:
+    if not re.match(r"(clients|dist/clients)/example/|dist/diff-example\.md$", p):
+        say(f"{p}: real client instance is versioned; remove it with `git rm --cached` (only example/ may be committed)")
 
 if problems:
     print("\n".join(problems)); print(f"\n{len(problems)} problem(s)."); sys.exit(1)
