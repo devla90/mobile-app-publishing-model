@@ -59,6 +59,10 @@ The CI build (`build.yml`) only sees committed files, so GitHub Pages never publ
 
 `dist/swimlanes.svg` can be edited in PowerPoint, Visio or Figma. `swimlanes.png` is 2x for presentations. Per client, in `dist/clients/<id>/`.
 
+`dist/swimlanes.drawio` is the same diagram for draw.io (desktop or app.diagrams.net). Lanes are containers, activities keep their number, lane, stage and phases as data (*Edit Data*), and arrows are connected to the activities, so they follow when a box is moved. It is generated with the SVG from the same layout, so both always match. Per client it is named `dist/clients/<id>/swimlanes-<id>.drawio`, so several clients can be opened in draw.io without mixing them up.
+
+The `.drawio` is output, not source: every build overwrites it. Change the diagram in `model/diagram.json`; edit the `.drawio` by hand only in a copy outside `dist/`.
+
 ## Other UI languages
 
 `python3 generator/build.py --lang <code>` uses `generator/i18n/<code>.json`. To publish two languages, build twice into different folders (the generator writes to `dist/`; copy or rename between builds).

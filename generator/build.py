@@ -4,7 +4,9 @@
 Outputs in dist/:
   index.html                  interactive explorer of the base model (state kept in the browser)
   swimlanes.svg / .png        swimlane diagram of the base model
-  clients/<id>/index.html, swimlanes.svg, swimlanes.png   the same, instantiated per client
+  swimlanes.drawio            the same diagram, editable in draw.io (regenerated on every build)
+  clients/<id>/index.html, swimlanes.svg, swimlanes-<id>.drawio, swimlanes.png   the same, instantiated per client
+                              (the .drawio carries the client id so copies opened together in draw.io stay distinguishable)
   diff-<id>.md                what each client changes relative to the base
 
 Usage:  python3 generator/build.py [--no-png] [--lang es]
@@ -12,6 +14,7 @@ Requires Python 3.10+. PNG export needs playwright (pip install playwright && pl
 if it is missing, the PNG is skipped with a notice.
 """
 import json, sys, html, pathlib, re
+import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MODEL = ROOT / "model"
@@ -118,16 +121,14 @@ def page(m, t, instance=None):
     return head + js_data(m, t, instance) + logic + "\n</body>\n</html>\n"
 
 
-# ---------- Static swimlane diagram (SVG) ----------
+# ---------- Static swimlane diagram (layout shared by SVG and draw.io) ----------
 COLOR = {"L1": "#1F6FEB", "L2": "#0E9384", "L3": "#7A5AF8", "L4": "#D92D20", "L5": "#DC6803", "L6": "#A3820F", "L7": "#667085"}
 TINT = {"L1": "#EAF2FE", "L2": "#E6F6F4", "L3": "#F1EEFE", "L4": "#FDECEA", "L5": "#FEF1E6", "L6": "#F8F3E0", "L7": "#F0F1F4"}
+INK, MUTED, RULE, ARROW = "#1D2433", "#5B6475", "#E4E7EC", "#7D8596"
 
 
-def svg_swimlanes(m, t, instance=None, title=None):
-    esc = html.escape
-    title = title or t["svg_title"]
-    INK, MUTED, RULE, ARROW = "#1D2433", "#5B6475", "#E4E7EC", "#7D8596"
-    FONT = "Calibri, Carlito, 'Segoe UI', Arial, sans-serif"
+def swimlane_layout(m, t, instance=None):
+    """Geometry of the swimlane diagram: page size, rows, box positions and the arrows to draw."""
     X0, CW, BW, BH1, BH2, GAP, PADR, TOP = 132, 176, 158, 42, 56, 12, 16, 96
     HEAD = TOP + 92
     lanes = m["LANES"]; stages = m["STAGES"]; box = m["BOX"]
@@ -149,39 +150,71 @@ def svg_swimlanes(m, t, instance=None, title=None):
             yy = rowY[r] + PADR
             for b in [b for b in box if b[2] == r and b[1] == l[0]]:
                 pos[b[0]] = dict(x=X0 + col[l[0]] * CW + (CW - BW) / 2, y=yy, w=BW, h=bh(b)); yy += bh(b) + GAP
+    # Arrows follow the numbering. Same-row hops are horizontal ("h") and are skipped when another box sits in between.
+    links = []
+    for n in range(1, 22):
+        a, b = pos.get(n), pos.get(n + 1)
+        if not a or not b: continue
+        ba, bb = box[n - 1], box[n]
+        if ba[2] == bb[2] and a["x"] != b["x"]:
+            lo, hi = min(a["x"], b["x"]), max(a["x"], b["x"]); y1, y2 = min(a["y"] + a["h"] / 2, b["y"] + b["h"] / 2), max(a["y"] + a["h"] / 2, b["y"] + b["h"] / 2)
+            if any(ob is not ba and ob is not bb and lo < pos[ob[0]]["x"] < hi and pos[ob[0]]["y"] <= y2 and pos[ob[0]]["y"] + pos[ob[0]]["h"] >= y1 for ob in box): continue
+            links.append((n, n + 1, "h"))
+        else:
+            links.append((n, n + 1, "v"))
+    names = {l[0]: (instance or {}).get("lanes", {}).get(l[0], l[1]) for l in lanes}
+    subs = {l[0]: l[1] if instance and names[l[0]] != l[1] else t["lane_sub_long"][l[0]] for l in lanes}
+    return dict(X0=X0, CW=CW, TOP=TOP, HEAD=HEAD, GB=GB, W=W, H=H, rows=rows, rowY=rowY, pos=pos, links=links, names=names, subs=subs)
+
+
+def split_lane_name(name):
+    words = name.split(" ")
+    if len(name) <= 16 or len(words) == 1: return [name]
+    k = len(words) // 2 + len(words) % 2
+    return [" ".join(words[:k]), " ".join(words[k:])]
+
+
+def split_stage_name(name):
+    w = name.split(" "); k = (len(w) + 1) // 2
+    return " ".join(w[:k]), " ".join(w[k:])
+
+
+def phase_range(phs):
+    return f"{phs[0]}–{phs[-1]}" if len(phs) > 1 else phs[0]
+
+
+def svg_swimlanes(m, t, instance=None, title=None):
+    esc = html.escape
+    title = title or t["svg_title"]
+    FONT = "Calibri, Carlito, 'Segoe UI', Arial, sans-serif"
+    g = swimlane_layout(m, t, instance)
+    X0, CW, TOP, HEAD, GB, W, H, rowY, pos = (g[k] for k in ["X0", "CW", "TOP", "HEAD", "GB", "W", "H", "rowY", "pos"])
+    lanes = m["LANES"]; stages = m["STAGES"]; box = m["BOX"]
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" font-family="{FONT}">',
          f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
          f'<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="{ARROW}"/></marker></defs>',
          f'<text x="24" y="40" font-size="24" font-weight="700" fill="{INK}">{esc(title)}</text>',
          f'<text x="24" y="66" font-size="14" fill="{MUTED}">{esc(t["svg_subtitle"])}</text>']
-    lanenames = {l[0]: (instance or {}).get("lanes", {}).get(l[0], l[1]) for l in lanes}
     for i, l in enumerate(lanes):
         lid = l[0]; x = X0 + i * CW; cx = x + CW / 2; c = COLOR[lid]
         o.append(f'<rect x="{x+6}" y="{TOP}" width="{CW-12}" height="78" rx="8" fill="{TINT[lid]}"/><rect x="{x+6}" y="{TOP}" width="{CW-12}" height="5" rx="2" fill="{c}"/>')
-        name = lanenames[lid]; words = name.split(" ")
-        lines = [name] if len(name) <= 16 or len(words) == 1 else [" ".join(words[:len(words)//2 + len(words) % 2]), " ".join(words[len(words)//2 + len(words) % 2:])]
+        lines = split_lane_name(g["names"][lid])
         for k, n in enumerate(lines):
             o.append(f'<text x="{cx}" y="{TOP+28+k*17}" text-anchor="middle" font-size="15" font-weight="700" fill="{c}">{esc(n)}</text>')
-        sub = l[1] if instance and lanenames[lid] != l[1] else t["lane_sub_long"][lid]
-        o.append(f'<text x="{cx}" y="{TOP+28+len(lines)*17+4}" text-anchor="middle" font-size="11.5" fill="{MUTED}">{esc(sub)}</text>')
+        o.append(f'<text x="{cx}" y="{TOP+28+len(lines)*17+4}" text-anchor="middle" font-size="11.5" fill="{MUTED}">{esc(g["subs"][lid])}</text>')
     for i in range(len(lanes) + 1):
         x = X0 + i * CW; o.append(f'<line x1="{x}" x2="{x}" y1="{HEAD}" y2="{GB}" stroke="{RULE}"/>')
     for ry in rowY + [GB]:
         o.append(f'<line x1="16" x2="{W-16}" y1="{ry}" y2="{ry}" stroke="{RULE}"/>')
     for r, (n, phs) in enumerate(stages):
-        w = n.split(" "); a = " ".join(w[:(len(w)+1)//2]); b = " ".join(w[(len(w)+1)//2:]); yb = rowY[r] + PADR
+        a, b = split_stage_name(n); yb = rowY[r] + 16
         o.append(f'<text x="24" y="{yb+14}" font-size="14" font-weight="700" fill="{INK}">{esc(a)}</text>')
         if b: o.append(f'<text x="24" y="{yb+31}" font-size="14" font-weight="700" fill="{INK}">{esc(b)}</text>')
-        ph = f"{phs[0]}–{phs[-1]}" if len(phs) > 1 else phs[0]
-        o.append(f'<text x="24" y="{yb+(49 if b else 32)}" font-size="12" fill="{MUTED}">{ph}</text>')
-    for n in range(1, 22):
-        a, b = pos.get(n), pos.get(n + 1)
-        if not a or not b: continue
-        ba, bb = box[n - 1], box[n]
+        o.append(f'<text x="24" y="{yb+(49 if b else 32)}" font-size="12" fill="{MUTED}">{phase_range(phs)}</text>')
+    for na, nb, kind in g["links"]:
+        a, b = pos[na], pos[nb]
         ac = (a["x"] + a["w"] / 2, a["y"] + a["h"] / 2); bc = (b["x"] + b["w"] / 2, b["y"] + b["h"] / 2)
-        if ba[2] == bb[2] and a["x"] != b["x"]:
-            lo, hi = min(a["x"], b["x"]), max(a["x"], b["x"]); y1, y2 = min(ac[1], bc[1]), max(ac[1], bc[1])
-            if any(ob is not ba and ob is not bb and lo < pos[ob[0]]["x"] < hi and pos[ob[0]]["y"] <= y2 and pos[ob[0]]["y"] + pos[ob[0]]["h"] >= y1 for ob in box): continue
+        if kind == "h":
             sx = a["x"] + a["w"] if b["x"] > a["x"] else a["x"]; ex = b["x"] if b["x"] > a["x"] else b["x"] + b["w"]; dx = (ex - sx) / 2
             p = f'M{sx} {ac[1]}C{sx+dx} {ac[1]} {ex-dx} {bc[1]} {ex} {bc[1]}'
         else:
@@ -198,6 +231,78 @@ def svg_swimlanes(m, t, instance=None, title=None):
         o.append(f'<text x="24" y="{GB+30+k*20}" font-size="13" fill="{MUTED}">{esc(tx)}</text>')
     o.append("</svg>")
     return "\n".join(o)
+
+
+def drawio_swimlanes(m, t, instance=None, title=None):
+    """Same diagram as svg_swimlanes, as an editable draw.io file (uncompressed XML).
+
+    Lanes are swimlane containers holding their activities; arrows are real edges between activities,
+    so they stay attached when boxes are moved. Each activity carries n, lane, stage and phases as data."""
+    esc = html.escape
+    title = title or t["svg_title"]
+    FONT = "fontFamily=Calibri;"
+    g = swimlane_layout(m, t, instance)
+    X0, CW, TOP, HEAD, GB, W, H, rows, rowY, pos = (g[k] for k in ["X0", "CW", "TOP", "HEAD", "GB", "W", "H", "rows", "rowY", "pos"])
+    lanes = m["LANES"]; stages = m["STAGES"]; box = m["BOX"]
+    num = lambda v: f"{v:g}"
+    mxfile = ET.Element("mxfile", host="generator/build.py")
+    diagram = ET.SubElement(mxfile, "diagram", id="swimlanes", name=title)
+    model = ET.SubElement(diagram, "mxGraphModel", dx=num(W), dy=num(H), grid="0", gridSize="10", guides="1", tooltips="1",
+                          connect="1", arrows="1", fold="1", page="1", pageScale="1", pageWidth=num(W), pageHeight=num(H),
+                          background="#FFFFFF", math="0", shadow="0")
+    root = ET.SubElement(model, "root")
+    ET.SubElement(root, "mxCell", id="0")
+    ET.SubElement(root, "mxCell", id="1", parent="0")
+
+    def cell(id, value, style, x, y, w, h, parent="1", data=None, edge=None):
+        if data is not None:
+            holder = ET.SubElement(root, "object", id=id, label=value, **data)
+            c = ET.SubElement(holder, "mxCell", style=style, parent=parent)
+        else:
+            c = ET.SubElement(root, "mxCell", id=id, value=value, style=style, parent=parent)
+        if edge:
+            c.set("edge", "1"); c.set("source", edge[0]); c.set("target", edge[1])
+            ET.SubElement(c, "mxGeometry", relative="1", **{"as": "geometry"})
+        else:
+            c.set("vertex", "1")
+            ET.SubElement(c, "mxGeometry", x=num(x), y=num(y), width=num(w), height=num(h), **{"as": "geometry"})
+
+    text = f"text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=0;{FONT}"
+    cell("title", esc(title), f"{text}fontSize=24;fontStyle=1;fontColor={INK};", 24, 16, W - 48, 32)
+    cell("subtitle", esc(t["svg_subtitle"]), f"{text}fontSize=14;fontColor={MUTED};", 24, 52, W - 48, 20)
+    for r, (n, phs) in enumerate(stages):
+        a, b = split_stage_name(n)
+        label = f'<b style="font-size:14px;color:{INK}">{esc(a)}{"<br>" + esc(b) if b else ""}</b><br>{phase_range(phs)}'
+        cell(f"stage-{r}", label, f"rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor={RULE};align=left;verticalAlign=top;"
+             f"spacingLeft=8;spacingTop=12;fontSize=12;fontColor={MUTED};{FONT}", 16, rowY[r], W - 32, rows[r])
+    for i, l in enumerate(lanes):
+        lid = l[0]; lx = X0 + i * CW + 6; c = COLOR[lid]
+        label = f'<b style="font-size:15px">{"<br>".join(esc(s) for s in split_lane_name(g["names"][lid]))}</b><br>' \
+                f'<span style="font-size:11.5px;color:{MUTED}">{esc(g["subs"][lid])}</span>'
+        cell(f"lane-{lid}", label, f"swimlane;html=1;whiteSpace=wrap;startSize={HEAD - TOP};rounded=1;arcSize=8;fillColor={TINT[lid]};"
+             f"swimlaneFillColor=none;strokeColor={c};fontColor={c};collapsible=0;horizontal=1;verticalAlign=middle;{FONT}",
+             lx, TOP, CW - 12, GB - TOP)
+        for n, blid, r, lines, phases in [b for b in box if b[1] == lid]:
+            p = pos[n]
+            cell(f"act-{n}", "<br>".join(esc(s) for s in lines),
+                 f"rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor={TINT[lid]};strokeColor={c};strokeWidth=1.4;align=left;"
+                 f"verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor={INK};{FONT}",
+                 p["x"] - lx, p["y"] - TOP, p["w"], p["h"], parent=f"lane-{lid}",
+                 data=dict(n=str(n), lane=lid, stage=stages[r][0], phases=", ".join(phases)))
+            cell(f"act-{n}-n", str(n), f"ellipse;html=1;fillColor={c};strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;"
+                 f"movable=0;resizable=0;{FONT}", 5, 6, 20, 20, parent=f"act-{n}")
+    for na, nb, kind in g["links"]:
+        a, b = pos[na], pos[nb]
+        if kind == "h":
+            right = b["x"] > a["x"]
+            ports = f"exitX={1 if right else 0};exitY=0.5;entryX={0 if right else 1};entryY=0.5;"
+        else:
+            ports = "exitX=0.5;exitY=1;entryX=0.5;entryY=0;"
+        cell(f"link-{na}-{nb}", "", f"edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;{ports}strokeColor={ARROW};strokeWidth=1.4;"
+             f"endArrow=block;endFill=1;endSize=5;", 0, 0, 0, 0, edge=(f"act-{na}", f"act-{nb}"))
+    cell("notes", "<br>".join(esc(s) for s in t["svg_notes"]), f"{text}fontSize=13;fontColor={MUTED};", 24, GB + 16, W - 48, 20 * len(t["svg_notes"]) + 8)
+    ET.indent(mxfile)
+    return ET.tostring(mxfile, encoding="unicode") + "\n"
 
 
 def png(svg_path, png_path):
@@ -247,15 +352,18 @@ def main():
     OUT.mkdir(exist_ok=True)
     (OUT / "index.html").write_text(page(m, t), encoding="utf-8")
     (OUT / "swimlanes.svg").write_text(svg_swimlanes(m, t), encoding="utf-8")
+    (OUT / "swimlanes.drawio").write_text(drawio_swimlanes(m, t), encoding="utf-8")
     png(OUT / "swimlanes.svg", OUT / "swimlanes.png")
-    print("dist/index.html, swimlanes.svg" + ("" if NO_PNG else ", swimlanes.png"))
+    print("dist/index.html, swimlanes.svg, swimlanes.drawio" + ("" if NO_PNG else ", swimlanes.png"))
     clients = ROOT / "clients"
     for d in sorted(clients.iterdir()) if clients.exists() else []:
         f = d / "instance.json"
         if not f.exists(): continue
         inst = read_json(f); cd = OUT / "clients" / d.name; cd.mkdir(parents=True, exist_ok=True)
         (cd / "index.html").write_text(page(m, t, inst), encoding="utf-8")
-        (cd / "swimlanes.svg").write_text(svg_swimlanes(m, t, inst, tf(t, "svg_client_title", client=inst["client"])), encoding="utf-8")
+        ctitle = tf(t, "svg_client_title", client=inst["client"])
+        (cd / "swimlanes.svg").write_text(svg_swimlanes(m, t, inst, ctitle), encoding="utf-8")
+        (cd / f"swimlanes-{d.name}.drawio").write_text(drawio_swimlanes(m, t, inst, ctitle), encoding="utf-8")
         png(cd / "swimlanes.svg", cd / "swimlanes.png")
         (OUT / f"diff-{d.name}.md").write_text(diff_md(m, t, inst), encoding="utf-8")
         print(f"dist/clients/{d.name}/ and dist/diff-{d.name}.md")
