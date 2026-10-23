@@ -27,7 +27,7 @@ python3 generator/build.py              # builds dist/ (PNG needs playwright)
 python3 generator/build.py --no-png     # HTML, SVG and diff only
 ```
 
-Open `dist/index.html` in a browser. With GitHub Pages pointed at the build workflow, it is published.
+Open `dist/index.html` in a browser. Publishing it on GitHub Pages is optional; see [docs/deployment.md](docs/deployment.md#github-pages-optional).
 
 ## Two places, two uses
 
@@ -44,7 +44,7 @@ Open the repository with Claude Code. `CLAUDE.md` tells it what to read for each
 - `/edit-model` — adds or changes a step, role, credential or variant while respecting IDs and dependencies.
 - `/validate-requirements` — checks the data points with deadlines against Apple's and Google's official pages and updates `docs/validation.md`.
 
-`.github/workflows/check-sources.yml` compares the cited official pages with a stored reference every month and opens an issue if any changed. `build.yml` rebuilds `dist/` and publishes it to GitHub Pages on every push to `main`.
+`.github/workflows/check-sources.yml` compares the cited official pages with a stored reference every month and opens an issue if any changed. `validate.yml` runs the validation and the build on every pull request to `main`.
 
 ## First steps in a new repository
 
@@ -54,7 +54,7 @@ python3 generator/check_sources.py --update   # initial reference of the officia
 git add generator/sources_hash.json && git commit -m "Add sources reference"
 ```
 
-Then, on GitHub: Settings → Pages → Source: *GitHub Actions*. For a private repository without Pages, see [docs/deployment.md](docs/deployment.md).
+Optionally, publish on GitHub Pages and protect `main`: see [docs/deployment.md](docs/deployment.md#github-pages-optional) and [Branch protection](docs/deployment.md#branch-protection).
 
 ## Contributing
 

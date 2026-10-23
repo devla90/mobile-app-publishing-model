@@ -1,3 +1,6 @@
+# Optional: publishes dist/ to GitHub Pages on every push to main.
+# To enable it, copy this file to .github/workflows/build.yml and set
+# Settings → Pages → Source: GitHub Actions. See docs/deployment.md#github-pages-optional.
 name: Build and publish
 
 on:

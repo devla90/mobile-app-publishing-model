@@ -2,7 +2,7 @@
 """Validate model/*.json and clients/*/instance.json: syntax, IDs and cross-references.
 
 Usage: python3 generator/validate.py
-Exit code 1 on any problem. Run it before every commit; the build workflow runs it too.
+Exit code 1 on any problem. Run it before every commit; the validate workflow runs it on every pull request.
 """
 import json, re, subprocess, sys
 from pathlib import Path

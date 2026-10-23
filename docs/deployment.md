@@ -4,11 +4,20 @@
 
 `dist/` is a static site. Options:
 
-- **GitHub Pages.** Settings → Pages → Source: GitHub Actions. `.github/workflows/build.yml` builds `dist/` and publishes it on every push to `main`. On the free plan, Pages only works for public repositories.
+- **GitHub Pages (optional).** Not enabled in this repository; see [GitHub Pages (optional)](#github-pages-optional).
 - **Netlify or Cloudflare Pages.** Publish from a private repository and allow password protection. Build command: `python3 generator/build.py --no-png`. Publish directory: `dist`.
 - **Local.** Open `dist/index.html` in a browser.
 
 The static page keeps clients, versions and dates only in the browser of whoever opens it (`localStorage`, keys prefixed `mapm-`). There is no shared state and no roles.
+
+## GitHub Pages (optional)
+
+The repository does not publish anything by itself. To publish `dist/` from your clone:
+
+1. `cp docs/github-pages/build.yml .github/workflows/build.yml` and commit it.
+2. On GitHub: Settings → Pages → Source: *GitHub Actions*.
+
+The workflow validates, builds with PNG and deploys on every push to `main` that touches `model/`, `clients/` or `generator/`. On the free plan, Pages only works for public repositories.
 
 ## Claude artifact (shared operations)
 
@@ -26,9 +35,16 @@ To regenerate the artifact after changing the model:
 
 ## Branch protection
 
-`main` only changes through pull requests. A ruleset on `main` requires one approval and the `validate` check (`.github/workflows/validate.yml`, which runs `validate.py` and `build.py --no-png`), and blocks force pushes and deletion. Tags `v*` are protected from being moved or deleted. Releases are tagged on `main` with semantic versions (`v1.0.0`).
+Protection is configured by the repository owner on GitHub, not by files in the repository. On the free plan, rulesets only work on public repositories (private ones need GitHub Pro). Recommended setup:
 
-On the free plan, rulesets only work on public repositories.
+1. Settings → Rules → Rulesets → *New branch ruleset*. Name `main`, enforcement *Active*, target *Default branch*. Enable:
+   - *Restrict deletions* and *Block force pushes*.
+   - *Require a pull request before merging*, 1 approval, dismiss stale approvals on new commits.
+   - *Require status checks to pass*: `validate` (from `.github/workflows/validate.yml`, which runs `validate.py` and `build.py --no-png` on every pull request).
+   - If you work alone, add *Repository admin* to the bypass list with mode *For pull requests only*: you can merge your own pull requests, but not push to `main` directly.
+2. *New tag ruleset*. Name `releases`, enforcement *Active*, target pattern `v*`. Enable *Restrict updates*, *Restrict deletions* and *Block force pushes*, so a published version cannot be moved.
+
+Releases are tagged on `main` with semantic versions (`v1.0.0`) and described in `CHANGELOG.md`.
 
 ## Private client instances
 
@@ -61,7 +77,7 @@ git check-ignore -v clients/<id> dist/clients/<id> dist/diff-<id>.md   # all thr
 git status --short                                                    # no line with <id>
 ```
 
-The CI build (`build.yml`) only sees committed files, so GitHub Pages never publishes a real instance.
+CI (`validate.yml` and, if enabled, the optional Pages workflow) only sees committed files, so it never builds or publishes a real instance.
 
 ## Diagram
 

@@ -27,7 +27,7 @@ python3 generator/build.py              # genera dist/ (el PNG requiere playwrig
 python3 generator/build.py --no-png     # solo HTML, SVG y diff
 ```
 
-Abre `dist/index.html` en el navegador. Con GitHub Pages apuntando al workflow de build, queda publicado.
+Abre `dist/index.html` en el navegador. Publicarlo en GitHub Pages es opcional; ver [docs/deployment.md](docs/deployment.md#github-pages-optional).
 
 ## Dos lugares, dos usos
 
@@ -44,7 +44,7 @@ Abre el repositorio con Claude Code. `CLAUDE.md` le dice qué leer según la tar
 - `/edit-model`: agrega o cambia un paso, rol, credencial o variante respetando IDs y dependencias.
 - `/validate-requirements`: revisa en las páginas oficiales de Apple y Google los datos con plazo y actualiza `docs/validation.md`.
 
-La acción `check-sources.yml` compara cada mes las páginas oficiales citadas con una referencia guardada y abre un issue si alguna cambió. `build.yml` regenera `dist/` y la publica en GitHub Pages en cada push a `main`.
+La acción `check-sources.yml` compara cada mes las páginas oficiales citadas con una referencia guardada y abre un issue si alguna cambió. `validate.yml` ejecuta la validación y el build en cada pull request a `main`.
 
 ## Primeros pasos en un repositorio nuevo
 
@@ -54,7 +54,7 @@ python3 generator/check_sources.py --update   # referencia inicial de las fuente
 git add generator/sources_hash.json && git commit -m "Add sources reference"
 ```
 
-Luego, en GitHub: Settings → Pages → Source: *GitHub Actions*.
+Opcionalmente, publica en GitHub Pages y protege `main`: ver [docs/deployment.md](docs/deployment.md#github-pages-optional) y [Branch protection](docs/deployment.md#branch-protection).
 
 ## Origen
 

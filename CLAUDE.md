@@ -56,5 +56,6 @@ generator/         build.py, validate.py, check_sources.py, templates/ (page HTM
 dist/              generated: index.html, swimlanes.svg/.drawio/.png, clients/<id>/, diff-<id>.md
 docs/              model.md, conventions.md, decisions.md, validation.md, deployment.md
 .claude/skills/    instantiate-client, edit-model, validate-requirements
-.github/workflows/ build.yml (Pages), validate.yml (PR check), check-sources.yml (monthly source watch)
+.github/workflows/ validate.yml (PR check), check-sources.yml (monthly source watch)
+docs/github-pages/ build.yml, optional Pages workflow to copy into .github/workflows/
 ```
