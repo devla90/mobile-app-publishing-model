@@ -17,6 +17,7 @@ Why the model is the way it is. One row per decision, newest last.
 | 11 | 2026-10-14 | Repository for the base model; Claude artifact for shared operations | Tracking real clients is internal information and must not sit in a public repository; the artifact already solves sharing and roles |
 | 12 | 2026-10-14 | Repository in English, model content in Spanish, declared with `lang: "es"`; UI strings extracted to `generator/i18n/` | Open-source conventions for anyone contributing structure or code; the content is reviewed by Spanish-speaking business, security and legal teams and translating it without a domain reviewer would introduce errors and double the maintenance. The `lang` field and the i18n file leave the door open to other languages without touching the model |
 | 13 | 2026-10-14 | Enum values in English (`ios`/`android`/`both`, `owner`/`app`/`version`/`cycle`, `high`/`medium`) with labels in the data or i18n file | Code compares against enums; labels are content. Mixing them would force Spanish literals into the code |
+| 14 | 2026-10-22 | Financial features declaration (validation row 31) applies to every app published on Play, not only financial ones; noted on S12.7 | The official page moved (answer/13516546 → 13849271) and states that apps without financial features must also complete it |
 
 ## Decisions still open
 
