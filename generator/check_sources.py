@@ -30,6 +30,8 @@ def urls_in_doc():
 
 def visible_text(body: str) -> str:
     body = re.sub(r"(?is)<(script|style|noscript).*?</\1>", " ", body)
+    # Hidden per-request values (support.google.com sends a new zwieback_id on every load).
+    body = re.sub(r"(?is)<div[^>]*\bdata-page-data-key=[^>]*>.*?</div>", " ", body)
     body = re.sub(r"(?s)<[^>]+>", " ", body)
     return re.sub(r"\s+", "", html.unescape(body))
 

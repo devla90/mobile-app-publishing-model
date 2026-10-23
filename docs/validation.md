@@ -45,7 +45,7 @@ Status: `OK` confirmed at the source · `CORRECTED` the model said otherwise and
 | 28 | Requisito de 12 testers durante 14 días en prueba cerrada aplica solo a cuentas personales creadas desde 2023-11-13, no a organizaciones | S11 nota | OK | https://support.google.com/googleplay/android-developer/answer/14151465 |
 | 29 | Target API: apps nuevas y actualizaciones deben apuntar a API 36 desde 2026-08-31; extensión hasta 2026-11-01 | S8, R21 | OK | https://support.google.com/googleplay/android-developer/answer/11926878 |
 | 30 | Sign-in details para revisores: hasta 5 juegos de credenciales en App content | S12, S14 | OK | https://support.google.com/googleplay/android-developer/answer/9859455 |
-| 31 | Declaración de funciones financieras (Financial features) obligatoria para apps de banca, préstamos y pagos | S12.4 | OK | https://support.google.com/googleplay/android-developer/answer/13516546 |
+| 31 | Declaración de funciones financieras (Financial features) obligatoria para toda app publicada en Play, aunque no ofrezca funciones financieras; exentos los servicios del sistema y las apps privadas | S12.7 | CORRECTED (2026-10-22: previously "obligatoria para apps de banca, préstamos y pagos", used in S12.4; source moved from answer/13516546) | https://support.google.com/googleplay/android-developer/answer/13849271 |
 | 32 | Verificación de desarrolladores Android fuera de Play: obligatoria desde 2026-09 en Brasil, Indonesia, Singapur y Tailandia; global en 2027 | V13 nota | OK | https://developer.android.com/developer-verification |
 | 33 | Tiempo de revisión de Google Play: "normalmente hasta 7 días, puede ser más" | S14 tiempos | OK | https://support.google.com/googleplay/android-developer/answer/9859751 |
 
@@ -56,6 +56,8 @@ Status: `OK` confirmed at the source · `CORRECTED` the model said otherwise and
 | 34 | Tiempo total de la etapa "Cuentas y acuerdos": 3 a 8 semanas | NO SOURCE | Estimate: D-U-N-S + enrollment + verification + internal approvals |
 | 35 | Tiempo de preparación de ficha y capturas: 1 a 2 semanas | NO SOURCE | Practice estimate |
 | 36 | Rotación de claves de API de CI y tokens de servicio cada 6 a 12 meses | NO SOURCE | Common internal policy; not a store requirement |
+
+Partial validation 2026-10-22: row 31.
 
 ## How to update
 

@@ -1078,7 +1078,8 @@
         "S5.3",
         "S5.4"
       ],
-      "variants": []
+      "variants": [],
+      "note": "En Play, la declaración de funciones financieras es obligatoria para toda app publicada, aunque no ofrezca ninguna."
     },
     {
       "id": "S12.8",
