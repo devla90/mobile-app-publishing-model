@@ -24,6 +24,12 @@ To regenerate the artifact after changing the model:
 2. Take `dist/index.html`. Remove `<!doctype>`, `<html>`, `<head>` and `<body>` wrappers (the artifact adds them) and the line `window.claude={use:async()=>null};`.
 3. Publish with `capabilities: {db: {}, user: {}}`. `generator/templates/page_logic.js` already contains the `db` logic with local fallback.
 
+## Branch protection
+
+`main` only changes through pull requests. A ruleset on `main` requires one approval and the `validate` check (`.github/workflows/validate.yml`, which runs `validate.py` and `build.py --no-png`), and blocks force pushes and deletion. Tags `v*` are protected from being moved or deleted. Releases are tagged on `main` with semantic versions (`v1.0.0`).
+
+On the free plan, rulesets only work on public repositories.
+
 ## Private client instances
 
 Real instances hold internal information and never go into this repository. Only `clients/example/` and its output are versioned; `.gitignore` excludes every other `clients/<id>/`, `dist/clients/<id>/` and `dist/diff-<id>.md`.

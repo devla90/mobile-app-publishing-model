@@ -1,0 +1,22 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # Required status check for main: model and instances valid, page and diagrams build.
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate JSON, cross-references and private instances
+        run: python3 generator/validate.py
+      - name: Build dist/ (no PNG)
+        run: python3 generator/build.py --no-png
