@@ -46,6 +46,8 @@ Open the repository with Claude Code. `CLAUDE.md` tells it what to read for each
 
 `.github/workflows/check-sources.yml` compares the cited official pages with a stored reference every month and opens an issue if any changed. `validate.yml` runs the validation and the build on every pull request to `main`.
 
+Store data (deadlines, limits, costs) was last validated against official sources on 2026-10-14; see [docs/validation.md](docs/validation.md).
+
 ## First steps in a new repository
 
 ```bash
@@ -60,6 +62,6 @@ Optionally, publish on GitHub Pages and protect `main`: see [docs/deployment.md]
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Changes to data points with a deadline, limit or cost must cite an official source in `docs/validation.md`.
 
-## Origin
+## License
 
-Built with Claude in October 2026 for a digital-channels team. Data validated against official sources on 2026-10-14; see [docs/validation.md](docs/validation.md).
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

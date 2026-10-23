@@ -46,6 +46,8 @@ Abre el repositorio con Claude Code. `CLAUDE.md` le dice qué leer según la tar
 
 La acción `check-sources.yml` compara cada mes las páginas oficiales citadas con una referencia guardada y abre un issue si alguna cambió. `validate.yml` ejecuta la validación y el build en cada pull request a `main`.
 
+Los datos de las tiendas (plazos, límites, costos) se validaron por última vez contra fuentes oficiales el 14 de octubre de 2026; ver [docs/validation.md](docs/validation.md).
+
 ## Primeros pasos en un repositorio nuevo
 
 ```bash
@@ -56,6 +58,6 @@ git add generator/sources_hash.json && git commit -m "Add sources reference"
 
 Opcionalmente, publica en GitHub Pages y protege `main`: ver [docs/deployment.md](docs/deployment.md#github-pages-optional) y [Branch protection](docs/deployment.md#branch-protection).
 
-## Origen
+## Licencia
 
-Construido con Claude en octubre de 2026 para un área de canales digitales. Datos validados contra fuentes oficiales el 14 de octubre de 2026; ver `docs/validation.md`.
+Apache License 2.0. Ver [LICENSE](LICENSE) y [NOTICE](NOTICE).
