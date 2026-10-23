@@ -4,9 +4,11 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-22
+
 ### Fixed
 - Validation row 31: the Google Play financial features declaration is required for every published app, not only financial ones; source moved to `answer/13849271`. Note added to S12.7.
-- `check_sources.py` ignored no per-request values, so every support.google.com page was reported as changed on each run; the hidden `data-page-data-key` blocks are now stripped before hashing.
+- `check_sources.py` hashed a hidden per-request id on support.google.com, so every Google page was reported as changed on each run; the hidden `data-page-data-key` blocks are now stripped before hashing.
 
 ## [1.0.1] - 2026-10-22
 
