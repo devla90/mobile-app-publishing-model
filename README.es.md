@@ -56,6 +56,10 @@ git add generator/sources_hash.json && git commit -m "Add sources reference"
 
 Opcionalmente, publica en GitHub Pages y protege `main`: ver [docs/deployment.md](docs/deployment.md#github-pages-optional) y [Branch protection](docs/deployment.md#branch-protection).
 
+## Licencia
+
+Apache License 2.0. Ver [LICENSE](LICENSE) y [NOTICE](NOTICE).
+
 ## Origen
 
 Construido con Claude en octubre de 2026 para un área de canales digitales. Datos validados contra fuentes oficiales el 14 de octubre de 2026; ver `docs/validation.md`.

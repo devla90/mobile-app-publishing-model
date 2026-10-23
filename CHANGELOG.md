@@ -4,6 +4,10 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- Apache License 2.0 (`LICENSE`, `NOTICE`).
+- Initial reference of the official sources (`generator/sources_hash.json`).
+
 ## [1.0.0] - 2026-10-22
 
 ### Added
