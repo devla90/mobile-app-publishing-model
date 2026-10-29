@@ -1,0 +1,32 @@
+{
+  "client": "<display name>",
+  "lang": "<content-lang>",
+  "description": "Instance of <client>. Reference date: <YYYY-MM-DD>. Write only what differs from the base model; everything else is inherited.",
+  "regulatory_profile": "PR-<SECTOR>-<COUNTRY>",
+  "lanes": {
+    "L1": "<business area that owns the process>",
+    "L2": "<IT area>",
+    "L3": "<in-house team or vendor that executes>",
+    "L4": "<security area>",
+    "L5": "<legal, compliance and risk>",
+    "L6": "<legal representation and finance>",
+    "L7": "<external parties>"
+  },
+  "variants": {
+    "V1": "a"
+  },
+  "open_variants": {
+    "V2": "<assumed option and why>. Closes in session <n> (question <q>)."
+  },
+  "renewals": {
+    "R01": "<YYYY-MM-DD>"
+  },
+  "decisions": [
+    {
+      "date": "<YYYY-MM-DD>",
+      "decision": "<what was decided>",
+      "owner": "<area, never a person>",
+      "rationale": "<why>"
+    }
+  ]
+}
