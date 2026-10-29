@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-29
+
 ### Changed
 - Each client's page, diagrams and diff are written to `clients/<id>/dist/` (`index.html`, `swimlanes.svg`, `swimlanes-<id>.drawio`, `swimlanes.png`, `diff.md`) instead of `dist/clients/<id>/` and `dist/diff-<id>.md`. A private client folder now holds its documents and its output together. `validate.py` flags anything left tracked under the old paths.
 
