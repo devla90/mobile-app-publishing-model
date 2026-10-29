@@ -14,6 +14,23 @@ problems = []
 say = lambda msg: problems.append(msg)
 
 
+def check_plan(where, acts):
+    """acts: {id: (min, max, after, continuous)}. Durations are whole days >= 0, every `after` exists, no cycles."""
+    for i, (mn, mx, after, cont) in acts.items():
+        if not cont and not (isinstance(mn, int) and isinstance(mx, int) and 0 <= mn <= mx):
+            say(f"{where}: activity {i} needs whole-day durations with 0 <= min <= max")
+        for a in after:
+            if a not in acts: say(f"{where}: activity {i} waits for unknown activity {a}")
+    state = {}
+    def visit(i, path):
+        if state.get(i) == 1: say(f"{where}: dependency cycle {' -> '.join(path + [i])}"); return
+        if state.get(i) == 2 or i not in acts: return
+        state[i] = 1
+        for a in acts[i][2]: visit(a, path + [i])
+        state[i] = 2
+    for i in acts: visit(i, [])
+
+
 def load(path):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -88,6 +105,9 @@ for m in files["milestones"]["milestones"]:
     for c in m["checks"]:
         if c["step"] not in step_ids: say(f"milestones: check {c['id']} points to unknown step {c['step']}")
 n_stages = len(phases["stages"])
+base_plan = {str(a["n"]): (a.get("duration", {}).get("min"), a.get("duration", {}).get("max"), [str(x) for x in a.get("after", [])],
+                           a.get("continuous", False)) for a in files["diagram"]["activities"]}
+check_plan("diagram", base_plan)
 for a in files["diagram"]["activities"]:
     if a["lane"] not in lanes: say(f"diagram: activity {a['n']} unknown lane {a['lane']}")
     if not 0 <= a["stage"] < n_stages: say(f"diagram: activity {a['n']} stage index out of range")
@@ -112,6 +132,23 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
     if "start_date" in inst:
         try: date.fromisoformat(str(inst["start_date"]))
         except ValueError: say(f"{rel}: start_date must be a valid YYYY-MM-DD date")
+    # Plan: overrides of base activities and the client's own activities (docs/conventions.md#durations-and-the-timeline)
+    acts = dict(base_plan)
+    for x in inst.get("extra_activities", []):
+        xid = str(x.get("id", ""))
+        if not xid or xid in base_plan: say(f"{rel}: extra activity needs an id not used by the model ('{xid}')"); continue
+        if x.get("lane") not in lanes: say(f"{rel}: extra activity {xid} has unknown lane {x.get('lane')}")
+        if not x.get("name"): say(f"{rel}: extra activity {xid} has no name")
+        acts[xid] = (x.get("min"), x.get("max"), [str(a) for a in x.get("after", [])], False)
+    for k, o in inst.get("plan", {}).items():
+        if k not in acts: say(f"{rel}: plan names unknown activity {k}"); continue
+        mn, mx, after, cont = acts[k]
+        acts[k] = (o.get("min", mn), o.get("max", mx), [str(a) for a in o.get("after", after)], cont)
+        d = o.get("done")
+        if d is not None and d is not True:
+            try: date.fromisoformat(str(d))
+            except ValueError: say(f"{rel}: plan {k} done must be true or a YYYY-MM-DD date")
+    check_plan(str(rel), acts)
 
 # Real client instances must never be versioned (docs/deployment.md#private-client-instances).
 # Checks the git index, so a forced `git add -f` is caught before the commit. Skipped outside a git checkout.

@@ -87,6 +87,14 @@ python3 generator/build.py --no-png
 
 ## Durations and the timeline
 
-`duration.min` and `duration.max` of each phase in `phases.json` are calendar days. The page orders phases by the `depends_on` of their steps: a phase starts when the earlier phases it depends on have finished; a dependency on a later phase is read as overlap and ignored. A phase with `max` 0 is continuous and left out. Changing a duration or a step dependency changes the estimated dates; check the "Cuánto tarda" card after the build.
+The plan works on the 25 diagram activities, not on phases. Each activity in `diagram.json` has `duration.min` and `duration.max` in calendar days and `after`, the activities that must finish before it starts. Activities 22–25 are `continuous` and have no duration. `validate.py` checks that durations are whole days with `min <= max`, that every `after` exists and that there are no cycles.
 
-An instance may set `start_date` (`YYYY-MM-DD`); the client's page then shows the end date of each phase and the estimated first publication.
+The page computes two scenarios separately: fast (every activity at its minimum) and slow (every activity at its maximum), and marks the critical path of the slow one. Phase durations in `phases.json` remain as a reference in the step view.
+
+An instance may set:
+
+- `start_date` (`YYYY-MM-DD`): day 0 of the plan.
+- `plan`: per activity, `min`, `max`, `after` (replaces the base list) and `done` (`true`, meaning finished at `start_date`, or the real date). A finished activity ends on that date and its dependants start from there.
+- `extra_activities`: the client's own activities, with `id` (not a number used by the model), `name`, `lane`, `min`, `max` and `after`. They chain with the model's activities, and a base activity can wait for them through `plan.<n>.after`.
+
+The base model never gets client activities; that keeps it neutral. Edits made on the page are stored per client in the browser or the artifact database; to make them permanent, copy them into `instance.json`.
