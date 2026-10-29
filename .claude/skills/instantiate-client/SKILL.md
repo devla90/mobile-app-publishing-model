@@ -28,7 +28,7 @@ Do not read `model/steps.json`.
 6. **Decisions.** Each agreement with `date`, `decision`, `owner` and `rationale`. This is the record consulted later.
 7. **Regulatory profile.** `PR-<SECTOR>-<COUNTRY>` in uppercase (`PR-RETAIL-XX`). If the `profiles/` folder does not exist, only the name is stored.
 8. Write the file, then run `python3 generator/validate.py && python3 generator/build.py --no-png`.
-9. Deliver: paths of `dist/clients/<id>/index.html`, `swimlanes.svg`, `swimlanes-<id>.drawio` and `dist/diff-<id>.md`. Summarise the diff in three lines: lanes assigned, variants chosen, alerts.
+9. Deliver: paths of `clients/<id>/dist/index.html`, `swimlanes.svg`, `swimlanes-<id>.drawio` and `diff.md`. Summarise the diff in three lines: lanes assigned, variants chosen, alerts.
 
 ## What is not done
 

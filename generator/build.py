@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Build dist/ from model/*.json, clients/*/instance.json and generator/i18n/<lang>.json.
+"""Build the pages and diagrams from model/*.json, clients/*/instance.json and generator/i18n/<lang>.json.
 
-Outputs in dist/:
+Base model, in dist/:
   index.html                  interactive explorer of the base model (state kept in the browser)
   swimlanes.svg / .png        swimlane diagram of the base model
   swimlanes.drawio            the same diagram, editable in draw.io (regenerated on every build)
-  clients/<id>/index.html, swimlanes.svg, swimlanes-<id>.drawio, swimlanes.png   the same, instantiated per client
-                              (the .drawio carries the client id so copies opened together in draw.io stay distinguishable)
-  diff-<id>.md                what each client changes relative to the base
+
+Each client, in clients/<id>/dist/ (next to its instance.json, so a private client folder holds everything):
+  index.html, swimlanes.svg, swimlanes.png   the same, instantiated for the client
+  swimlanes-<id>.drawio       carries the client id so copies opened together in draw.io stay distinguishable
+  diff.md                     what the client changes relative to the base
 
 Usage:  python3 generator/build.py [--no-png] [--lang es]
 Requires Python 3.10+. PNG export needs playwright (pip install playwright && playwright install chromium);
@@ -384,14 +386,14 @@ def main():
     for d in sorted(clients.iterdir()) if clients.exists() else []:
         f = d / "instance.json"
         if not f.exists(): continue
-        inst = read_json(f); cd = OUT / "clients" / d.name; cd.mkdir(parents=True, exist_ok=True)
+        inst = read_json(f); cd = d / "dist"; cd.mkdir(exist_ok=True)
         (cd / "index.html").write_text(page(m, t, inst), encoding="utf-8")
         ctitle = tf(t, "svg_client_title", client=inst["client"])
         (cd / "swimlanes.svg").write_text(svg_swimlanes(m, t, inst, ctitle), encoding="utf-8")
         (cd / f"swimlanes-{d.name}.drawio").write_text(drawio_swimlanes(m, t, inst, ctitle), encoding="utf-8")
         png(cd / "swimlanes.svg", cd / "swimlanes.png")
-        (OUT / f"diff-{d.name}.md").write_text(diff_md(m, t, inst), encoding="utf-8")
-        print(f"dist/clients/{d.name}/ and dist/diff-{d.name}.md")
+        (cd / "diff.md").write_text(diff_md(m, t, inst), encoding="utf-8")
+        print(f"clients/{d.name}/dist/")
 
 
 if __name__ == "__main__":

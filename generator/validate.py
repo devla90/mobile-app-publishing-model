@@ -150,7 +150,8 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
             except ValueError: say(f"{rel}: plan {k} done must be true or a YYYY-MM-DD date")
     check_plan(str(rel), acts)
 
-# Real client instances must never be versioned (docs/deployment.md#private-client-instances).
+# Real client instances and their output (clients/<id>/dist/) must never be versioned (docs/deployment.md#private-client-instances).
+# Client output used to live in dist/clients/ and dist/diff-*.md; nothing may remain tracked there.
 # Checks the git index, so a forced `git add -f` is caught before the commit. Skipped outside a git checkout.
 try:
     tracked = subprocess.run(["git", "ls-files", "--", "clients", "dist/clients", "dist/diff-*.md"], cwd=ROOT,
@@ -158,7 +159,9 @@ try:
 except (OSError, subprocess.CalledProcessError):
     tracked = []
 for p in tracked:
-    if not re.match(r"(clients|dist/clients)/example/|dist/diff-example\.md$", p):
+    if p.startswith("dist/"):
+        say(f"{p}: client output now lives in clients/<id>/dist/; remove the old copy with `git rm --cached`")
+    elif not p.startswith("clients/example/"):
         say(f"{p}: real client instance is versioned; remove it with `git rm --cached` (only example/ may be committed)")
 
 if problems:
