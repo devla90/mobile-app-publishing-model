@@ -13,13 +13,13 @@ const save=()=>{try{localStorage.setItem("mapm-rev",JSON.stringify(rev))}catch(e
 try{const h=location.hash.slice(1);if(byId[h])st.sel=h}catch(e){}
 
 // ---------- Storage: shared db with local fallback
-// clients/{id} = {name, lanes:{L1..L7:text}, variants:{V1..V14:key}, ren:{R01:date}, start:date, createdAt}
+// clients/{id} = {name, lanes:{L1..L7:text}, variants:{V1..V14:key}, ren:{R01:date}, start:date, plan:{<activity>:{min,max,after,done}}, extra:[activity], createdAt}
 // clients/{id}/versions/{vid} = {name, checks:{c1:1}, status:{m1:"blk"}, notes:{m1:text}, createdAt}
 let db=null,dbUser=null,canWrite=true;
 let clients={},versions={};
 const LS=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
 const LSW=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-function loadLocal(){clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(typeof PRESET_CLIENT!=="undefined"&&PRESET_CLIENT&&!clients.preset){clients.preset=PRESET_CLIENT;LSW("mapm-clients",clients)}if(typeof PRESET_CLIENT!=="undefined"&&PRESET_CLIENT&&!st.client)st.client="preset"}
+function loadLocal(){clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(typeof PRESET_CLIENT!=="undefined"&&PRESET_CLIENT){if(!clients.preset)clients.preset=PRESET_CLIENT;else{const p=clients.preset;p.extra=PRESET_CLIENT.extra;if(!p.plan&&PRESET_CLIENT.plan)p.plan=PRESET_CLIENT.plan;if(!p.start&&PRESET_CLIENT.start)p.start=PRESET_CLIENT.start}LSW("mapm-clients",clients)}if(typeof PRESET_CLIENT!=="undefined"&&PRESET_CLIENT&&!st.client)st.client="preset"}
 const uid=()=>Math.random().toString(36).slice(2,10);
 async function putClient(id,data){clients[id]=data;if(db&&canWrite){try{await db.doc("clients/"+id).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-clients",clients)}
 async function putVersion(cid,vid,data){versions[cid]=versions[cid]||{};versions[cid][vid]=data;if(db&&canWrite){try{await db.doc("clients/"+cid+"/versions/"+vid).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-versions",versions)}
@@ -40,7 +40,7 @@ function linkify(t){return esc(t).replace(/\b([ACF]\d{2}|S\d{1,2}\.\d{1,2})\b/g,
   if(k==="A")lab=A[m];else if(k==="C")lab=C[m]&&C[m][0];else if(k==="F")lab=F[m]&&F[m][0];else lab=byId[m]&&byId[m].name;
   if(!lab)return m;return `<button class="chip" data-go="${k==="S"?"step":k}:${m}"><b>${m}</b>${k==="S"?"":esc(lab)}</button>`})}
 function toast(t){const el=document.getElementById("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2400)}
-function setTab(t){st.tab=t;[["ov",tabOv,ovView],["vr",tabVr,vrView],["dt",tabDt,dtView],["in",tabIn,inView],["rn",tabRn,rnView]].forEach(([k,b,v])=>{b.setAttribute("aria-selected",k===t);v.hidden=k!==t})}
+function setTab(t){st.tab=t;[["ov",tabOv,ovView],["rm",tabRm,rmView],["vr",tabVr,vrView],["dt",tabDt,dtView],["in",tabIn,inView],["rn",tabRn,rnView]].forEach(([k,b,v])=>{b.setAttribute("aria-selected",k===t);v.hidden=k!==t})}
 function go(id,scroll){st.sel=id;st.view=null;try{history.replaceState(null,"","#"+id)}catch(e){}setTab("dt");render();
   if(scroll){const el=rail.querySelector(`[data-id="${CSS.escape(id)}"]`);el&&el.scrollIntoView({block:"nearest"})}
   if(matchMedia("(max-width:860px)").matches&&scroll!==false)detail.scrollIntoView({block:"start"})}
@@ -79,17 +79,100 @@ function renderPairs(){
   const hits=PAIRS.filter(([a,b])=>same(a,b));
   el.innerHTML=hits.map(([a,b,risk,sev])=>`<div class="alert"><b>${esc(tf("pair_alert",{a:A[a],b:A[b],lane:laneLabel(laneOfRole[a]),sev:T.severity[sev]||sev}))}</b>${esc(risk)}.${esc(T.pair_alert_tail)}</div>`).join("");
 }
-// Timeline: SCHED gives [start_min, end_min, start_max, end_max] in days per phase (see schedule() in build.py).
-const startDate=()=>{const c=cur();return c?(c.start||""):(LS("mapm-start")||"")};
-async function setStart(v){const c=cur();if(c){const n={...c};if(v)n.start=v;else delete n.start;await putClient(st.client,n)}else LSW("mapm-start",v||null);renderTimeline()}
+// ---------- Plan by activity
+// ACT rows: [id, name, lane, min, max, after[], continuous, per_version]. A client may override min/max/after,
+// mark an activity done (date or true) and add its own activities (extra). Two scenarios are computed apart:
+// fast (every activity at its min) and slow (every activity at its max).
+const planSrc=()=>{const c=cur();return c?{start:c.start||"",plan:c.plan||{},extra:c.extra||[]}:{start:LS("mapm-start")||"",plan:LS("mapm-plan")||{},extra:[]}};
+async function savePlan(start,plan){const c=cur();if(c){const n={...c,plan};if(start)n.start=start;else delete n.start;await putClient(st.client,n)}else{LSW("mapm-start",start||null);LSW("mapm-plan",plan)}renderTimeline();renderRoadmap()}
+function planActs(src,ignoreDone){
+  const base=ACT.map((r,i)=>({id:r[0],name:r[1],lane:r[2],min:r[3],max:r[4],after:r[5],cont:r[6],ver:r[7],extra:false,i}));
+  const ext=src.extra.map((x,j)=>({id:String(x.id),name:x.name,lane:x.lane,min:x.min,max:x.max,after:(x.after||[]).map(String),cont:false,ver:false,extra:true,i:ACT.length+j}));
+  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,min:o.min??a.min,max:o.max??a.max,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null)}});
+}
+const dayOf=(start,iso)=>start&&typeof iso==="string"?Math.round((new Date(iso+"T00:00:00")-new Date(start+"T00:00:00"))/DAY):0;
+function planCalc(list,start){
+  const by=Object.fromEntries(list.map(a=>[a.id,a]));const r={};
+  const go=(id,seen)=>{if(r[id])return r[id];const a=by[id];if(!a||seen.has(id))return null;seen.add(id);
+    const prev=a.after.map(x=>go(x,seen)).filter(Boolean);const f0=Math.max(0,...prev.map(p=>p.fe)),s0=Math.max(0,...prev.map(p=>p.se));
+    if(a.done){const d=dayOf(start,a.done);return r[id]={fs:d,fe:d,ss:d,se:d,done:true}}
+    return r[id]=a.cont?{fs:f0,fe:f0,ss:s0,se:s0}:{fs:f0,fe:f0+a.min,ss:s0,se:s0+a.max}};
+  list.forEach(a=>go(a.id,new Set()));
+  // Critical path of the slow scenario: no slack between an activity and the latest finish it can have.
+  const work=list.filter(a=>!a.cont&&!a.done);const endS=Math.max(0,...work.map(a=>r[a.id].se));const lf={};
+  [...work].sort((x,y)=>r[y.id].se-r[x.id].se).forEach(a=>{const succ=work.filter(b=>b.after.includes(a.id));lf[a.id]=succ.length?Math.min(...succ.map(b=>lf[b.id]-b.max)):endS});
+  work.forEach(a=>r[a.id].crit=lf[a.id]-r[a.id].se===0);
+  return{r,endF:Math.max(0,...work.map(a=>r[a.id].fe)),endS};
+}
 function renderTimeline(){
-  const el=document.getElementById("timeline");const ids=Object.keys(SCHED);const end=Math.max(...ids.map(p=>SCHED[p][3]))||1;
-  const s0=startDate();const fd=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
-  const pct=n=>n/end*100;
-  const rows=ids.map(pid=>{const[a0,a1,b0,b1]=SCHED[pid];const[mn,mx,why]=TIME[pid];const p=PH.find(x=>x[0]===pid);
-    return `<div class="tlrow"><div class="nm">${esc(p[1])}<small>${pid} · ${esc(FREQ[p[2]])}${why?" · "+esc(why):""}</small></div><div class="trk"><span class="mx" style="left:${pct(b0)}%;width:${pct(b1-b0)}%"></span><span style="left:${pct(a0)}%;width:${pct(a1-a0)}%"></span></div><div class="tm"><b>${mn}–${mx}</b> ${T.tl_days}${s0?`<small>${tf("tl_ends",{a:fd(a1),b:fd(b1)})}</small>`:""}</div></div>`}).join("");
-  const fmn=Math.max(...ids.map(p=>SCHED[p][1])),fmx=end;const vids=Object.keys(SCHED_VER);const vmn=Math.max(0,...vids.map(p=>SCHED_VER[p][1])),vmx=Math.max(0,...vids.map(p=>SCHED_VER[p][3]));
-  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label>${rows}<div class="tlsum"><span><b>${fmn}–${fmx} ${T.tl_days}</b> ${T.tl_first}</span>${s0?`<span><b>${tf("tl_golive",{a:fd(fmn),b:fd(fmx)})}</b></span>`:""}<span><b>${vmn}–${vmx} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_parallel}</span></div>`;
+  const el=document.getElementById("timeline");const src=planSrc();const s0=src.start;const list=planActs(src);const{r,endF,endS}=planCalc(list,s0);
+  const fd=n=>{if(!s0)return tf("tl_day_n",{n});const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"2-digit"})};
+  const lo=Math.min(0,...list.map(a=>r[a.id].fs)),span=Math.max(1,endS-lo);const pct=n=>(n-lo)/span*100;
+  const rows=[...list].sort((x,y)=>r[x.id].ss-r[y.id].ss||r[x.id].fs-r[y.id].fs||x.i-y.i).map(a=>{const q=r[a.id];
+    const bar=(s,e,cls,lab)=>`<div class="pbar"><i>${lab}</i><span class="${cls}" style="left:${pct(s)}%;width:${a.cont?100-pct(s):Math.max(pct(e)-pct(s),.6)}%"></span></div>`;
+    const when=(s,e)=>a.cont?tf("tl_continuous",{d:fd(s)}):a.done?fd(e):`${fd(s)} → ${fd(e)}`;
+    const days=a.cont||a.done?"":`<input type="number" min="0" step="1" value="${a.min}" data-act="${esc(a.id)}" data-f="min" aria-label="${T.tl_min} ${esc(a.id)}"><span>/</span><input type="number" min="0" step="1" value="${a.max}" data-act="${esc(a.id)}" data-f="max" aria-label="${T.tl_max} ${esc(a.id)}">`;
+    const done=a.cont?"":`<label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done" ${a.done?"checked":""}> ${T.tl_h_done}</label>${a.done?`<input type="date" data-act="${esc(a.id)}" data-f="doneDate" value="${typeof a.done==="string"?esc(a.done):esc(s0)}" aria-label="${T.tl_done_on}">`:""}`;
+    return `<div class="prow${q.crit?" crit":""}${a.done?" done":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.id)}</b><span>${esc(a.name)}${a.extra?`<small>${T.tl_extra}</small>`:""}<small>${esc(laneLabel(a.lane))}</small></span></div><div class="pdays">${days}</div><div class="pdone-c">${done}</div><div class="pwhen"><span><em>${T.tl_h_fast}</em>${when(q.fs,q.fe)}</span><span><em>${T.tl_h_slow}</em>${when(q.ss,q.se)}</span></div><div class="ptrack">${a.done?bar(q.fs,q.fe,"d","✓"):bar(q.fs,q.fe,"f",T.tl_fast_short)+bar(q.ss,q.se,"s",T.tl_slow_short)}</div></div>`}).join("");
+  const ver=planActs(src,true).filter(a=>a.ver&&!a.cont);const vids=new Set(ver.map(a=>a.id));const vc=planCalc(ver.map(a=>({...a,after:a.after.filter(x=>vids.has(x))})),"");
+  const crit=[...list].filter(a=>r[a.id].crit).sort((x,y)=>r[x.id].ss-r[y.id].ss).map(a=>a.id).join(" → ");
+  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div><div class="ptools"><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label><button class="btn" type="button" id="tlReset">${T.tl_reset}</button>${cur()?"":`<span class="plain">${T.tl_noclient}</span>`}</div>
+  <div class="phead"><span>${T.tl_h_act}</span><span>${T.tl_h_days}</span><span>${T.tl_h_done}</span><span>${T.tl_h_fast} · ${T.tl_h_slow}</span></div>${rows}
+  <div class="tlsum"><span><b>${T.tl_end}:</b> ${T.tl_end_fast} <b>${fd(endF)}</b> · ${T.tl_end_slow} <b>${fd(endS)}</b>${s0?"":` (${endF}–${endS} ${T.tl_days})`}</span><span><b>${vc.endF}–${vc.endS} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_critical} ${esc(crit)}</span></div>`;
+}
+function onPlanChange(e){
+  const t=e.target;const src=planSrc();
+  if(t.id==="tlStart"){savePlan(t.value,src.plan);return}
+  const id=t.dataset.act,f=t.dataset.f;if(!id)return;const plan={...src.plan};const o={...(plan[id]||{})};
+  const a=planActs(src).find(x=>x.id===id);const base=ACT.find(x=>x[0]===id);const ext=src.extra.find(x=>String(x.id)===id);const def=base?{min:base[3],max:base[4]}:{min:ext.min,max:ext.max};
+  if(f==="min"||f==="max"){const v=Math.max(0,parseInt(t.value,10)||0);o[f]=v;if(f==="min"&&v>(o.max??a.max))o.max=v;if(f==="max"&&v<(o.min??a.min))o.min=v;
+    if(o.min===def.min)delete o.min;if(o.max===def.max)delete o.max}
+  if(f==="done"){if(t.checked)o.done=src.start||new Date().toISOString().slice(0,10);else delete o.done}
+  if(f==="doneDate"&&t.value)o.done=t.value;
+  if(Object.keys(o).length)plan[id]=o;else delete plan[id];savePlan(src.start,plan);
+}
+async function resetPlan(){const c=cur();const p=st.client==="preset"&&PRESET_CLIENT?PRESET_CLIENT:null;
+  if(c){const n={...c,plan:p&&p.plan?p.plan:{}};if(p&&p.start)n.start=p.start;await putClient(st.client,n)}else{LSW("mapm-plan",{});}renderTimeline();renderRoadmap();toast(T.tl_reset_done)}
+
+// ---------- Roadmap (executive view of the same plan)
+// Committed dates are the slow scenario; status is computed against today.
+function renderRoadmap(){
+  const el=document.getElementById("roadmap");const src=planSrc();const s0=src.start;const c=cur();
+  if(!s0){el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2></div></div><p class="plain">${T.rm_need_start}</p>`;return}
+  const list=planActs(src);const{r,endF,endS}=planCalc(list,s0);const today=dayOf(s0,new Date().toISOString().slice(0,10));
+  const fd=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
+  const status=a=>{const q=r[a.id];if(a.done)return"done";if(a.cont)return q.ss<=today?"now":"todo";if(q.se<today)return"late";if(q.ss<=today)return"now";return"todo"};
+  const work=list.filter(a=>!a.cont);const cnt={done:0,now:0,todo:0,late:0};work.forEach(a=>cnt[status(a)]++);
+  // Stage of each activity: its diagram stage; client activities take the latest stage among what they wait for.
+  const stageOf={};ACT.forEach(a=>{const b=BOX.find(x=>String(x[0])===a[0]);stageOf[a[0]]=b?b[2]:0});
+  const st2=id=>{if(stageOf[id]!==undefined)return stageOf[id];const a=list.find(x=>x.id===id);stageOf[id]=-1;const v=Math.max(0,...(a?a.after:[]).map(st2));return stageOf[id]=v};
+  list.forEach(a=>st2(a.id));
+  const lo=Math.min(0,...list.map(a=>r[a.id].fs)),hi=Math.max(endS,today)+14,span=hi-lo;const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
+  // Month ticks
+  let ticks="",labels="";const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+lo);d.setDate(1);d.setMonth(d.getMonth()+1);
+  for(let k=0;k<24;k++){const n=dayOf(s0,d.toISOString().slice(0,10));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"2-digit"})}</span>`;d.setMonth(d.getMonth()+1)}
+  const inRange=today>=lo&&today<=hi;const todayLine=inRange?`<span class="gtoday" style="left:${pct(today)}%"></span>`:"";const todayMark=inRange?`<span class="gtoday" style="left:${pct(today)}%"><i>${T.rm_today}</i></span>`:"";
+  const stEnd=STAGES.map((g,i)=>{const acts=work.filter(a=>stageOf[a.id]===i);return acts.length?{i,name:g[0],end:Math.max(...acts.map(a=>r[a.id].se)),done:acts.every(a=>a.done)}:null}).filter(Boolean);
+  const ms=stEnd.map(m=>`<span class="gms${m.done?" done":""}" style="left:${pct(m.end)}%" title="${esc(tf("rm_stage_end",{s:m.name}))}: ${fd(m.end)}"></span>`).join("");
+  let rows=`<div class="grow"><div class="gl"><b>◆</b>${T.rm_milestones}</div><div class="gt">${ticks}${ms}${todayLine}</div></div>`;
+  STAGES.forEach((g,i)=>{const acts=list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].ss-r[y.id].ss||x.i-y.i);if(!acts.length)return;
+    rows+=`<div class="grow stg"><div class="gl">${esc(g[0])}</div><div class="gt">${ticks}${todayLine}</div></div>`;
+    acts.forEach(a=>{const q=r[a.id];const s=status(a);const tip=a.done?tf("rm_done_on",{d:fd(q.se)}):a.cont?tf("tl_continuous",{d:fd(q.ss)}):`${tf("rm_until",{a:fd(q.ss),b:fd(q.se)})} (${T.tl_end_fast} ${fd(q.fe)})`;
+      const left=pct(q.ss),w=a.cont?100-left:Math.max(pct(q.se)-left,.5);
+      rows+=`<div class="grow"><div class="gl" title="${esc(a.name)}"><b>${esc(a.id)}</b>${esc(a.name)}</div><div class="gt">${ticks}<span class="gbar ${a.cont?"cont":s}${q.crit?" crit":""}" style="left:${left}%;width:${w}%" title="${esc(a.id+" · "+a.name+" · "+tip)}"></span>${todayLine}</div></div>`})});
+  const li=(arr,fn)=>arr.length?`<ul>${arr.map(fn).join("")}</ul>`:`<p class="plain">${T.rm_none}</p>`;
+  const done=work.filter(a=>a.done).sort((x,y)=>r[x.id].se-r[y.id].se);
+  const soon=work.filter(a=>!a.done&&status(a)!=="late"&&r[a.id].ss<=today+30).sort((x,y)=>r[x.id].ss-r[y.id].ss);
+  const late=work.filter(a=>status(a)==="late");
+  const pctDone=work.length?Math.round(cnt.done/work.length*100):0;const left=Math.max(0,endS-today);
+  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}</div></div><button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div>
+  <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(endS)}</b><span>${tf("rm_best",{d:fd(endF)})} · ${tf("rm_left",{n:left})}</span></div></div>
+  <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
+  <div class="gantt"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div></div>${rows}</div></div>
+  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_milestones}</span></div>
+  <div class="rmcols"><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.id)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].se)})}</small></li>`)}</div>
+  <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.id)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].ss),b:fd(r[a.id].se)})}</small></li>`)}</div>
+  <div><h3>${T.rm_list_late}</h3>${li(late,a=>`<li><b>${esc(a.id)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].ss),b:fd(r[a.id].se)})}</small></li>`)}</div></div>`;
 }
 
 // ---------- Track a version (milestones)
@@ -202,7 +285,7 @@ function renderFilterChip(){const ph=st.phases.length===1?`${st.phases[0]} ${PH.
 function renderClients(){const ids=Object.keys(clients).sort((a,b)=>(clients[a].name||"").localeCompare(clients[b].name||""));clientSel.innerHTML=`<option value="">${T.client_base_option}</option>`+ids.map(i=>`<option value="${i}" ${i===st.client?"selected":""}>${esc(clients[i].name)}</option>`).join("")}
 
 // ---------- Global render
-function render(){renderClients();renderSwim();renderPairs();renderTimeline();renderVer();renderInst();renderRen();renderFilterChip();renderRail();st.view?renderEntity(...st.view):renderStep()}
+function render(){renderClients();renderSwim();renderPairs();renderTimeline();renderRoadmap();renderVer();renderInst();renderRen();renderFilterChip();renderRail();st.view?renderEntity(...st.view):renderStep()}
 
 // ---------- Events
 clientSel.addEventListener("change",()=>{st.client=clientSel.value;st.version="";subscribeVersions(st.client);render()});
@@ -210,7 +293,7 @@ newClientBtn.addEventListener("click",newClient);
 document.getElementById("createClientBtn").addEventListener("click",()=>createClient(document.getElementById("newClientName").value.trim()));
 document.getElementById("newClientName").addEventListener("keydown",e=>{if(e.key==="Enter")createClient(e.target.value.trim())});
 home.addEventListener("click",e=>{const d=e.target.closest("[data-door]");if(!d)return;setTab(d.dataset.door);document.querySelector(".tabs").scrollIntoView({block:"start"})});
-[["ov",tabOv],["vr",tabVr],["dt",tabDt],["in",tabIn],["rn",tabRn]].forEach(([k,b])=>b.addEventListener("click",()=>setTab(k)));
+[["ov",tabOv],["rm",tabRm],["vr",tabVr],["dt",tabDt],["in",tabIn],["rn",tabRn]].forEach(([k,b])=>b.addEventListener("click",()=>setTab(k)));
 swim.addEventListener("click",e=>{const g=e.target.closest("[data-box]");if(g)openBox(Number(g.dataset.box))});
 swim.addEventListener("keydown",e=>{const g=e.target.closest("[data-box]");if(g&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openBox(Number(g.dataset.box))}});
 verbar.addEventListener("click",e=>{if(e.target.closest("#newVer"))newVersion();if(e.target.closest("#goInst"))newClient();if(e.target.closest("#createVer"))createVersion(document.getElementById("newVerName").value.trim())});
@@ -223,7 +306,9 @@ ms.addEventListener("click",async e=>{
 ms.addEventListener("change",async e=>{const n=e.target.closest("[data-note]");if(!n)return;const v=verData();if(!v)return;await putVersion(st.client,st.version,{...v,notes:{...(v.notes||{}),[n.dataset.note]:n.value}})});
 instBox.addEventListener("click",e=>{if(e.target.closest("#saveInst"))saveInst();if(e.target.closest("#goNew"))newClient()});
 renlist.addEventListener("change",e=>{const i=e.target.closest("[data-ren]");if(i)setRen(i.dataset.ren,i.value)});
-document.getElementById("timeline").addEventListener("change",e=>{if(e.target.id==="tlStart")setStart(e.target.value)});
+document.getElementById("timeline").addEventListener("change",onPlanChange);
+document.getElementById("roadmap").addEventListener("click",e=>{if(e.target.id==="rmPrint"){setTab("rm");window.print()}});
+document.getElementById("timeline").addEventListener("click",e=>{if(e.target.id==="tlReset")resetPlan()});
 renlist.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(!g)return;const[k,id]=g.dataset.go.split(":");go(id,true)});
 rail.addEventListener("click",e=>{const li=e.target.closest(".step");if(li)go(li.dataset.id,false)});
 rail.addEventListener("keydown",e=>{const li=e.target.closest(".step");if(li&&(e.key==="Enter"||e.key===" ")){e.preventDefault();go(li.dataset.id,false)}});

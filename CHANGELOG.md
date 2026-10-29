@@ -4,6 +4,16 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+- The timeline card becomes "Plan y fechas": it plans the 25 diagram activities instead of phases, with editable min/max days, activities marked done with their real date, fast and slow scenarios in separate columns, and the critical path. Each activity has `duration` and `after` in `diagram.json` (first publication 24–127 days).
+
+### Added
+- "Roadmap" tab: executive view of the same plan with progress, status counts (done, in progress, pending, late against today), estimated end, a Gantt by stage with milestones and today's line, and lists of what was done, what comes in the next 30 days and what is late. Printable to PDF.
+- `plan` and `extra_activities` in `instance.json` to adjust days, mark done activities and add client-only activities; checked by `validate.py` and listed in the client diff.
+
+### Removed
+- `schedule()` in `build.py`: the plan is computed in the page from the activities.
+
 ## [1.1.0] - 2026-10-29
 
 ### Added

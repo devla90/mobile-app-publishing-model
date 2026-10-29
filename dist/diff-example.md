@@ -32,3 +32,9 @@ Ninguna.
 | Fecha | Decisión | Responsable | Motivo |
 | --- | --- | --- | --- |
 | 2026-10-14 | El titular de las cuentas es la entidad, no el proveedor | Canales Digitales | Apple exige que las apps financieras las publique la propia entidad (guía 3.2.1) |
+
+## Plan
+Fecha de inicio: 2026-11-02
+
+| Actividad | Días (mín.–máx.) | Espera a | Hecha |
+| --- | --- | --- | --- |

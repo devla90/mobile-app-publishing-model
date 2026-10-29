@@ -40,7 +40,7 @@ The 19 phases group into 8 stages; this is how the swimlane diagram is drawn.
 | Review and release | S14–S15 | Every version |
 | Operation and renewal | S16–S18 | Continuous |
 
-The page's "Cuánto tarda" card turns the phase durations into a Gantt-style timeline (fast and slow scenario) and, given a start date, into end dates per phase and an estimated first publication. See `docs/conventions.md#durations-and-the-timeline`.
+The page's "Plan y fechas" card plans the 25 diagram activities: editable days per activity, activities marked done, fast and slow scenarios in separate columns, the critical path and, given a start date, real dates. Instances can add their own activities. The "Roadmap" tab shows the same plan as an executive view: progress, status against today, a Gantt by stage with milestones, and what was done, what comes next and what is late. See `docs/conventions.md#durations-and-the-timeline`.
 
 ## Underlying rules
 
