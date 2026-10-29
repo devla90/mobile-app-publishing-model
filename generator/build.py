@@ -29,6 +29,29 @@ def read_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def schedule(pha, stp, only=None):
+    """Earliest start and finish of each phase, in days from the start: [start_min, end_min, start_max, end_max].
+
+    Phase X waits for phase Y when a step of X depends on a step of Y. A dependency on a later phase means the
+    two overlap, so it is ignored and the graph stays acyclic. Phases with max duration 0 are continuous and left out.
+    """
+    order = [p["id"] for p in pha["phases"] if p["duration"]["max"] > 0 and (only is None or p["id"] in only)]
+    pos = {p: i for i, p in enumerate(order)}
+    dur = {p["id"]: (p["duration"]["min"], p["duration"]["max"]) for p in pha["phases"]}
+    after = {p: set() for p in order}
+    for s in stp["steps"]:
+        for d in s["depends_on"]:
+            a, b = s["phase"], d.split(".")[0]
+            if a in pos and b in pos and pos[b] < pos[a]:
+                after[a].add(b)
+    out = {}
+    for p in order:
+        lo = max((out[d][1] for d in after[p]), default=0)
+        hi = max((out[d][3] for d in after[p]), default=0)
+        out[p] = [lo, lo + dur[p][0], hi, hi + dur[p][1]]
+    return out
+
+
 def load_model():
     g = lambda n: read_json(MODEL / n)
     act, cred, art, var, pha, stp, dia, ren, mil = (g(n) for n in [
@@ -46,6 +69,8 @@ def load_model():
     m["TIME"] = {f["id"]: [f["duration"]["min"], f["duration"]["max"], f["duration"]["depends_on"]] for f in pha["phases"]}
     m["STAGES"] = [[e["name"], e["phases"]] for e in pha["stages"]]
     m["VER_PH"] = pha["per_version_phases"]
+    m["SCHED"] = schedule(pha, stp)
+    m["SCHED_VER"] = schedule(pha, stp, set(pha["per_version_phases"]))
     m["S_RAW"] = [[p["id"], p["name"], p["platform"], p["owner"], p["inputs"], p["outputs"],
                    p["depends_on"], ",".join(p["variants"]), p.get("note", "")] for p in stp["steps"]]
     m["BOX"] = [[a["n"], a["lane"], a["stage"], a["lines"], a["phases"]] for a in dia["activities"]]
@@ -100,12 +125,16 @@ def js_data(m, t, instance=None):
     s.append(f'const REN={d(m["REN"])};')
     s.append(f'const PAIRS={d(m["PAIRS"])};')
     s.append(f'const TIME={d(m["TIME"])};')
+    s.append(f'const SCHED={d(m["SCHED"])};')
+    s.append(f'const SCHED_VER={d(m["SCHED_VER"])};')
     s.append(f'const MS={d(m["MS"])};')
     # Static site: no shared db. The Claude artifact build removes the next line (see docs/deployment.md).
     s.append('window.claude={use:async()=>null};')
     if instance:
         inst = {"name": instance["client"], "lanes": instance.get("lanes", {}), "variants": instance.get("variants", {}),
                 "ren": instance.get("renewals", {}), "createdAt": "2026-01-01T00:00:00Z"}
+        if instance.get("start_date"):
+            inst["start"] = instance["start_date"]
         s.append(f'const PRESET_CLIENT={d(inst)};')
     else:
         s.append('const PRESET_CLIENT=null;')

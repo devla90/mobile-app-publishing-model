@@ -3,6 +3,7 @@
   "lang": "es",
   "description": "Instance template. Copy this folder per client. Write only what differs from the base model; everything else is inherited.",
   "regulatory_profile": "PR-<SECTOR>-<PAIS>",
+  "start_date": "2026-11-02",
   "lanes": {
     "L1": "Canales Digitales",
     "L2": "Equipo técnico de Canales Digitales",

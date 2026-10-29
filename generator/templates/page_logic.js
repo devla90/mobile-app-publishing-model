@@ -13,7 +13,7 @@ const save=()=>{try{localStorage.setItem("mapm-rev",JSON.stringify(rev))}catch(e
 try{const h=location.hash.slice(1);if(byId[h])st.sel=h}catch(e){}
 
 // ---------- Storage: shared db with local fallback
-// clients/{id} = {name, lanes:{L1..L7:text}, variants:{V1..V14:key}, ren:{R01:date}, createdAt}
+// clients/{id} = {name, lanes:{L1..L7:text}, variants:{V1..V14:key}, ren:{R01:date}, start:date, createdAt}
 // clients/{id}/versions/{vid} = {name, checks:{c1:1}, status:{m1:"blk"}, notes:{m1:text}, createdAt}
 let db=null,dbUser=null,canWrite=true;
 let clients={},versions={};
@@ -79,12 +79,17 @@ function renderPairs(){
   const hits=PAIRS.filter(([a,b])=>same(a,b));
   el.innerHTML=hits.map(([a,b,risk,sev])=>`<div class="alert"><b>${esc(tf("pair_alert",{a:A[a],b:A[b],lane:laneLabel(laneOfRole[a]),sev:T.severity[sev]||sev}))}</b>${esc(risk)}.${esc(T.pair_alert_tail)}</div>`).join("");
 }
+// Timeline: SCHED gives [start_min, end_min, start_max, end_max] in days per phase (see schedule() in build.py).
+const startDate=()=>{const c=cur();return c?(c.start||""):(LS("mapm-start")||"")};
+async function setStart(v){const c=cur();if(c){const n={...c};if(v)n.start=v;else delete n.start;await putClient(st.client,n)}else LSW("mapm-start",v||null);renderTimeline()}
 function renderTimeline(){
-  const el=document.getElementById("timeline");const first=PH.filter(p=>!["S16","S17","S18"].includes(p[0]));const max=Math.max(...first.map(p=>TIME[p[0]][1]));
-  let mn=0,mx=0,vmn=0,vmx=0;
-  const rows=first.map(([pid,pn,fq])=>{const[a,b,why]=TIME[pid];mn+=a;mx+=b;if(VER_PH.includes(pid)){vmn+=a;vmx+=b}
-    return `<div class="tlrow"><div class="nm">${esc(pn)}<small>${pid} · ${esc(FREQ[fq])}${why?" · "+esc(why):""}</small></div><div class="trk"><span class="mx" style="left:0;width:${b/max*100}%"></span><span style="left:0;width:${a/max*100}%"></span></div><div class="tm"><b>${a}–${b}</b> ${T.tl_days}</div></div>`}).join("");
-  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div>${rows}<div class="tlsum"><span><b>${mn}–${mx} ${T.tl_days}</b> ${T.tl_first}</span><span><b>${vmn}–${vmx} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_parallel}</span></div>`;
+  const el=document.getElementById("timeline");const ids=Object.keys(SCHED);const end=Math.max(...ids.map(p=>SCHED[p][3]))||1;
+  const s0=startDate();const fd=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
+  const pct=n=>n/end*100;
+  const rows=ids.map(pid=>{const[a0,a1,b0,b1]=SCHED[pid];const[mn,mx,why]=TIME[pid];const p=PH.find(x=>x[0]===pid);
+    return `<div class="tlrow"><div class="nm">${esc(p[1])}<small>${pid} · ${esc(FREQ[p[2]])}${why?" · "+esc(why):""}</small></div><div class="trk"><span class="mx" style="left:${pct(b0)}%;width:${pct(b1-b0)}%"></span><span style="left:${pct(a0)}%;width:${pct(a1-a0)}%"></span></div><div class="tm"><b>${mn}–${mx}</b> ${T.tl_days}${s0?`<small>${tf("tl_ends",{a:fd(a1),b:fd(b1)})}</small>`:""}</div></div>`}).join("");
+  const fmn=Math.max(...ids.map(p=>SCHED[p][1])),fmx=end;const vids=Object.keys(SCHED_VER);const vmn=Math.max(0,...vids.map(p=>SCHED_VER[p][1])),vmx=Math.max(0,...vids.map(p=>SCHED_VER[p][3]));
+  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label>${rows}<div class="tlsum"><span><b>${fmn}–${fmx} ${T.tl_days}</b> ${T.tl_first}</span>${s0?`<span><b>${tf("tl_golive",{a:fd(fmn),b:fd(fmx)})}</b></span>`:""}<span><b>${vmn}–${vmx} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_parallel}</span></div>`;
 }
 
 // ---------- Track a version (milestones)
@@ -218,6 +223,7 @@ ms.addEventListener("click",async e=>{
 ms.addEventListener("change",async e=>{const n=e.target.closest("[data-note]");if(!n)return;const v=verData();if(!v)return;await putVersion(st.client,st.version,{...v,notes:{...(v.notes||{}),[n.dataset.note]:n.value}})});
 instBox.addEventListener("click",e=>{if(e.target.closest("#saveInst"))saveInst();if(e.target.closest("#goNew"))newClient()});
 renlist.addEventListener("change",e=>{const i=e.target.closest("[data-ren]");if(i)setRen(i.dataset.ren,i.value)});
+document.getElementById("timeline").addEventListener("change",e=>{if(e.target.id==="tlStart")setStart(e.target.value)});
 renlist.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(!g)return;const[k,id]=g.dataset.go.split(":");go(id,true)});
 rail.addEventListener("click",e=>{const li=e.target.closest(".step");if(li)go(li.dataset.id,false)});
 rail.addEventListener("keydown",e=>{const li=e.target.closest(".step");if(li&&(e.key==="Enter"||e.key===" ")){e.preventDefault();go(li.dataset.id,false)}});

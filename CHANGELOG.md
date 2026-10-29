@@ -4,6 +4,10 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- Timeline with dates: the "Cuánto tarda" card takes a start date (saved per client) and shows when each phase ends in the fast and slow scenario, plus the estimated first publication. Phases run in parallel where step dependencies allow (first publication 24–131 days instead of the sequential 26–141).
+- Optional `start_date` in `instance.json`, checked by `validate.py`.
+
 ## [1.0.2] - 2026-10-22
 
 ### Fixed

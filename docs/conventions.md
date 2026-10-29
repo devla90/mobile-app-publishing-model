@@ -83,4 +83,10 @@ python3 generator/validate.py
 python3 generator/build.py --no-png
 ```
 
-`validate.py` checks JSON syntax, that every `depends_on`, `variants`, `step`, `lane` and role reference exists, that enums are valid, and that client instances only use known lanes, variants and renewals.
+`validate.py` checks JSON syntax, that every `depends_on`, `variants`, `step`, `lane` and role reference exists, that enums are valid, and that client instances only use known lanes, variants and renewals and a valid `start_date`.
+
+## Durations and the timeline
+
+`duration.min` and `duration.max` of each phase in `phases.json` are calendar days. The page orders phases by the `depends_on` of their steps: a phase starts when the earlier phases it depends on have finished; a dependency on a later phase is read as overlap and ignored. A phase with `max` 0 is continuous and left out. Changing a duration or a step dependency changes the estimated dates; check the "Cuánto tarda" card after the build.
+
+An instance may set `start_date` (`YYYY-MM-DD`); the client's page then shows the end date of each phase and the estimated first publication.

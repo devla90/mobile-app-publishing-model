@@ -76,11 +76,14 @@
   "pair_alert_tail": " Debe justificarse por escrito en la instanciación.",
 
   "tl_title": "Cuánto tarda",
-  "tl_intro": "Rangos estimados en días calendario por fase. La barra clara es el máximo; la oscura, el mínimo.",
+  "tl_intro": "Días calendario por fase. Cada barra empieza cuando terminan las fases de las que depende. La oscura es el escenario rápido (todas las fases en su mínimo); la clara, el lento (todas en su máximo). Elige una fecha de inicio para ver cuándo termina cada fase.",
+  "tl_start": "Fecha de inicio",
+  "tl_ends": "termina entre {a} y {b}",
+  "tl_golive": "Primera publicación entre {a} y {b}",
   "tl_days": "días",
   "tl_first": "la primera publicación",
   "tl_each": "cada versión siguiente",
-  "tl_parallel": "Las fases en paralelo acortan el total real.",
+  "tl_parallel": "Las fases que no dependen entre sí avanzan en paralelo; el total sigue el camino más largo.",
 
   "ver_need_client": "Para seguir una versión, elige o crea un cliente arriba. El modelo base no lleva seguimiento.",
   "ver_create_client": "Crear cliente",
