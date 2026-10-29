@@ -40,6 +40,8 @@ The 19 phases group into 8 stages; this is how the swimlane diagram is drawn.
 | Review and release | S14–S15 | Every version |
 | Operation and renewal | S16–S18 | Continuous |
 
+The page's "Cuánto tarda" card turns the phase durations into a Gantt-style timeline (fast and slow scenario) and, given a start date, into end dates per phase and an estimated first publication. See `docs/conventions.md#durations-and-the-timeline`.
+
 ## Underlying rules
 
 - **Business decides and owns; IT answers for the technology; the executor does the work.** V14 says whether the executor is in-house IT or a third party. In the store accounts, ownership (A03, A04) sits with business and technical administration (A05, A06) with IT.

@@ -5,6 +5,7 @@ Usage: python3 generator/validate.py
 Exit code 1 on any problem. Run it before every commit; the validate workflow runs it on every pull request.
 """
 import json, re, subprocess, sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -108,6 +109,9 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
     for r, d in inst.get("renewals", {}).items():
         if r not in renewal_ids: say(f"{rel}: unknown renewal {r}")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(d)): say(f"{rel}: renewal {r} date must be YYYY-MM-DD")
+    if "start_date" in inst:
+        try: date.fromisoformat(str(inst["start_date"]))
+        except ValueError: say(f"{rel}: start_date must be a valid YYYY-MM-DD date")
 
 # Real client instances must never be versioned (docs/deployment.md#private-client-instances).
 # Checks the git index, so a forced `git add -f` is caught before the commit. Skipped outside a git checkout.
