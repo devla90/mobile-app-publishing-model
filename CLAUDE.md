@@ -12,6 +12,7 @@ This repository is a data model, not an application. Read only what the task nee
 | Validate store data | `.claude/skills/validate-requirements/SKILL.md`, `docs/validation.md` | everything else |
 | Change how the page looks or behaves | `generator/build.py`, `generator/templates/`, `generator/i18n/es.json` | `model/` |
 | Answer why something was decided | `docs/decisions.md` | everything else |
+| Replicate the method in another domain | `starter-kit/` | `model/`, `clients/` |
 
 ## Rules
 
@@ -58,4 +59,5 @@ docs/              model.md, conventions.md, decisions.md, validation.md, deploy
 .claude/skills/    instantiate-client, edit-model, validate-requirements
 .github/workflows/ validate.yml (PR check), check-sources.yml (monthly source watch)
 docs/github-pages/ build.yml, optional Pages workflow to copy into .github/workflows/
+starter-kit/       domain-neutral prompt, method and templates to rebuild this approach elsewhere with any AI
 ```
