@@ -52,9 +52,9 @@ python3 generator/check_sources.py --update   # after validating, store the new 
 
 ```
 model/             source of truth (10 JSON files, English keys, Spanish values)
-clients/<id>/      instance.json per client (example/ is the template)
+clients/<id>/      instance.json per client (example/ is the template); dist/ inside holds its generated page, diagram and diff.md
 generator/         build.py, validate.py, check_sources.py, templates/ (page HTML + JS), i18n/ (UI strings)
-dist/              generated: index.html, swimlanes.svg/.drawio/.png, clients/<id>/, diff-<id>.md
+dist/              generated for the base model: index.html, swimlanes.svg/.drawio/.png
 docs/              model.md, conventions.md, decisions.md, validation.md, deployment.md
 .claude/skills/    instantiate-client, edit-model, validate-requirements
 .github/workflows/ validate.yml (PR check), check-sources.yml (monthly source watch)

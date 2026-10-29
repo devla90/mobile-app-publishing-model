@@ -145,9 +145,9 @@ Lanes with no real owner keep the base's generic name. No personal names: areas 
 ```
 model/             source of truth (JSON, keys in repository language, values in content language)
 profiles/          regulatory profiles (optional)
-clients/example/   instance template; every other clients/<id>/ is ignored by git
+clients/example/   instance template; every other clients/<id>/ is ignored by git. clients/<id>/dist/ holds each client's output
 generator/         validate.py, build.py, check_sources.py, templates/, i18n/<lang>.json
-dist/              generated: index.html, swimlanes.svg/.drawio/.png, clients/<id>/, diff-<id>.md
+dist/              generated for the base model: index.html, swimlanes.svg/.drawio/.png
 docs/              model.md, conventions.md, decisions.md, validation.md, deployment.md
 CLAUDE.md          guide for AI assistants (also works as AGENTS.md)
 CHANGELOG.md       Keep a Changelog, [Unreleased] on top
@@ -162,11 +162,11 @@ Repeatable procedures (instantiate a client, edit the model, validate external r
 
 All Python 3 with the standard library (Playwright only for the optional PNG).
 
-- **`validate.py`**: loads every model file; checks JSON syntax, duplicate IDs, that a step's ID starts with its phase, that every role, lane, step, variant, credential and artifact referenced exists, that enums are valid, that each role is in exactly one lane, that instances use only known lanes, variants, options and renewals and that dates are `YYYY-MM-DD`. Finally it runs `git ls-files clients dist/clients dist/diff-*.md` and fails if anything other than `example` is tracked, so a forced `git add -f` of a real client is caught. Exit code 1 on any problem.
+- **`validate.py`**: loads every model file; checks JSON syntax, duplicate IDs, that a step's ID starts with its phase, that every role, lane, step, variant, credential and artifact referenced exists, that enums are valid, that each role is in exactly one lane, that instances use only known lanes, variants, options and renewals and that dates are `YYYY-MM-DD`. Finally it runs `git ls-files clients` and fails if anything other than `clients/example/` is tracked, so a forced `git add -f` of a real client is caught. Exit code 1 on any problem.
 - **`build.py`**: reads the model and the UI strings (`i18n/<lang>.json`), and writes:
   - `dist/index.html`: a single page with the model embedded as JSON and tabs to explore entities, see the flow by phase, renewals and per-version tracking (stored in `localStorage`).
   - `dist/swimlanes.svg` and `.drawio`: lanes as rows, stages as columns, the diagram activities as numbered boxes with arrows.
-  - For each instance: the same under `dist/clients/<id>/` with real lane names, and `dist/diff-<id>.md` listing lanes assigned, variants chosen and alerts (incompatible pairs that fall in the same team).
+  - For each instance: the same under `clients/<id>/dist/` (inside the client folder, so a private overlay holds everything) with real lane names, and `diff.md` listing lanes assigned, variants chosen and alerts (incompatible pairs that fall in the same team).
   - Flags: `--no-png`, `--lang <code>`.
 - **`check_sources.py`**: extracts every URL from `docs/validation.md`, hashes the visible text of each page and compares with `generator/sources_hash.json`. `--update` stores the new reference after a human has reviewed the rows. Strip per-request noise before hashing (hidden IDs, timestamps), or every run reports changes.
 
@@ -197,7 +197,7 @@ To reuse the original code instead (only possible if you can copy files from the
   <base-repo>/                 public or shareable
   <client>-private/            private repository
     clients/<id>/              instance.json + working documents
-    dist/                      copies of generated output to share
+    clients/<id>/dist/         generated output (written there by the build through the link)
 ```
 
 ```bash
@@ -211,13 +211,9 @@ python3 generator/validate.py && python3 generator/build.py --no-png
 ```
 clients/*
 !clients/example/
-dist/clients/*
-!dist/clients/example/
-dist/diff-*.md
-!dist/diff-example.md
 ```
 
-Before pushing the base: `git check-ignore -v clients/<id> dist/clients/<id> dist/diff-<id>.md` must match a rule for all three, and `git status --short` must show nothing with `<id>`. Commit client edits in the private repository.
+Before pushing the base: `git check-ignore -v clients/<id>` must match a rule, and `git status --short` must show nothing with `<id>`. Commit client edits in the private repository.
 
 ## 8. Working with a client
 

@@ -33,5 +33,5 @@ Instance of <what is being delivered> for <client>. Reference date: <YYYY-MM-DD>
 ## How to use this folder
 
 1. Clone this repository next to the base and link the folder from the base: `ln -s ../../<client>-private/clients/<id> clients/<id>`.
-2. `python3 generator/validate.py && python3 generator/build.py --no-png` generates `dist/clients/<id>/` and `dist/diff-<id>.md`.
+2. `python3 generator/validate.py && python3 generator/build.py --no-png` generates `clients/<id>/dist/` (page, diagram and `diff.md`) inside this folder.
 3. Commit changes here, never in the base.

@@ -15,7 +15,7 @@ Modelo base, neutro y reutilizable, de todo lo que existe para publicar una app 
 | `model/` | El modelo base en JSON (10 archivos). | Personas o IA, con el skill `edit-model`. |
 | `clients/<id>/instance.json` | Lo que cambia para un cliente: carriles, variantes, fechas, decisiones. | Una vez por cliente, con el skill `instantiate-client`. |
 | `generator/` | `build.py`, `validate.py`, `check_sources.py`, plantillas de la página y textos de interfaz (`i18n/`). | Solo para cambiar cómo se ve o funciona la página. |
-| `dist/` | Lo generado: página interactiva, diagrama SVG y PNG, diff por cliente. | Nadie. Se regenera con `build.py`. |
+| `dist/` | Lo generado para el modelo base: página interactiva, diagrama SVG y PNG. La página, el diagrama y el diff de cada cliente van a `clients/<id>/dist/`. | Nadie. Se regenera con `build.py`. |
 | `docs/` | Cómo está construido el modelo, convenciones, decisiones, validación de datos, despliegue. | Al cambiar el modelo. |
 | `.claude/skills/` | Procedimientos para la IA: instanciar, editar el modelo, validar requisitos. | Al cambiar un procedimiento. |
 | `starter-kit/` | El método sin contenido del dominio: un prompt, una referencia y plantillas para rehacerlo en otro proceso con cualquier asistente de IA. | Al cambiar el método. |
