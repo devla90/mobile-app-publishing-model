@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-29
+
 ### Changed
 - The timeline card becomes "Plan y fechas": it plans the 25 diagram activities instead of phases, with editable min/max days, activities marked done with their real date, fast and slow scenarios in separate columns, and the critical path. Each activity has `duration` and `after` in `diagram.json` (first publication 24–127 days).
 
