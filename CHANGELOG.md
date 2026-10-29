@@ -4,6 +4,9 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- `starter-kit/`: domain-neutral prompt, method reference and templates (AI guide, instance, client README, session, open points, internal decisions, regulatory profile) to replicate the approach in another domain with any AI assistant.
+
 ## [1.0.2] - 2026-10-22
 
 ### Fixed

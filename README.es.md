@@ -18,6 +18,7 @@ Modelo base, neutro y reutilizable, de todo lo que existe para publicar una app 
 | `dist/` | Lo generado: página interactiva, diagrama SVG y PNG, diff por cliente. | Nadie. Se regenera con `build.py`. |
 | `docs/` | Cómo está construido el modelo, convenciones, decisiones, validación de datos, despliegue. | Al cambiar el modelo. |
 | `.claude/skills/` | Procedimientos para la IA: instanciar, editar el modelo, validar requisitos. | Al cambiar un procedimiento. |
+| `starter-kit/` | El método sin contenido del dominio: un prompt, una referencia y plantillas para rehacerlo en otro proceso con cualquier asistente de IA. | Al cambiar el método. |
 
 ## Uso
 
@@ -57,6 +58,10 @@ git add generator/sources_hash.json && git commit -m "Add sources reference"
 ```
 
 Opcionalmente, publica en GitHub Pages y protege `main`: ver [docs/deployment.md](docs/deployment.md#github-pages-optional) y [Branch protection](docs/deployment.md#branch-protection).
+
+## Reutilizar el método en otro dominio
+
+[`starter-kit/`](starter-kit/README.md) empaqueta el enfoque (base neutral, perfiles regulatorios, instancias privadas, generador, validación y trabajo con el cliente) como texto para cualquier asistente de IA, sin necesidad de Claude Code. Pega `prompt.md`, luego `method.md`, y responde la entrevista. Los archivos están en inglés; indica a la IA en qué idioma quieres el contenido.
 
 ## Licencia
 
