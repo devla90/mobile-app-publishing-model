@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-30
+
 ### Added
 - Step S1.7 "Reunir los datos de registro de las cuentas", required by S2.1 and S2.4.
 - Activity "Crea las cuentas de desarrollador" (L2, S2): S2.1 and S2.4 are run by A05 and A06; A03 and A04 answer for them.
