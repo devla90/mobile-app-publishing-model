@@ -1,5 +1,5 @@
 {
-  "description": "Variation points V1-V14. No option is the default; each client picks one.",
+  "description": "Variation points V1-V15. No option is the default; each client picks one. Optional `platform`: the point only exists for that platform. V15 acts through the `platform` of each step and activity, so it is not listed on steps.",
   "lang": "es",
   "items": {
     "V1": {
@@ -55,6 +55,7 @@
     },
     "V4": {
       "name": "Cómo se firma iOS",
+      "platform": "ios",
       "options": [
         {
           "key": "a",
@@ -76,6 +77,7 @@
     },
     "V5": {
       "name": "Firma de la app Android",
+      "platform": "android",
       "options": [
         {
           "key": "a",
@@ -97,6 +99,7 @@
     },
     "V6": {
       "name": "Custodia de la upload key",
+      "platform": "android",
       "options": [
         {
           "key": "a",
@@ -131,6 +134,7 @@
     },
     "V8": {
       "name": "Push en iOS",
+      "platform": "ios",
       "options": [
         {
           "key": "a",
@@ -237,6 +241,23 @@
         {
           "key": "c",
           "text": "Un tercero contratado por el negocio"
+        }
+      ]
+    },
+    "V15": {
+      "name": "Plataformas objetivo",
+      "options": [
+        {
+          "key": "a",
+          "text": "iOS y Android"
+        },
+        {
+          "key": "b",
+          "text": "Solo iOS"
+        },
+        {
+          "key": "c",
+          "text": "Solo Android"
         }
       ]
     }

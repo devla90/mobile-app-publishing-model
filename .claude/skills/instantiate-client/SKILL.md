@@ -11,7 +11,7 @@ An instance is what differs from the base model for one client. The model is not
 
 - `clients/example/instance.json` (the template, ~40 lines).
 - `model/actors.json`, only the `lanes` key (L1–L7, name and what each covers) and `incompatible_pairs`.
-- `model/variants.json` (V1–V14 with their options).
+- `model/variants.json` (V1–V15 with their options).
 - `model/renewals.json` only if the client already has accounts open and dates are known.
 
 Do not read `model/steps.json`.
@@ -22,7 +22,7 @@ Do not read `model/steps.json`.
 2. **Lanes.** Ask for each L1–L7 which real area or company occupies it. If the user does not know one, leave the model's generic name. Rules:
    - L1 (business) and L2 (IT) must be areas of the entity itself; if the user puts a vendor in L1, flag it: Apple requires financial apps to be published by the entity.
    - L3 (technical executor) is where a vendor goes, if any; that implies `"V14": "b"`.
-3. **Variants.** Ask only about the ones that affect the client. The ones that vary most between clients: V1 (account type), V2 (account ownership), V3 (where it is built), V7 (how it is uploaded), V13 (channel), V14 (who runs the technology). The rest are inherited if not stated. Write the option key (letter).
+3. **Variants.** Ask only about the ones that affect the client. The ones that vary most between clients: V1 (account type), V2 (account ownership), V3 (where it is built), V7 (how it is uploaded), V13 (channel), V15 (target platforms), V14 (who runs the technology). The rest are inherited if not stated. Write the option key (letter).
 4. **Incompatible pairs.** If both roles of a pair end up in lanes with the same name (e.g. custodian and signer both "Proveedor X"), add it as a decision with the rationale and warn that the page will show the alert.
 5. **Renewals and start date.** Only known dates, ISO format, key = renewal ID. If the client has a planned start, set `start_date` (ISO). Use `plan` to mark activities already done or change their days, and `extra_activities` for client-only activities such as a pilot run (format in `docs/conventions.md#durations-and-the-timeline`).
 6. **Decisions.** Each agreement with `date`, `decision`, `owner` and `rationale`. This is the record consulted later.

@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1388 1178" width="1388" height="1178" font-family="Calibri, Carlito, 'Segoe UI', Arial, sans-serif">
-<rect width="1388" height="1178" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1388 1382" width="1388" height="1382" font-family="Calibri, Carlito, 'Segoe UI', Arial, sans-serif">
+<rect width="1388" height="1382" fill="#FFFFFF"/>
 <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7D8596"/></marker></defs>
 <text x="24" y="40" font-size="24" font-weight="700" fill="#1D2433">Flujo de publicación de apps móviles</text>
 <text x="24" y="66" font-size="14" fill="#5B6475">Qué hace cada frente en cada etapa. Siga los números: es el orden habitual del flujo.</text>
@@ -26,163 +26,235 @@
 <rect x="1194" y="96" width="164" height="78" rx="8" fill="#F0F1F4"/><rect x="1194" y="96" width="164" height="5" rx="2" fill="#667085"/>
 <text x="1276.0" y="124" text-anchor="middle" font-size="15" font-weight="700" fill="#667085">Externos</text>
 <text x="1276.0" y="145" text-anchor="middle" font-size="11.5" fill="#5B6475">Apple, Google, D&amp;B</text>
-<line x1="132" x2="132" y1="188" y2="1082" stroke="#E4E7EC"/>
-<line x1="308" x2="308" y1="188" y2="1082" stroke="#E4E7EC"/>
-<line x1="484" x2="484" y1="188" y2="1082" stroke="#E4E7EC"/>
-<line x1="660" x2="660" y1="188" y2="1082" stroke="#E4E7EC"/>
-<line x1="836" x2="836" y1="188" y2="1082" stroke="#E4E7EC"/>
-<line x1="1012" x2="1012" y1="188" y2="1082" stroke="#E4E7EC"/>
-<line x1="1188" x2="1188" y1="188" y2="1082" stroke="#E4E7EC"/>
-<line x1="1364" x2="1364" y1="188" y2="1082" stroke="#E4E7EC"/>
+<line x1="132" x2="132" y1="188" y2="1286" stroke="#E4E7EC"/>
+<line x1="308" x2="308" y1="188" y2="1286" stroke="#E4E7EC"/>
+<line x1="484" x2="484" y1="188" y2="1286" stroke="#E4E7EC"/>
+<line x1="660" x2="660" y1="188" y2="1286" stroke="#E4E7EC"/>
+<line x1="836" x2="836" y1="188" y2="1286" stroke="#E4E7EC"/>
+<line x1="1012" x2="1012" y1="188" y2="1286" stroke="#E4E7EC"/>
+<line x1="1188" x2="1188" y1="188" y2="1286" stroke="#E4E7EC"/>
+<line x1="1364" x2="1364" y1="188" y2="1286" stroke="#E4E7EC"/>
 <line x1="16" x2="1372" y1="188" y2="188" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="344" y2="344" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="432" y2="432" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="588" y2="588" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="676" y2="676" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="764" y2="764" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="906" y2="906" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="994" y2="994" stroke="#E4E7EC"/>
-<line x1="16" x2="1372" y1="1082" y2="1082" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="412" y2="412" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="636" y2="636" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="792" y2="792" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="880" y2="880" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="968" y2="968" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="1110" y2="1110" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="1198" y2="1198" stroke="#E4E7EC"/>
+<line x1="16" x2="1372" y1="1286" y2="1286" stroke="#E4E7EC"/>
 <text x="24" y="218" font-size="14" font-weight="700" fill="#1D2433">Cuentas y</text>
 <text x="24" y="235" font-size="14" font-weight="700" fill="#1D2433">acuerdos</text>
 <text x="24" y="253" font-size="12" fill="#5B6475">S0–S4</text>
-<text x="24" y="374" font-size="14" font-weight="700" fill="#1D2433">Identidad de</text>
-<text x="24" y="391" font-size="14" font-weight="700" fill="#1D2433">la app</text>
-<text x="24" y="409" font-size="12" fill="#5B6475">S5</text>
-<text x="24" y="462" font-size="14" font-weight="700" fill="#1D2433">Firma y</text>
-<text x="24" y="479" font-size="14" font-weight="700" fill="#1D2433">servicios</text>
-<text x="24" y="497" font-size="12" fill="#5B6475">S6–S7</text>
-<text x="24" y="618" font-size="14" font-weight="700" fill="#1D2433">Construcción</text>
-<text x="24" y="636" font-size="12" fill="#5B6475">S8–S9</text>
-<text x="24" y="706" font-size="14" font-weight="700" fill="#1D2433">Subida y</text>
-<text x="24" y="723" font-size="14" font-weight="700" fill="#1D2433">pruebas</text>
-<text x="24" y="741" font-size="12" fill="#5B6475">S10–S11</text>
-<text x="24" y="794" font-size="14" font-weight="700" fill="#1D2433">Ficha y</text>
-<text x="24" y="811" font-size="14" font-weight="700" fill="#1D2433">aprobaciones</text>
-<text x="24" y="829" font-size="12" fill="#5B6475">S12–S13</text>
-<text x="24" y="936" font-size="14" font-weight="700" fill="#1D2433">Revisión y</text>
-<text x="24" y="953" font-size="14" font-weight="700" fill="#1D2433">publicación</text>
-<text x="24" y="971" font-size="12" fill="#5B6475">S14–S15</text>
-<text x="24" y="1024" font-size="14" font-weight="700" fill="#1D2433">Operación y</text>
-<text x="24" y="1041" font-size="14" font-weight="700" fill="#1D2433">renovación</text>
-<text x="24" y="1059" font-size="12" fill="#5B6475">S16–S18</text>
-<path d="M845.0 232.0C660.0 232.0 660.0 232.0 475.0 232.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M1179.0 232.0C1188.0 232.0 1188.0 232.0 1197.0 232.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M299.0 300.0C308.0 300.0 308.0 300.0 317.0 300.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M396.0 328C396.0 346 220.0 342 220.0 360" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M299.0 388.0C308.0 388.0 308.0 388.0 317.0 388.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M396.0 416C396.0 434 748.0 430 748.0 448" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M669.0 476.0C572.0 476.0 572.0 476.0 475.0 476.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M396.0 504C396.0 522 396.0 498 396.0 516" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M396.0 572C396.0 590 572.0 586 572.0 604" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M651.0 632.0C660.0 632.0 660.0 632.0 669.0 632.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M748.0 660C748.0 678 572.0 674 572.0 692" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M572.0 748C572.0 766 220.0 762 220.0 780" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M845.0 808.0C836.0 808.0 836.0 808.0 827.0 808.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M669.0 808.0C484.0 808.0 484.0 869.0 299.0 869.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M220.0 890C220.0 908 1276.0 904 1276.0 922" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M1197.0 950.0C748.0 950.0 748.0 950.0 299.0 950.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
-<path d="M220.0 978C220.0 996 220.0 992 220.0 1010" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<text x="24" y="442" font-size="14" font-weight="700" fill="#1D2433">Identidad de</text>
+<text x="24" y="459" font-size="14" font-weight="700" fill="#1D2433">la app</text>
+<text x="24" y="477" font-size="12" fill="#5B6475">S5</text>
+<text x="24" y="666" font-size="14" font-weight="700" fill="#1D2433">Firma y</text>
+<text x="24" y="683" font-size="14" font-weight="700" fill="#1D2433">servicios</text>
+<text x="24" y="701" font-size="12" fill="#5B6475">S6–S7</text>
+<text x="24" y="822" font-size="14" font-weight="700" fill="#1D2433">Construcción</text>
+<text x="24" y="840" font-size="12" fill="#5B6475">S8–S9</text>
+<text x="24" y="910" font-size="14" font-weight="700" fill="#1D2433">Subida y</text>
+<text x="24" y="927" font-size="14" font-weight="700" fill="#1D2433">pruebas</text>
+<text x="24" y="945" font-size="12" fill="#5B6475">S10–S11</text>
+<text x="24" y="998" font-size="14" font-weight="700" fill="#1D2433">Ficha y</text>
+<text x="24" y="1015" font-size="14" font-weight="700" fill="#1D2433">aprobaciones</text>
+<text x="24" y="1033" font-size="12" fill="#5B6475">S12–S13</text>
+<text x="24" y="1140" font-size="14" font-weight="700" fill="#1D2433">Revisión y</text>
+<text x="24" y="1157" font-size="14" font-weight="700" fill="#1D2433">publicación</text>
+<text x="24" y="1175" font-size="12" fill="#5B6475">S14–S15</text>
+<text x="24" y="1228" font-size="14" font-weight="700" fill="#1D2433">Operación y</text>
+<text x="24" y="1245" font-size="14" font-weight="700" fill="#1D2433">renovación</text>
+<text x="24" y="1263" font-size="12" fill="#5B6475">S16–S18</text>
+<path d="M299.0 232.0C308.0 232.0 308.0 232.0 317.0 232.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M396.0 260C396.0 278 396.0 254 396.0 272" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M1100.0 260V314.0H475.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M475.0 300.0H1236.5V260" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M963.5 260V334H396.0V340" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M1315.5 260V334H396.0V340" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M396.0 396C396.0 414 396.0 410 396.0 428" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M396.0 484C396.0 502 396.0 478 396.0 496" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M396.0 552C396.0 570 396.0 546 396.0 564" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M475.0 524.0H739.0Q748.0 524.0 748.0 533.0V652" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M396.0 620C396.0 638 396.0 634 396.0 652" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M669.0 680.0C572.0 680.0 572.0 680.0 475.0 680.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M475.0 680.0C572.0 680.0 572.0 748.0 669.0 748.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M396.0 708C396.0 726 396.0 702 396.0 720" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M396.0 776C396.0 794 572.0 790 572.0 808" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M748.0 776C748.0 794 572.0 790 572.0 808" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M651.0 836.0C660.0 836.0 660.0 836.0 669.0 836.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M572.0 864C572.0 882 572.0 878 572.0 896" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M317.0 592.0H229.0Q220.0 592.0 220.0 601.0V984" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M299.0 1012.0H532.5V952" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M748.0 864C748.0 924.0 748.0 924.0 748.0 984" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M651.0 924.0H739.0Q748.0 924.0 748.0 933.0V984" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M845.0 1012.0C836.0 1012.0 836.0 1012.0 827.0 1012.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M669.0 1012.0C484.0 1012.0 484.0 1073.0 299.0 1073.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M259.5 1094V1120H1276.0V1126" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M1197.0 1154.0C748.0 1154.0 748.0 1154.0 299.0 1154.0" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M220.0 1182C220.0 1200 220.0 1196 220.0 1214" fill="none" stroke="#7D8596" stroke-width="1.4" marker-end="url(#ah)"/>
+<g opacity="1">
 <rect x="141.0" y="204" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
 <circle cx="156.0" cy="220" r="10" fill="#1F6FEB"/><text x="156.0" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">1</text>
 <text x="173.0" y="225" font-size="13" fill="#1D2433">Decide titular</text>
 <text x="173.0" y="241" font-size="13" fill="#1D2433">y modelo operativo</text>
+</g>
+<g opacity="1">
 <rect x="845.0" y="204" width="158" height="56" rx="9" fill="#FEF1E6" stroke="#DC6803" stroke-width="1.4"/>
 <circle cx="860.0" cy="220" r="10" fill="#DC6803"/><text x="860.0" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">2</text>
 <text x="877.0" y="225" font-size="13" fill="#1D2433">Aprueba uso de</text>
 <text x="877.0" y="241" font-size="13" fill="#1D2433">tiendas y terceros</text>
+</g>
+<g opacity="1">
 <rect x="317.0" y="204" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
 <circle cx="332.0" cy="220" r="10" fill="#0E9384"/><text x="332.0" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">3</text>
 <text x="349.0" y="225" font-size="13" fill="#1D2433">Crea correos y</text>
 <text x="349.0" y="241" font-size="13" fill="#1D2433">cuentas con 2FA</text>
+</g>
+<g opacity="1">
 <rect x="1021.0" y="204" width="158" height="56" rx="9" fill="#F8F3E0" stroke="#A3820F" stroke-width="1.4"/>
 <circle cx="1036.0" cy="220" r="10" fill="#A3820F"/><text x="1036.0" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">4</text>
-<text x="1053.0" y="225" font-size="13" fill="#1D2433">Gestiona D-U-N-S,</text>
-<text x="1053.0" y="241" font-size="13" fill="#1D2433">poderes y pagos</text>
+<text x="1053.0" y="225" font-size="13" fill="#1D2433">Reúne datos legales</text>
+<text x="1053.0" y="241" font-size="13" fill="#1D2433">y de contacto</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="272" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="288" r="10" fill="#0E9384"/><text x="332.0" y="292" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">5</text>
+<text x="349.0" y="293" font-size="13" fill="#1D2433">Crea las cuentas</text>
+<text x="349.0" y="309" font-size="13" fill="#1D2433">de desarrollador</text>
+</g>
+<g opacity="1">
 <rect x="1197.0" y="204" width="158" height="56" rx="9" fill="#F0F1F4" stroke="#667085" stroke-width="1.4"/>
-<circle cx="1212.0" cy="220" r="10" fill="#667085"/><text x="1212.0" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">5</text>
+<circle cx="1212.0" cy="220" r="10" fill="#667085"/><text x="1212.0" y="224" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">6</text>
 <text x="1229.0" y="225" font-size="13" fill="#1D2433">Verifican la</text>
 <text x="1229.0" y="241" font-size="13" fill="#1D2433">entidad</text>
-<rect x="141.0" y="272" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
-<circle cx="156.0" cy="288" r="10" fill="#1F6FEB"/><text x="156.0" y="292" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">6</text>
-<text x="173.0" y="293" font-size="13" fill="#1D2433">Acepta acuerdos</text>
-<text x="173.0" y="309" font-size="13" fill="#1D2433">e invita a TI</text>
-<rect x="317.0" y="272" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
-<circle cx="332.0" cy="288" r="10" fill="#0E9384"/><text x="332.0" y="292" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">7</text>
-<text x="349.0" y="293" font-size="13" fill="#1D2433">Configura roles</text>
-<text x="349.0" y="309" font-size="13" fill="#1D2433">y accesos</text>
-<rect x="141.0" y="360" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
-<circle cx="156.0" cy="376" r="10" fill="#1F6FEB"/><text x="156.0" y="380" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">8</text>
-<text x="173.0" y="381" font-size="13" fill="#1D2433">Define IDs y crea</text>
-<text x="173.0" y="397" font-size="13" fill="#1D2433">la app en tiendas</text>
-<rect x="317.0" y="360" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
-<circle cx="332.0" cy="376" r="10" fill="#0E9384"/><text x="332.0" y="380" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">9</text>
-<text x="349.0" y="381" font-size="13" fill="#1D2433">Registra App IDs</text>
-<text x="349.0" y="397" font-size="13" fill="#1D2433">por target</text>
-<rect x="669.0" y="448" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
-<circle cx="684.0" cy="464" r="10" fill="#D92D20"/><text x="684.0" y="468" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">10</text>
-<text x="701.0" y="469" font-size="13" fill="#1D2433">Genera y custodia</text>
-<text x="701.0" y="485" font-size="13" fill="#1D2433">claves de firma</text>
-<rect x="317.0" y="448" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
-<circle cx="332.0" cy="464" r="10" fill="#0E9384"/><text x="332.0" y="468" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">11</text>
-<text x="349.0" y="469" font-size="13" fill="#1D2433">Emite certificados</text>
-<text x="349.0" y="485" font-size="13" fill="#1D2433">y perfiles</text>
-<rect x="317.0" y="516" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
-<circle cx="332.0" cy="532" r="10" fill="#0E9384"/><text x="332.0" y="536" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">12</text>
-<text x="349.0" y="537" font-size="13" fill="#1D2433">Configura push y</text>
-<text x="349.0" y="553" font-size="13" fill="#1D2433">deep links</text>
-<rect x="493.0" y="604" width="158" height="56" rx="9" fill="#F1EEFE" stroke="#7A5AF8" stroke-width="1.4"/>
-<circle cx="508.0" cy="620" r="10" fill="#7A5AF8"/><text x="508.0" y="624" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">13</text>
-<text x="525.0" y="625" font-size="13" fill="#1D2433">Compila, firma y</text>
-<text x="525.0" y="641" font-size="13" fill="#1D2433">verifica binario</text>
-<rect x="669.0" y="604" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
-<circle cx="684.0" cy="620" r="10" fill="#D92D20"/><text x="684.0" y="624" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">14</text>
-<text x="701.0" y="625" font-size="13" fill="#1D2433">Analiza el binario</text>
-<text x="701.0" y="641" font-size="13" fill="#1D2433">(SAST, MAST)</text>
-<rect x="493.0" y="692" width="158" height="56" rx="9" fill="#F1EEFE" stroke="#7A5AF8" stroke-width="1.4"/>
-<circle cx="508.0" cy="708" r="10" fill="#7A5AF8"/><text x="508.0" y="712" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">15</text>
-<text x="525.0" y="713" font-size="13" fill="#1D2433">Sube el build y</text>
-<text x="525.0" y="729" font-size="13" fill="#1D2433">prueba en canales</text>
-<rect x="141.0" y="780" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
-<circle cx="156.0" cy="796" r="10" fill="#1F6FEB"/><text x="156.0" y="800" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">16</text>
-<text x="173.0" y="801" font-size="13" fill="#1D2433">Prepara ficha y</text>
-<text x="173.0" y="817" font-size="13" fill="#1D2433">notas de versión</text>
-<rect x="845.0" y="780" width="158" height="56" rx="9" fill="#FEF1E6" stroke="#DC6803" stroke-width="1.4"/>
-<circle cx="860.0" cy="796" r="10" fill="#DC6803"/><text x="860.0" y="800" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">17</text>
-<text x="877.0" y="801" font-size="13" fill="#1D2433">Declara privacidad</text>
-<text x="877.0" y="817" font-size="13" fill="#1D2433">y aprueba</text>
-<rect x="669.0" y="780" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
-<circle cx="684.0" cy="796" r="10" fill="#D92D20"/><text x="684.0" y="800" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">18</text>
-<text x="701.0" y="801" font-size="13" fill="#1D2433">Aprobación de</text>
-<text x="701.0" y="817" font-size="13" fill="#1D2433">seguridad</text>
-<rect x="141.0" y="848" width="158" height="42" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
-<circle cx="156.0" cy="864" r="10" fill="#1F6FEB"/><text x="156.0" y="868" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">19</text>
-<text x="173.0" y="869" font-size="13" fill="#1D2433">Decide Go / No-Go</text>
-<rect x="1197.0" y="922" width="158" height="56" rx="9" fill="#F0F1F4" stroke="#667085" stroke-width="1.4"/>
-<circle cx="1212.0" cy="938" r="10" fill="#667085"/><text x="1212.0" y="942" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">20</text>
-<text x="1229.0" y="943" font-size="13" fill="#1D2433">Revisan la versión</text>
-<text x="1229.0" y="959" font-size="13" fill="#1D2433">(Apple y Google)</text>
-<rect x="141.0" y="922" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
-<circle cx="156.0" cy="938" r="10" fill="#1F6FEB"/><text x="156.0" y="942" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">21</text>
-<text x="173.0" y="943" font-size="13" fill="#1D2433">Libera y despliega</text>
-<text x="173.0" y="959" font-size="13" fill="#1D2433">por fases</text>
-<rect x="141.0" y="1010" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
-<circle cx="156.0" cy="1026" r="10" fill="#1F6FEB"/><text x="156.0" y="1030" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">22</text>
-<text x="173.0" y="1031" font-size="13" fill="#1D2433">Monitorea, responde</text>
-<text x="173.0" y="1047" font-size="13" fill="#1D2433">reseñas, renueva</text>
-<rect x="493.0" y="1010" width="158" height="56" rx="9" fill="#F1EEFE" stroke="#7A5AF8" stroke-width="1.4"/>
-<circle cx="508.0" cy="1026" r="10" fill="#7A5AF8"/><text x="508.0" y="1030" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">23</text>
-<text x="525.0" y="1031" font-size="13" fill="#1D2433">Analiza fallos y</text>
-<text x="525.0" y="1047" font-size="13" fill="#1D2433">actualiza SDK</text>
-<rect x="317.0" y="1010" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
-<circle cx="332.0" cy="1026" r="10" fill="#0E9384"/><text x="332.0" y="1030" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">24</text>
-<text x="349.0" y="1031" font-size="13" fill="#1D2433">Renueva y rota</text>
-<text x="349.0" y="1047" font-size="13" fill="#1D2433">credenciales</text>
-<rect x="669.0" y="1010" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
-<circle cx="684.0" cy="1026" r="10" fill="#D92D20"/><text x="684.0" y="1030" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">25</text>
-<text x="701.0" y="1031" font-size="13" fill="#1D2433">Atiende incidentes</text>
-<text x="701.0" y="1047" font-size="13" fill="#1D2433">de claves</text>
-<text x="24" y="1112" font-size="13" fill="#5B6475">Si la tienda rechaza la versión (20), se vuelve a construir (13) o a ajustar la ficha (16).</text>
-<text x="24" y="1132" font-size="13" fill="#5B6475">La última etapa es continua: sus actividades (22 a 25) ocurren en paralelo durante la vida de la app.</text>
-<text x="24" y="1152" font-size="13" fill="#5B6475">Canal Digital decide y es titular de las cuentas; TI responde por la tecnología; el ejecutor técnico puede ser TI interno o un tercero (V14).</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="340" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="356" r="10" fill="#0E9384"/><text x="332.0" y="360" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">7</text>
+<text x="349.0" y="361" font-size="13" fill="#1D2433">Invita usuarios</text>
+<text x="349.0" y="377" font-size="13" fill="#1D2433">y asigna roles</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="428" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="444" r="10" fill="#0E9384"/><text x="332.0" y="448" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">8</text>
+<text x="349.0" y="449" font-size="13" fill="#1D2433">Define Bundle ID</text>
+<text x="349.0" y="465" font-size="13" fill="#1D2433">y package name</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="496" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="512" r="10" fill="#0E9384"/><text x="332.0" y="516" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">9</text>
+<text x="349.0" y="517" font-size="13" fill="#1D2433">Registra App IDs</text>
+<text x="349.0" y="533" font-size="13" fill="#1D2433">por target</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="564" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="580" r="10" fill="#0E9384"/><text x="332.0" y="584" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">10</text>
+<text x="349.0" y="585" font-size="13" fill="#1D2433">Crea la app</text>
+<text x="349.0" y="601" font-size="13" fill="#1D2433">en tiendas</text>
+</g>
+<g opacity="1">
+<rect x="669.0" y="652" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
+<circle cx="684.0" cy="668" r="10" fill="#D92D20"/><text x="684.0" y="672" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">11</text>
+<text x="701.0" y="673" font-size="13" fill="#1D2433">Genera claves</text>
+<text x="701.0" y="689" font-size="13" fill="#1D2433">de firma</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="652" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="668" r="10" fill="#0E9384"/><text x="332.0" y="672" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">12</text>
+<text x="349.0" y="673" font-size="13" fill="#1D2433">Emite certificados</text>
+<text x="349.0" y="689" font-size="13" fill="#1D2433">y perfiles</text>
+</g>
+<g opacity="1">
+<rect x="669.0" y="720" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
+<circle cx="684.0" cy="736" r="10" fill="#D92D20"/><text x="684.0" y="740" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">13</text>
+<text x="701.0" y="741" font-size="13" fill="#1D2433">Custodia y entrega</text>
+<text x="701.0" y="757" font-size="13" fill="#1D2433">credenciales</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="720" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="736" r="10" fill="#0E9384"/><text x="332.0" y="740" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">14</text>
+<text x="349.0" y="741" font-size="13" fill="#1D2433">Configura push y</text>
+<text x="349.0" y="757" font-size="13" fill="#1D2433">deep links</text>
+</g>
+<g opacity="1">
+<rect x="493.0" y="808" width="158" height="56" rx="9" fill="#F1EEFE" stroke="#7A5AF8" stroke-width="1.4"/>
+<circle cx="508.0" cy="824" r="10" fill="#7A5AF8"/><text x="508.0" y="828" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">15</text>
+<text x="525.0" y="829" font-size="13" fill="#1D2433">Compila, firma y</text>
+<text x="525.0" y="845" font-size="13" fill="#1D2433">verifica binario</text>
+</g>
+<g opacity="1">
+<rect x="669.0" y="808" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
+<circle cx="684.0" cy="824" r="10" fill="#D92D20"/><text x="684.0" y="828" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">16</text>
+<text x="701.0" y="829" font-size="13" fill="#1D2433">Analiza el binario</text>
+<text x="701.0" y="845" font-size="13" fill="#1D2433">(SAST, MAST)</text>
+</g>
+<g opacity="1">
+<rect x="141.0" y="984" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
+<circle cx="156.0" cy="1000" r="10" fill="#1F6FEB"/><text x="156.0" y="1004" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">17</text>
+<text x="173.0" y="1005" font-size="13" fill="#1D2433">Prepara ficha y</text>
+<text x="173.0" y="1021" font-size="13" fill="#1D2433">notas de versión</text>
+</g>
+<g opacity="1">
+<rect x="845.0" y="984" width="158" height="56" rx="9" fill="#FEF1E6" stroke="#DC6803" stroke-width="1.4"/>
+<circle cx="860.0" cy="1000" r="10" fill="#DC6803"/><text x="860.0" y="1004" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">18</text>
+<text x="877.0" y="1005" font-size="13" fill="#1D2433">Declara privacidad</text>
+<text x="877.0" y="1021" font-size="13" fill="#1D2433">y aprueba</text>
+</g>
+<g opacity="1">
+<rect x="493.0" y="896" width="158" height="56" rx="9" fill="#F1EEFE" stroke="#7A5AF8" stroke-width="1.4"/>
+<circle cx="508.0" cy="912" r="10" fill="#7A5AF8"/><text x="508.0" y="916" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">19</text>
+<text x="525.0" y="917" font-size="13" fill="#1D2433">Sube el build y</text>
+<text x="525.0" y="933" font-size="13" fill="#1D2433">prueba en canales</text>
+</g>
+<g opacity="1">
+<rect x="669.0" y="984" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
+<circle cx="684.0" cy="1000" r="10" fill="#D92D20"/><text x="684.0" y="1004" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">20</text>
+<text x="701.0" y="1005" font-size="13" fill="#1D2433">Aprobación de</text>
+<text x="701.0" y="1021" font-size="13" fill="#1D2433">seguridad</text>
+</g>
+<g opacity="1">
+<rect x="141.0" y="1052" width="158" height="42" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
+<circle cx="156.0" cy="1068" r="10" fill="#1F6FEB"/><text x="156.0" y="1072" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">21</text>
+<text x="173.0" y="1073" font-size="13" fill="#1D2433">Decide Go / No-Go</text>
+</g>
+<g opacity="1">
+<rect x="1197.0" y="1126" width="158" height="56" rx="9" fill="#F0F1F4" stroke="#667085" stroke-width="1.4"/>
+<circle cx="1212.0" cy="1142" r="10" fill="#667085"/><text x="1212.0" y="1146" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">22</text>
+<text x="1229.0" y="1147" font-size="13" fill="#1D2433">Revisan la versión</text>
+<text x="1229.0" y="1163" font-size="13" fill="#1D2433">(Apple y Google)</text>
+</g>
+<g opacity="1">
+<rect x="141.0" y="1126" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
+<circle cx="156.0" cy="1142" r="10" fill="#1F6FEB"/><text x="156.0" y="1146" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">23</text>
+<text x="173.0" y="1147" font-size="13" fill="#1D2433">Libera y despliega</text>
+<text x="173.0" y="1163" font-size="13" fill="#1D2433">por fases</text>
+</g>
+<g opacity="1">
+<rect x="141.0" y="1214" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
+<circle cx="156.0" cy="1230" r="10" fill="#1F6FEB"/><text x="156.0" y="1234" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">24</text>
+<text x="173.0" y="1235" font-size="13" fill="#1D2433">Monitorea, responde</text>
+<text x="173.0" y="1251" font-size="13" fill="#1D2433">reseñas, renueva</text>
+</g>
+<g opacity="1">
+<rect x="493.0" y="1214" width="158" height="56" rx="9" fill="#F1EEFE" stroke="#7A5AF8" stroke-width="1.4"/>
+<circle cx="508.0" cy="1230" r="10" fill="#7A5AF8"/><text x="508.0" y="1234" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">25</text>
+<text x="525.0" y="1235" font-size="13" fill="#1D2433">Analiza fallos y</text>
+<text x="525.0" y="1251" font-size="13" fill="#1D2433">actualiza SDK</text>
+</g>
+<g opacity="1">
+<rect x="317.0" y="1214" width="158" height="56" rx="9" fill="#E6F6F4" stroke="#0E9384" stroke-width="1.4"/>
+<circle cx="332.0" cy="1230" r="10" fill="#0E9384"/><text x="332.0" y="1234" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">26</text>
+<text x="349.0" y="1235" font-size="13" fill="#1D2433">Renueva y rota</text>
+<text x="349.0" y="1251" font-size="13" fill="#1D2433">credenciales</text>
+</g>
+<g opacity="1">
+<rect x="669.0" y="1214" width="158" height="56" rx="9" fill="#FDECEA" stroke="#D92D20" stroke-width="1.4"/>
+<circle cx="684.0" cy="1230" r="10" fill="#D92D20"/><text x="684.0" y="1234" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">27</text>
+<text x="701.0" y="1235" font-size="13" fill="#1D2433">Atiende incidentes</text>
+<text x="701.0" y="1251" font-size="13" fill="#1D2433">de claves</text>
+</g>
+<text x="24" y="1316" font-size="13" fill="#5B6475">Si la tienda rechaza la versión (22), se vuelve a construir (15) o a ajustar la ficha (17).</text>
+<text x="24" y="1336" font-size="13" fill="#5B6475">La última etapa es continua: sus actividades (24 a 27) ocurren en paralelo durante la vida de la app.</text>
+<text x="24" y="1356" font-size="13" fill="#5B6475">Canal Digital decide y es titular de las cuentas; TI responde por la tecnología; el ejecutor técnico puede ser TI interno o un tercero (V14).</text>
 </svg>

@@ -1,6 +1,6 @@
 <mxfile host="generator/build.py">
   <diagram id="swimlanes" name="Flujo de publicación · Ejemplo">
-    <mxGraphModel dx="1388" dy="1178" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1388" pageHeight="1178" background="#FFFFFF" math="0" shadow="0">
+    <mxGraphModel dx="1388" dy="1382" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1388" pageHeight="1382" background="#FFFFFF" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -11,31 +11,31 @@
           <mxGeometry x="24" y="52" width="1340" height="20" as="geometry" />
         </mxCell>
         <mxCell id="stage-0" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Cuentas y&lt;br&gt;acuerdos&lt;/b&gt;&lt;br&gt;S0–S4" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="188" width="1356" height="156" as="geometry" />
+          <mxGeometry x="16" y="188" width="1356" height="224" as="geometry" />
         </mxCell>
         <mxCell id="stage-1" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Identidad de&lt;br&gt;la app&lt;/b&gt;&lt;br&gt;S5" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="344" width="1356" height="88" as="geometry" />
+          <mxGeometry x="16" y="412" width="1356" height="224" as="geometry" />
         </mxCell>
         <mxCell id="stage-2" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Firma y&lt;br&gt;servicios&lt;/b&gt;&lt;br&gt;S6–S7" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="432" width="1356" height="156" as="geometry" />
+          <mxGeometry x="16" y="636" width="1356" height="156" as="geometry" />
         </mxCell>
         <mxCell id="stage-3" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Construcción&lt;/b&gt;&lt;br&gt;S8–S9" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="588" width="1356" height="88" as="geometry" />
+          <mxGeometry x="16" y="792" width="1356" height="88" as="geometry" />
         </mxCell>
         <mxCell id="stage-4" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Subida y&lt;br&gt;pruebas&lt;/b&gt;&lt;br&gt;S10–S11" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="676" width="1356" height="88" as="geometry" />
+          <mxGeometry x="16" y="880" width="1356" height="88" as="geometry" />
         </mxCell>
         <mxCell id="stage-5" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Ficha y&lt;br&gt;aprobaciones&lt;/b&gt;&lt;br&gt;S12–S13" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="764" width="1356" height="142" as="geometry" />
+          <mxGeometry x="16" y="968" width="1356" height="142" as="geometry" />
         </mxCell>
         <mxCell id="stage-6" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Revisión y&lt;br&gt;publicación&lt;/b&gt;&lt;br&gt;S14–S15" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="906" width="1356" height="88" as="geometry" />
+          <mxGeometry x="16" y="1110" width="1356" height="88" as="geometry" />
         </mxCell>
         <mxCell id="stage-7" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Operación y&lt;br&gt;renovación&lt;/b&gt;&lt;br&gt;S16–S18" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="16" y="994" width="1356" height="88" as="geometry" />
+          <mxGeometry x="16" y="1198" width="1356" height="88" as="geometry" />
         </mxCell>
         <mxCell id="lane-L1" value="&lt;b style=&quot;font-size:15px&quot;&gt;Canales&lt;br&gt;Digitales&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Canal Digital&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#EAF2FE;swimlaneFillColor=none;strokeColor=#1F6FEB;fontColor=#1F6FEB;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="138" y="96" width="164" height="986" as="geometry" />
+          <mxGeometry x="138" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-1" label="Decide titular&lt;br&gt;y modelo operativo" n="1" lane="L1" stage="Cuentas y acuerdos" phases="S0">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
@@ -45,56 +45,40 @@
         <mxCell id="act-1-n" value="1" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-1" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-6" label="Acepta acuerdos&lt;br&gt;e invita a TI" n="6" lane="L1" stage="Cuentas y acuerdos" phases="S3, S4">
+        <object id="act-17" label="Prepara ficha y&lt;br&gt;notas de versión" n="17" lane="L1" stage="Ficha y aprobaciones" phases="S12">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
-            <mxGeometry x="3" y="176" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="888" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-6-n" value="6" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-6" vertex="1">
+        <mxCell id="act-17-n" value="17" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-17" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-8" label="Define IDs y crea&lt;br&gt;la app en tiendas" n="8" lane="L1" stage="Identidad de la app" phases="S5">
+        <object id="act-21" label="Decide Go / No-Go" n="21" lane="L1" stage="Ficha y aprobaciones" phases="S13">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
-            <mxGeometry x="3" y="264" width="158" height="56" as="geometry" />
-          </mxCell>
-        </object>
-        <mxCell id="act-8-n" value="8" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-8" vertex="1">
-          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
-        </mxCell>
-        <object id="act-16" label="Prepara ficha y&lt;br&gt;notas de versión" n="16" lane="L1" stage="Ficha y aprobaciones" phases="S12">
-          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
-            <mxGeometry x="3" y="684" width="158" height="56" as="geometry" />
-          </mxCell>
-        </object>
-        <mxCell id="act-16-n" value="16" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-16" vertex="1">
-          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
-        </mxCell>
-        <object id="act-19" label="Decide Go / No-Go" n="19" lane="L1" stage="Ficha y aprobaciones" phases="S13">
-          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
-            <mxGeometry x="3" y="752" width="158" height="42" as="geometry" />
-          </mxCell>
-        </object>
-        <mxCell id="act-19-n" value="19" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-19" vertex="1">
-          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
-        </mxCell>
-        <object id="act-21" label="Libera y despliega&lt;br&gt;por fases" n="21" lane="L1" stage="Revisión y publicación" phases="S15">
-          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
-            <mxGeometry x="3" y="826" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="956" width="158" height="42" as="geometry" />
           </mxCell>
         </object>
         <mxCell id="act-21-n" value="21" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-21" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-22" label="Monitorea, responde&lt;br&gt;reseñas, renueva" n="22" lane="L1" stage="Operación y renovación" phases="S16, S17">
+        <object id="act-23" label="Libera y despliega&lt;br&gt;por fases" n="23" lane="L1" stage="Revisión y publicación" phases="S15">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
-            <mxGeometry x="3" y="914" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="1030" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-22-n" value="22" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-22" vertex="1">
+        <mxCell id="act-23-n" value="23" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-23" vertex="1">
+          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
+        </mxCell>
+        <object id="act-24" label="Monitorea, responde&lt;br&gt;reseñas, renueva" n="24" lane="L1" stage="Operación y renovación" phases="S16, S17">
+          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
+            <mxGeometry x="3" y="1118" width="158" height="56" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="act-24-n" value="24" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-24" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
         <mxCell id="lane-L2" value="&lt;b style=&quot;font-size:15px&quot;&gt;Equipo técnico de&lt;br&gt;Canales Digitales&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;TI&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#E6F6F4;swimlaneFillColor=none;strokeColor=#0E9384;fontColor=#0E9384;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="314" y="96" width="164" height="986" as="geometry" />
+          <mxGeometry x="314" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-3" label="Crea correos y&lt;br&gt;cuentas con 2FA" n="3" lane="L2" stage="Cuentas y acuerdos" phases="S1">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
@@ -104,110 +88,142 @@
         <mxCell id="act-3-n" value="3" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-3" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-7" label="Configura roles&lt;br&gt;y accesos" n="7" lane="L2" stage="Cuentas y acuerdos" phases="S4">
+        <object id="act-5" label="Crea las cuentas&lt;br&gt;de desarrollador" n="5" lane="L2" stage="Cuentas y acuerdos" phases="S2, S3">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
             <mxGeometry x="3" y="176" width="158" height="56" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="act-5-n" value="5" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-5" vertex="1">
+          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
+        </mxCell>
+        <object id="act-7" label="Invita usuarios&lt;br&gt;y asigna roles" n="7" lane="L2" stage="Cuentas y acuerdos" phases="S3, S4">
+          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
+            <mxGeometry x="3" y="244" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
         <mxCell id="act-7-n" value="7" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-7" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
+        <object id="act-8" label="Define Bundle ID&lt;br&gt;y package name" n="8" lane="L2" stage="Identidad de la app" phases="S5">
+          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
+            <mxGeometry x="3" y="332" width="158" height="56" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="act-8-n" value="8" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-8" vertex="1">
+          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
+        </mxCell>
         <object id="act-9" label="Registra App IDs&lt;br&gt;por target" n="9" lane="L2" stage="Identidad de la app" phases="S5">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
-            <mxGeometry x="3" y="264" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="400" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
         <mxCell id="act-9-n" value="9" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-9" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-11" label="Emite certificados&lt;br&gt;y perfiles" n="11" lane="L2" stage="Firma y servicios" phases="S6">
+        <object id="act-10" label="Crea la app&lt;br&gt;en tiendas" n="10" lane="L2" stage="Identidad de la app" phases="S5">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
-            <mxGeometry x="3" y="352" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="468" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-11-n" value="11" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-11" vertex="1">
+        <mxCell id="act-10-n" value="10" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-10" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-12" label="Configura push y&lt;br&gt;deep links" n="12" lane="L2" stage="Firma y servicios" phases="S7">
+        <object id="act-12" label="Emite certificados&lt;br&gt;y perfiles" n="12" lane="L2" stage="Firma y servicios" phases="S6">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
-            <mxGeometry x="3" y="420" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="556" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
         <mxCell id="act-12-n" value="12" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-12" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-24" label="Renueva y rota&lt;br&gt;credenciales" n="24" lane="L2" stage="Operación y renovación" phases="S17, S18">
+        <object id="act-14" label="Configura push y&lt;br&gt;deep links" n="14" lane="L2" stage="Firma y servicios" phases="S7">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
-            <mxGeometry x="3" y="914" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="624" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-24-n" value="24" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-24" vertex="1">
+        <mxCell id="act-14-n" value="14" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-14" vertex="1">
+          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
+        </mxCell>
+        <object id="act-26" label="Renueva y rota&lt;br&gt;credenciales" n="26" lane="L2" stage="Operación y renovación" phases="S17, S18">
+          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
+            <mxGeometry x="3" y="1118" width="158" height="56" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="act-26-n" value="26" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-26" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
         <mxCell id="lane-L3" value="&lt;b style=&quot;font-size:15px&quot;&gt;Proveedor X&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Ejecutor técnico&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F1EEFE;swimlaneFillColor=none;strokeColor=#7A5AF8;fontColor=#7A5AF8;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="490" y="96" width="164" height="986" as="geometry" />
+          <mxGeometry x="490" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
-        <object id="act-13" label="Compila, firma y&lt;br&gt;verifica binario" n="13" lane="L3" stage="Construcción" phases="S8, S9">
+        <object id="act-15" label="Compila, firma y&lt;br&gt;verifica binario" n="15" lane="L3" stage="Construcción" phases="S8, S9">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F1EEFE;strokeColor=#7A5AF8;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L3" vertex="1">
-            <mxGeometry x="3" y="508" width="158" height="56" as="geometry" />
-          </mxCell>
-        </object>
-        <mxCell id="act-13-n" value="13" style="ellipse;html=1;fillColor=#7A5AF8;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-13" vertex="1">
-          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
-        </mxCell>
-        <object id="act-15" label="Sube el build y&lt;br&gt;prueba en canales" n="15" lane="L3" stage="Subida y pruebas" phases="S10, S11">
-          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F1EEFE;strokeColor=#7A5AF8;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L3" vertex="1">
-            <mxGeometry x="3" y="596" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="712" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
         <mxCell id="act-15-n" value="15" style="ellipse;html=1;fillColor=#7A5AF8;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-15" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-23" label="Analiza fallos y&lt;br&gt;actualiza SDK" n="23" lane="L3" stage="Operación y renovación" phases="S16, S17">
+        <object id="act-19" label="Sube el build y&lt;br&gt;prueba en canales" n="19" lane="L3" stage="Subida y pruebas" phases="S10, S11">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F1EEFE;strokeColor=#7A5AF8;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L3" vertex="1">
-            <mxGeometry x="3" y="914" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="800" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-23-n" value="23" style="ellipse;html=1;fillColor=#7A5AF8;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-23" vertex="1">
+        <mxCell id="act-19-n" value="19" style="ellipse;html=1;fillColor=#7A5AF8;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-19" vertex="1">
+          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
+        </mxCell>
+        <object id="act-25" label="Analiza fallos y&lt;br&gt;actualiza SDK" n="25" lane="L3" stage="Operación y renovación" phases="S16, S17">
+          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F1EEFE;strokeColor=#7A5AF8;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L3" vertex="1">
+            <mxGeometry x="3" y="1118" width="158" height="56" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="act-25-n" value="25" style="ellipse;html=1;fillColor=#7A5AF8;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-25" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
         <mxCell id="lane-L4" value="&lt;b style=&quot;font-size:15px&quot;&gt;Ciberseguridad&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Seguridad&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#FDECEA;swimlaneFillColor=none;strokeColor=#D92D20;fontColor=#D92D20;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="666" y="96" width="164" height="986" as="geometry" />
+          <mxGeometry x="666" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
-        <object id="act-10" label="Genera y custodia&lt;br&gt;claves de firma" n="10" lane="L4" stage="Firma y servicios" phases="S6">
+        <object id="act-11" label="Genera claves&lt;br&gt;de firma" n="11" lane="L4" stage="Firma y servicios" phases="S6">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FDECEA;strokeColor=#D92D20;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L4" vertex="1">
-            <mxGeometry x="3" y="352" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="556" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-10-n" value="10" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-10" vertex="1">
+        <mxCell id="act-11-n" value="11" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-11" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-14" label="Analiza el binario&lt;br&gt;(SAST, MAST)" n="14" lane="L4" stage="Construcción" phases="S8">
+        <object id="act-13" label="Custodia y entrega&lt;br&gt;credenciales" n="13" lane="L4" stage="Firma y servicios" phases="S6">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FDECEA;strokeColor=#D92D20;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L4" vertex="1">
-            <mxGeometry x="3" y="508" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="624" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-14-n" value="14" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-14" vertex="1">
+        <mxCell id="act-13-n" value="13" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-13" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-18" label="Aprobación de&lt;br&gt;seguridad" n="18" lane="L4" stage="Ficha y aprobaciones" phases="S13">
+        <object id="act-16" label="Analiza el binario&lt;br&gt;(SAST, MAST)" n="16" lane="L4" stage="Construcción" phases="S8">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FDECEA;strokeColor=#D92D20;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L4" vertex="1">
-            <mxGeometry x="3" y="684" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="712" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-18-n" value="18" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-18" vertex="1">
+        <mxCell id="act-16-n" value="16" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-16" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-25" label="Atiende incidentes&lt;br&gt;de claves" n="25" lane="L4" stage="Operación y renovación" phases="S18">
+        <object id="act-20" label="Aprobación de&lt;br&gt;seguridad" n="20" lane="L4" stage="Ficha y aprobaciones" phases="S13">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FDECEA;strokeColor=#D92D20;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L4" vertex="1">
-            <mxGeometry x="3" y="914" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="888" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-25-n" value="25" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-25" vertex="1">
+        <mxCell id="act-20-n" value="20" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-20" vertex="1">
+          <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
+        </mxCell>
+        <object id="act-27" label="Atiende incidentes&lt;br&gt;de claves" n="27" lane="L4" stage="Operación y renovación" phases="S18">
+          <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FDECEA;strokeColor=#D92D20;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L4" vertex="1">
+            <mxGeometry x="3" y="1118" width="158" height="56" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="act-27-n" value="27" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-27" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
         <mxCell id="lane-L5" value="&lt;b style=&quot;font-size:15px&quot;&gt;Legal, Cumplimiento&lt;br&gt;y Riesgos&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Cumplimiento, Legal y Riesgos&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#FEF1E6;swimlaneFillColor=none;strokeColor=#DC6803;fontColor=#DC6803;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="842" y="96" width="164" height="986" as="geometry" />
+          <mxGeometry x="842" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-2" label="Aprueba uso de&lt;br&gt;tiendas y terceros" n="2" lane="L5" stage="Cuentas y acuerdos" phases="S0">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FEF1E6;strokeColor=#DC6803;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L5" vertex="1">
@@ -217,18 +233,18 @@
         <mxCell id="act-2-n" value="2" style="ellipse;html=1;fillColor=#DC6803;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-2" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-17" label="Declara privacidad&lt;br&gt;y aprueba" n="17" lane="L5" stage="Ficha y aprobaciones" phases="S12, S13">
+        <object id="act-18" label="Declara privacidad&lt;br&gt;y aprueba" n="18" lane="L5" stage="Ficha y aprobaciones" phases="S12, S13">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FEF1E6;strokeColor=#DC6803;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L5" vertex="1">
-            <mxGeometry x="3" y="684" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="888" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-17-n" value="17" style="ellipse;html=1;fillColor=#DC6803;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-17" vertex="1">
+        <mxCell id="act-18-n" value="18" style="ellipse;html=1;fillColor=#DC6803;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-18" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
         <mxCell id="lane-L6" value="&lt;b style=&quot;font-size:15px&quot;&gt;Representación legal&lt;br&gt;y Finanzas&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Entidad, poderes y pagos&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F8F3E0;swimlaneFillColor=none;strokeColor=#A3820F;fontColor=#A3820F;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="1018" y="96" width="164" height="986" as="geometry" />
+          <mxGeometry x="1018" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
-        <object id="act-4" label="Gestiona D-U-N-S,&lt;br&gt;poderes y pagos" n="4" lane="L6" stage="Cuentas y acuerdos" phases="S1, S2">
+        <object id="act-4" label="Reúne datos legales&lt;br&gt;y de contacto" n="4" lane="L6" stage="Cuentas y acuerdos" phases="S1, S2">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F8F3E0;strokeColor=#A3820F;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L6" vertex="1">
             <mxGeometry x="3" y="108" width="158" height="56" as="geometry" />
           </mxCell>
@@ -237,77 +253,107 @@
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
         <mxCell id="lane-L7" value="&lt;b style=&quot;font-size:15px&quot;&gt;Apple, Google,&lt;br&gt;D&amp;amp;B&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Externos&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F0F1F4;swimlaneFillColor=none;strokeColor=#667085;fontColor=#667085;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
-          <mxGeometry x="1194" y="96" width="164" height="986" as="geometry" />
+          <mxGeometry x="1194" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
-        <object id="act-5" label="Verifican la&lt;br&gt;entidad" n="5" lane="L7" stage="Cuentas y acuerdos" phases="S2">
+        <object id="act-6" label="Verifican la&lt;br&gt;entidad" n="6" lane="L7" stage="Cuentas y acuerdos" phases="S2">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F0F1F4;strokeColor=#667085;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L7" vertex="1">
             <mxGeometry x="3" y="108" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-5-n" value="5" style="ellipse;html=1;fillColor=#667085;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-5" vertex="1">
+        <mxCell id="act-6-n" value="6" style="ellipse;html=1;fillColor=#667085;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-6" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-20" label="Revisan la versión&lt;br&gt;(Apple y Google)" n="20" lane="L7" stage="Revisión y publicación" phases="S14">
+        <object id="act-22" label="Revisan la versión&lt;br&gt;(Apple y Google)" n="22" lane="L7" stage="Revisión y publicación" phases="S14">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F0F1F4;strokeColor=#667085;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L7" vertex="1">
-            <mxGeometry x="3" y="826" width="158" height="56" as="geometry" />
+            <mxGeometry x="3" y="1030" width="158" height="56" as="geometry" />
           </mxCell>
         </object>
-        <mxCell id="act-20-n" value="20" style="ellipse;html=1;fillColor=#667085;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-20" vertex="1">
+        <mxCell id="act-22-n" value="22" style="ellipse;html=1;fillColor=#667085;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-22" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="link-2-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-2" target="act-3">
+        <mxCell id="link-1-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-1" target="act-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-4-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-4" target="act-5">
+        <mxCell id="link-3-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-3" target="act-5">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-6-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-6" target="act-7">
+        <mxCell id="link-4-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=1;entryY=0.75;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-4" target="act-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-5-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0.25;entryY=1;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-5" target="act-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-2-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-2" target="act-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-6-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-6" target="act-7">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="link-7-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-7" target="act-8">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-8-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-8" target="act-9">
+        <mxCell id="link-8-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-8" target="act-9">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="link-9-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-9" target="act-10">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-10-11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-10" target="act-11">
+        <mxCell id="link-9-11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-9" target="act-11">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-11-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-11" target="act-12">
+        <mxCell id="link-10-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-10" target="act-12">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-12-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-12" target="act-13">
+        <mxCell id="link-11-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-11" target="act-12">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-13-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-13" target="act-14">
+        <mxCell id="link-12-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-12" target="act-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-12-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-12" target="act-14">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="link-14-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-14" target="act-15">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-15-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-15" target="act-16">
+        <mxCell id="link-13-15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-13" target="act-15">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-17-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-17" target="act-18">
+        <mxCell id="link-15-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-15" target="act-16">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-18-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-18" target="act-19">
+        <mxCell id="link-15-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-15" target="act-19">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-19-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-19" target="act-20">
+        <mxCell id="link-10-17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-10" target="act-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-17-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0.25;entryY=1;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-17" target="act-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-16-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-16" target="act-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-19-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=1;exitY=0.5;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-19" target="act-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-18-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-18" target="act-20">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="link-20-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-20" target="act-21">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="link-21-22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-21" target="act-22">
+        <mxCell id="link-21-22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-21" target="act-22">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="notes" value="Si la tienda rechaza la versión (20), se vuelve a construir (13) o a ajustar la ficha (16).&lt;br&gt;La última etapa es continua: sus actividades (22 a 25) ocurren en paralelo durante la vida de la app.&lt;br&gt;Canal Digital decide y es titular de las cuentas; TI responde por la tecnología; el ejecutor técnico puede ser TI interno o un tercero (V14)." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=0;fontFamily=Calibri;fontSize=13;fontColor=#5B6475;" parent="1" vertex="1">
-          <mxGeometry x="24" y="1098" width="1340" height="68" as="geometry" />
+        <mxCell id="link-22-23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-22" target="act-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link-23-24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#7D8596;strokeWidth=1.4;endArrow=block;endFill=1;endSize=5;" parent="1" edge="1" source="act-23" target="act-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="notes" value="Si la tienda rechaza la versión (22), se vuelve a construir (15) o a ajustar la ficha (17).&lt;br&gt;La última etapa es continua: sus actividades (24 a 27) ocurren en paralelo durante la vida de la app.&lt;br&gt;Canal Digital decide y es titular de las cuentas; TI responde por la tecnología; el ejecutor técnico puede ser TI interno o un tercero (V14)." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=0;fontFamily=Calibri;fontSize=13;fontColor=#5B6475;" parent="1" vertex="1">
+          <mxGeometry x="24" y="1302" width="1340" height="68" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

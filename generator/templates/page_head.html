@@ -144,6 +144,15 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .gbar{position:absolute;top:7px;height:12px;border-radius:4px;min-width:4px}
 .gbar.done{background:var(--ok)}.gbar.now{background:var(--accent)}.gbar.todo{background:var(--muted);opacity:.55}.gbar.late{background:var(--bad)}
 .gbar.crit{box-shadow:0 0 0 2px var(--warn)}
+.gbar.t0{top:3px;height:8px}.gbar.t1{top:14px;height:8px}
+.rmtrack{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0 14px}
+.rmtrack h3{font-size:.9rem;margin:0 0 6px}
+.rmtrack .plain{font-size:.82rem;margin:6px 0 0}
+.trow{display:grid;grid-template-columns:70px minmax(80px,1fr) 150px minmax(0,1.4fr) minmax(0,1.4fr) 160px;gap:10px;align-items:center;font-size:.8rem;padding:5px 0;border-top:1px solid var(--line)}
+.trow .rmprog{margin:0}
+.trow .tblk{color:var(--bad);font-weight:600}
+@media (max-width:860px){.trow{grid-template-columns:70px minmax(0,1fr)}.trow>span{grid-column:1/-1}}
+#rmSeg{margin:10px 0 0}
 .gbar.cont{background:repeating-linear-gradient(90deg,var(--line2) 0 6px,transparent 6px 10px)}
 .gaxis{display:grid;grid-template-columns:260px 1fr;min-height:22px;font-size:.72rem;color:var(--muted)}
 .gaxis .gt span{position:absolute;top:4px;transform:translateX(-50%);white-space:nowrap}

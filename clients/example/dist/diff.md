@@ -23,7 +23,7 @@ Perfil regulatorio: PR-<SECTOR>-<PAIS>
 | V13 Canal de distribución | a) Tiendas públicas (modelado) |
 | V14 Modelo de ejecución tecnológica | b) Un tercero gobernado por TI |
 
-Sin elegir: V4, V5, V6, V9, V10, V11, V12
+Sin elegir: V4, V5, V6, V9, V10, V11, V12, V15
 
 ## Alertas de segregación de roles
 Ninguna.

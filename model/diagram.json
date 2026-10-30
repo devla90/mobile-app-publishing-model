@@ -1,11 +1,13 @@
 {
-  "description": "The 25 activities of the swimlane diagram: number, lane, stage (index into phases.json/stages), text lines, phases covered, and the plan: duration in calendar days (min/max) and the activities that must finish before (after). Continuous activities have no duration.",
+  "description": "The activities of the swimlane diagram, in flow order. `key` is the stable reference, used by `after`, `arrows` and instances; the number shown to people is computed from the position, so an activity is added by inserting it where it belongs. Also: lane, stage (index into phases.json/stages), platform, joint (one shared state and a meeting point for both platforms), text lines, phases covered, and the plan: duration in calendar days (min/max) and the activities that must finish before (after). Continuous activities have no duration. `arrows` are the links drawn on the diagram, a readable summary of the dependencies: [from, to, route]. Routes: h sideways, v down, s out of the side into the top, r out of the side into the bottom, l out of the bottom into the side, g along the gap above the target.",
   "lang": "es",
   "activities": [
     {
-      "n": 1,
+      "key": "decide-owner",
       "lane": "L1",
       "stage": 0,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Decide titular",
         "y modelo operativo"
@@ -20,9 +22,11 @@
       "after": []
     },
     {
-      "n": 2,
+      "key": "approve-stores",
       "lane": "L5",
       "stage": 0,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Aprueba uso de",
         "tiendas y terceros"
@@ -35,13 +39,15 @@
         "max": 5
       },
       "after": [
-        1
+        "decide-owner"
       ]
     },
     {
-      "n": 3,
+      "key": "create-identities",
       "lane": "L2",
       "stage": 0,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Crea correos y",
         "cuentas con 2FA"
@@ -54,16 +60,18 @@
         "max": 3
       },
       "after": [
-        1
+        "decide-owner"
       ]
     },
     {
-      "n": 4,
+      "key": "gather-registration-data",
       "lane": "L6",
       "stage": 0,
+      "platform": "both",
+      "joint": false,
       "lines": [
-        "Gestiona D-U-N-S,",
-        "poderes y pagos"
+        "Reúne datos legales",
+        "y de contacto"
       ],
       "phases": [
         "S1",
@@ -74,13 +82,38 @@
         "max": 30
       },
       "after": [
-        1
+        "decide-owner"
       ]
     },
     {
-      "n": 5,
+      "key": "create-developer-accounts",
+      "lane": "L2",
+      "stage": 0,
+      "platform": "both",
+      "joint": false,
+      "lines": [
+        "Crea las cuentas",
+        "de desarrollador"
+      ],
+      "phases": [
+        "S2",
+        "S3"
+      ],
+      "duration": {
+        "min": 1,
+        "max": 2
+      },
+      "after": [
+        "create-identities",
+        "gather-registration-data"
+      ]
+    },
+    {
+      "key": "verify-entity",
       "lane": "L7",
       "stage": 0,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Verifican la",
         "entidad"
@@ -93,73 +126,59 @@
         "max": 20
       },
       "after": [
-        3,
-        4
+        "create-developer-accounts"
       ]
     },
     {
-      "n": 6,
-      "lane": "L1",
+      "key": "assign-access",
+      "lane": "L2",
       "stage": 0,
+      "platform": "both",
+      "joint": false,
       "lines": [
-        "Acepta acuerdos",
-        "e invita a TI"
+        "Invita usuarios",
+        "y asigna roles"
       ],
       "phases": [
         "S3",
         "S4"
       ],
       "duration": {
-        "min": 1,
+        "min": 2,
         "max": 5
       },
       "after": [
-        2,
-        5
+        "approve-stores",
+        "verify-entity"
       ]
     },
     {
-      "n": 7,
+      "key": "define-identifiers",
       "lane": "L2",
-      "stage": 0,
-      "lines": [
-        "Configura roles",
-        "y accesos"
-      ],
-      "phases": [
-        "S4"
-      ],
-      "duration": {
-        "min": 1,
-        "max": 3
-      },
-      "after": [
-        6
-      ]
-    },
-    {
-      "n": 8,
-      "lane": "L1",
       "stage": 1,
+      "platform": "both",
+      "joint": false,
       "lines": [
-        "Define IDs y crea",
-        "la app en tiendas"
+        "Define Bundle ID",
+        "y package name"
       ],
       "phases": [
         "S5"
       ],
       "duration": {
         "min": 1,
-        "max": 2
+        "max": 1
       },
       "after": [
-        7
+        "assign-access"
       ]
     },
     {
-      "n": 9,
+      "key": "register-app-ids",
       "lane": "L2",
       "stage": 1,
+      "platform": "ios",
+      "joint": false,
       "lines": [
         "Registra App IDs",
         "por target"
@@ -172,32 +191,57 @@
         "max": 1
       },
       "after": [
-        8
+        "define-identifiers"
       ]
     },
     {
-      "n": 10,
+      "key": "create-store-app",
+      "lane": "L2",
+      "stage": 1,
+      "platform": "both",
+      "joint": false,
+      "lines": [
+        "Crea la app",
+        "en tiendas"
+      ],
+      "phases": [
+        "S5"
+      ],
+      "duration": {
+        "min": 0,
+        "max": 1
+      },
+      "after": [
+        "register-app-ids"
+      ]
+    },
+    {
+      "key": "generate-signing-keys",
       "lane": "L4",
       "stage": 2,
+      "platform": "both",
+      "joint": false,
       "lines": [
-        "Genera y custodia",
-        "claves de firma"
+        "Genera claves",
+        "de firma"
       ],
       "phases": [
         "S6"
       ],
       "duration": {
         "min": 1,
-        "max": 3
+        "max": 2
       },
       "after": [
-        9
+        "register-app-ids"
       ]
     },
     {
-      "n": 11,
+      "key": "issue-certificates",
       "lane": "L2",
       "stage": 2,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Emite certificados",
         "y perfiles"
@@ -210,14 +254,38 @@
         "max": 4
       },
       "after": [
-        9,
-        10
+        "register-app-ids",
+        "create-store-app",
+        "generate-signing-keys"
       ]
     },
     {
-      "n": 12,
+      "key": "hand-over-credentials",
+      "lane": "L4",
+      "stage": 2,
+      "platform": "both",
+      "joint": false,
+      "lines": [
+        "Custodia y entrega",
+        "credenciales"
+      ],
+      "phases": [
+        "S6"
+      ],
+      "duration": {
+        "min": 1,
+        "max": 1
+      },
+      "after": [
+        "issue-certificates"
+      ]
+    },
+    {
+      "key": "configure-services",
       "lane": "L2",
       "stage": 2,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Configura push y",
         "deep links"
@@ -230,13 +298,15 @@
         "max": 5
       },
       "after": [
-        11
+        "issue-certificates"
       ]
     },
     {
-      "n": 13,
+      "key": "build-and-sign",
       "lane": "L3",
       "stage": 3,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Compila, firma y",
         "verifica binario"
@@ -250,13 +320,16 @@
         "max": 4
       },
       "after": [
-        12
+        "hand-over-credentials",
+        "configure-services"
       ]
     },
     {
-      "n": 14,
+      "key": "analyze-binary",
       "lane": "L4",
       "stage": 3,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Analiza el binario",
         "(SAST, MAST)"
@@ -269,34 +342,15 @@
         "max": 3
       },
       "after": [
-        13
+        "build-and-sign"
       ]
     },
     {
-      "n": 15,
-      "lane": "L3",
-      "stage": 4,
-      "lines": [
-        "Sube el build y",
-        "prueba en canales"
-      ],
-      "phases": [
-        "S10",
-        "S11"
-      ],
-      "duration": {
-        "min": 3,
-        "max": 16
-      },
-      "after": [
-        13,
-        16
-      ]
-    },
-    {
-      "n": 16,
+      "key": "prepare-listing",
       "lane": "L1",
       "stage": 5,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Prepara ficha y",
         "notas de versión"
@@ -309,13 +363,15 @@
         "max": 10
       },
       "after": [
-        8
+        "create-store-app"
       ]
     },
     {
-      "n": 17,
+      "key": "declare-and-approve",
       "lane": "L5",
       "stage": 5,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Declara privacidad",
         "y aprueba"
@@ -329,13 +385,38 @@
         "max": 10
       },
       "after": [
-        16
+        "prepare-listing"
       ]
     },
     {
-      "n": 18,
+      "key": "upload-and-test",
+      "lane": "L3",
+      "stage": 4,
+      "platform": "both",
+      "joint": false,
+      "lines": [
+        "Sube el build y",
+        "prueba en canales"
+      ],
+      "phases": [
+        "S10",
+        "S11"
+      ],
+      "duration": {
+        "min": 3,
+        "max": 16
+      },
+      "after": [
+        "build-and-sign",
+        "prepare-listing"
+      ]
+    },
+    {
+      "key": "security-approval",
       "lane": "L4",
       "stage": 5,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Aprobación de",
         "seguridad"
@@ -348,14 +429,16 @@
         "max": 5
       },
       "after": [
-        14,
-        15
+        "analyze-binary",
+        "upload-and-test"
       ]
     },
     {
-      "n": 19,
+      "key": "go-no-go",
       "lane": "L1",
       "stage": 5,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Decide Go / No-Go"
       ],
@@ -367,15 +450,17 @@
         "max": 5
       },
       "after": [
-        15,
-        17,
-        18
+        "declare-and-approve",
+        "upload-and-test",
+        "security-approval"
       ]
     },
     {
-      "n": 20,
+      "key": "store-review",
       "lane": "L7",
       "stage": 6,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Revisan la versión",
         "(Apple y Google)"
@@ -388,13 +473,15 @@
         "max": 7
       },
       "after": [
-        19
+        "go-no-go"
       ]
     },
     {
-      "n": 21,
+      "key": "release",
       "lane": "L1",
       "stage": 6,
+      "platform": "both",
+      "joint": false,
       "lines": [
         "Libera y despliega",
         "por fases"
@@ -407,13 +494,15 @@
         "max": 7
       },
       "after": [
-        20
+        "store-review"
       ]
     },
     {
-      "n": 22,
+      "key": "monitor",
       "lane": "L1",
       "stage": 7,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Monitorea, responde",
         "reseñas, renueva"
@@ -424,13 +513,15 @@
       ],
       "continuous": true,
       "after": [
-        21
+        "release"
       ]
     },
     {
-      "n": 23,
+      "key": "analyze-crashes",
       "lane": "L3",
       "stage": 7,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Analiza fallos y",
         "actualiza SDK"
@@ -441,13 +532,15 @@
       ],
       "continuous": true,
       "after": [
-        21
+        "release"
       ]
     },
     {
-      "n": 24,
+      "key": "rotate-credentials",
       "lane": "L2",
       "stage": 7,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Renueva y rota",
         "credenciales"
@@ -458,13 +551,15 @@
       ],
       "continuous": true,
       "after": [
-        21
+        "release"
       ]
     },
     {
-      "n": 25,
+      "key": "handle-incidents",
       "lane": "L4",
       "stage": 7,
+      "platform": "both",
+      "joint": true,
       "lines": [
         "Atiende incidentes",
         "de claves"
@@ -474,8 +569,37 @@
       ],
       "continuous": true,
       "after": [
-        21
+        "release"
       ]
     }
+  ],
+  "arrows": [
+    ["decide-owner", "create-identities", "h"],
+    ["create-identities", "create-developer-accounts", "v"],
+    ["gather-registration-data", "create-developer-accounts", "l"],
+    ["create-developer-accounts", "verify-entity", "r"],
+    ["approve-stores", "assign-access", "g"],
+    ["verify-entity", "assign-access", "g"],
+    ["assign-access", "define-identifiers", "v"],
+    ["define-identifiers", "register-app-ids", "v"],
+    ["register-app-ids", "create-store-app", "v"],
+    ["register-app-ids", "generate-signing-keys", "s"],
+    ["create-store-app", "issue-certificates", "v"],
+    ["generate-signing-keys", "issue-certificates", "h"],
+    ["issue-certificates", "hand-over-credentials", "h"],
+    ["issue-certificates", "configure-services", "v"],
+    ["configure-services", "build-and-sign", "v"],
+    ["hand-over-credentials", "build-and-sign", "v"],
+    ["build-and-sign", "analyze-binary", "h"],
+    ["build-and-sign", "upload-and-test", "v"],
+    ["create-store-app", "prepare-listing", "s"],
+    ["prepare-listing", "upload-and-test", "r"],
+    ["analyze-binary", "security-approval", "v"],
+    ["upload-and-test", "security-approval", "s"],
+    ["declare-and-approve", "security-approval", "h"],
+    ["security-approval", "go-no-go", "h"],
+    ["go-no-go", "store-review", "g"],
+    ["store-review", "release", "h"],
+    ["release", "monitor", "v"]
   ]
 }

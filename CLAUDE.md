@@ -35,6 +35,7 @@ This repository is a data model, not an application. Read only what the task nee
 | F | Artifact | `model/artifacts.json` |
 | S | Phase (S0–S18) and step (S6.2) | `model/phases.json`, `model/steps.json` |
 | V | Variation point | `model/variants.json` |
+| key | Activity of the diagram, such as `create-store-app`. Its number is computed from the position | `model/diagram.json` |
 | R | Renewal | `model/renewals.json` |
 | m / c | Milestone and per-version check | `model/milestones.json` |
 
