@@ -4,6 +4,29 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- Step S1.7 "Reunir los datos de registro de las cuentas", required by S2.1 and S2.4.
+- Activity "Crea las cuentas de desarrollador" (L2, S2): S2.1 and S2.4 are run by A05 and A06; A03 and A04 answer for them.
+- Activity "Crea la app en tiendas" (L2, S5), after "Registra App IDs por target".
+- Activity "Custodia y entrega credenciales" (L4, S6), after "Emite certificados y perfiles".
+- V15 "Plataformas objetivo" (iOS and Android, only iOS, only Android). With one platform, the page leaves out the steps, activities, milestone checks, renewals and variants of the other, and the diagrams dim its boxes.
+- Follow-up per platform: `platform` and `joint` on each activity, and `plan.<key>.platforms` in instances for `done`, `min`, `max` and `blocked`. The plan keeps one date path per platform, with joint activities as meeting points.
+- Roadmap views Conjunto, iOS and Android, with progress, blocker, next activity and the gap at the next meeting point.
+- `arrows` in `diagram.json`: the links drawn on the diagram, checked by `validate.py`.
+
+### Changed
+- **Incompatible with 1.3.0:** activities have a stable `key`, and the number shown is computed from the position, in flow order. `after`, `arrows`, `plan` and `extra_activities` use keys. `validate.py` rejects instances that use numbers; `docs/decisions.md`, row 23, has the table from number to key. A plan stored in a browser is discarded once.
+- "Acepta acuerdos e invita a TI" and "Configura roles y accesos" merge into "Invita usuarios y asigna roles" (L2, 2–5 days). S3.1 and S3.2 move to the account activity, because the stores ask for them while the account is created: S3.1 now comes before S2.3, and S3.2 before S2.6.
+- "Gestiona D-U-N-S, poderes y pagos" becomes "Reúne datos legales y de contacto".
+- "Define IDs y crea la app en tiendas" moves to L2 and becomes "Define Bundle ID y package name". S5.1 goes to A05 and A06, consulting A09 and validated by A07; S5.3 to A05 and S5.4 to A06.
+- "Genera y custodia claves de firma" becomes "Genera claves de firma" (1–2 days); custody, handover and the credential inventory move to the new activity.
+- S6.13 depends on S7.2: fingerprints are registered once the Firebase project exists.
+- S11.3 depends on S8.4, and S11.4 has a note with the same rule: no build reaches external testers without its security analysis.
+
+### Fixed
+- Client pages opened as local files shared one browser storage, so one client's name and plan appeared on another client's page or on the base page. Each client page now stores its data under its own keys and moves its earlier data there.
+- A client page opened before a rebuild kept the stored plan and ignored changes to `plan` in `instance.json`. Now it adopts them and keeps only the activities edited on the page since the previous build.
+
 ## [1.3.0] - 2026-10-29
 
 ### Changed

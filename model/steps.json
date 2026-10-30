@@ -132,17 +132,32 @@
       "variants": []
     },
     {
+      "id": "S1.7",
+      "phase": "S1",
+      "name": "Reunir los datos de registro de las cuentas",
+      "platform": "both",
+      "owner": "A07, A02, A16",
+      "inputs": "Datos legales y de contacto",
+      "outputs": "Datos de registro validados",
+      "depends_on": [
+        "S0.1"
+      ],
+      "variants": [],
+      "note": "Nombre legal y dirección, nombre de desarrollador, sitio web, correos y teléfonos, medio de pago. El correo y el teléfono de desarrollador de Play son públicos. En Apple, un alias o el nombre de la empresa como nombre de la cuenta retrasa la aprobación."
+    },
+    {
       "id": "S2.1",
       "phase": "S2",
       "name": "Enrolar al titular en Apple Developer Program como organización",
       "platform": "ios",
-      "owner": "A03 (con poder de A02)",
+      "owner": "A05 ejecuta, A03 responde (con poder de A02)",
       "inputs": "C01, C02",
       "outputs": "Solicitud",
       "depends_on": [
         "S1.2",
         "S1.4",
-        "S1.6"
+        "S1.6",
+        "S1.7"
       ],
       "variants": [
         "V1"
@@ -170,7 +185,7 @@
       "inputs": "Aprobación",
       "outputs": "Membresía activa",
       "depends_on": [
-        "S2.2"
+        "S3.1"
       ],
       "variants": []
     },
@@ -179,12 +194,13 @@
       "phase": "S2",
       "name": "Crear cuenta de desarrollador Play tipo organización y vincular perfil de pagos",
       "platform": "android",
-      "owner": "A04",
+      "owner": "A06 ejecuta, A04 responde",
       "inputs": "C01, C03",
       "outputs": "Cuenta",
       "depends_on": [
         "S1.2",
-        "S1.5"
+        "S1.5",
+        "S1.7"
       ],
       "variants": [
         "V1"
@@ -212,7 +228,7 @@
       "inputs": "Cuenta",
       "outputs": "—",
       "depends_on": [
-        "S2.4"
+        "S3.2"
       ],
       "variants": []
     },
@@ -240,9 +256,10 @@
       "inputs": "—",
       "outputs": "F26",
       "depends_on": [
-        "S2.3"
+        "S2.2"
       ],
-      "variants": []
+      "variants": [],
+      "note": "Apple lo pide después de verificar la entidad y antes de pagar la membresía. Solo lo acepta el Account Holder."
     },
     {
       "id": "S3.2",
@@ -255,7 +272,8 @@
       "depends_on": [
         "S2.4"
       ],
-      "variants": []
+      "variants": [],
+      "note": "Google lo pide durante el registro de la cuenta, antes de pagar. Cumplimiento debe revisarlo antes de registrar."
     },
     {
       "id": "S3.3",
@@ -309,7 +327,7 @@
       "inputs": "C04",
       "outputs": "Admins",
       "depends_on": [
-        "S3.1"
+        "S2.3"
       ],
       "variants": []
     },
@@ -344,7 +362,7 @@
       "phase": "S5",
       "name": "Definir bundle ID y package name (permanentes)",
       "platform": "both",
-      "owner": "A07, A09",
+      "owner": "A05, A06 (consulta A09, valida A07)",
       "inputs": "Convención de nombres",
       "outputs": "Identificadores",
       "depends_on": [
@@ -373,7 +391,7 @@
       "phase": "S5",
       "name": "Crear el registro de app en App Store Connect",
       "platform": "ios",
-      "owner": "A14",
+      "owner": "A05",
       "inputs": "C09, nombre, SKU",
       "outputs": "App en App Store Connect",
       "depends_on": [
@@ -386,7 +404,7 @@
       "phase": "S5",
       "name": "Crear la app en Play Console",
       "platform": "android",
-      "owner": "A14",
+      "owner": "A06",
       "inputs": "Package name",
       "outputs": "App en Play",
       "depends_on": [
@@ -606,7 +624,8 @@
       "inputs": "C22",
       "outputs": "Servicios vinculados",
       "depends_on": [
-        "S6.11"
+        "S6.11",
+        "S7.2"
       ],
       "variants": [],
       "note": "Sin esto fallan login con Google, Maps y deep links."
@@ -923,7 +942,8 @@
       "inputs": "Aprobación beta",
       "outputs": "Pruebas",
       "depends_on": [
-        "S11.2"
+        "S11.2",
+        "S8.4"
       ],
       "variants": [
         "V9"
@@ -942,7 +962,8 @@
       ],
       "variants": [
         "V9"
-      ]
+      ],
+      "note": "Ningún build pasa a un track cerrado o abierto sin el análisis de S8.4. El track interno puede empezar antes."
     },
     {
       "id": "S11.5",

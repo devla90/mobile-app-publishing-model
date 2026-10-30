@@ -42,29 +42,39 @@ def load_model():
     m["PAIRS"] = [[*p["roles"], p["risk"], p["severity"]] for p in act["incompatible_pairs"]]
     m["C"] = {k: [v["name"], v["validity"]] for k, v in cred["items"].items()}
     m["F"] = {k: [v["name"], v["format"]] for k, v in art["items"].items()}
-    m["V"] = {k: [v["name"], [f'{o["key"]}) {o["text"]}' for o in v["options"]]] for k, v in var["items"].items()}
+    m["V"] = {k: [v["name"], [f'{o["key"]}) {o["text"]}' for o in v["options"]], v.get("platform", "both")] for k, v in var["items"].items()}
     m["FREQ"] = pha["frequencies"]
     m["PH"] = [[f["id"], f["name"], f["frequency"]] for f in pha["phases"]]
     m["TIME"] = {f["id"]: [f["duration"]["min"], f["duration"]["max"], f["duration"]["depends_on"]] for f in pha["phases"]}
     m["STAGES"] = [[e["name"], e["phases"]] for e in pha["stages"]]
     m["VER_PH"] = pha["per_version_phases"]
-    # Plan by activity: [id, name, lane, min, max, after, continuous, per_version]
-    m["ACT"] = [[str(a["n"]), " ".join(a["lines"]), a["lane"], a.get("duration", {}).get("min", 0), a.get("duration", {}).get("max", 0),
-                 [str(x) for x in a.get("after", [])], a.get("continuous", False), all(p in pha["per_version_phases"] for p in a["phases"])]
+    # Plan by activity: [key, name, lane, min, max, after, continuous, per_version, platform, joint].
+    # The number people see is the position in the list.
+    m["ACT"] = [[a["key"], " ".join(a["lines"]), a["lane"], a.get("duration", {}).get("min", 0), a.get("duration", {}).get("max", 0),
+                 a.get("after", []), a.get("continuous", False), all(p in pha["per_version_phases"] for p in a["phases"]),
+                 a["platform"], a["joint"]]
                 for a in dia["activities"]]
+    num = {a["key"]: i + 1 for i, a in enumerate(dia["activities"])}
+    m["NUM"] = num
+    m["ARROWS"] = [[num[x], num[y], route] for x, y, route in dia["arrows"]]
     m["S_RAW"] = [[p["id"], p["name"], p["platform"], p["owner"], p["inputs"], p["outputs"],
                    p["depends_on"], ",".join(p["variants"]), p.get("note", "")] for p in stp["steps"]]
-    m["BOX"] = [[a["n"], a["lane"], a["stage"], a["lines"], a["phases"]] for a in dia["activities"]]
+    m["BOX"] = [[num[a["key"]], a["lane"], a["stage"], a["lines"], a["phases"]] for a in dia["activities"]]
     m["REN"] = [[r["id"], r["name"], r["group"], r["cycle_months"], r["lead_days"], r["if_expired"], r["renewed_by"], r["step"]] for r in ren["items"]]
     m["MS"] = [[h["id"], h["name"], h["description"], h["phases"], [[c["id"], c["text"], c["step"]] for c in h["checks"]]] for h in mil["milestones"]]
     return m
 
 
-def load_strings(lang):
+def load_strings(lang, m):
     path = I18N / f"{lang}.json"
     if not path.exists():
         sys.exit(f"No UI strings for language '{lang}' (expected {path.relative_to(ROOT)})")
-    return read_json(path)
+    # {act:<key>} in a UI string becomes the number of that activity, so strings survive a change in the flow.
+    def number(mt):
+        if mt.group(1) not in m["NUM"]:
+            sys.exit(f"UI string names unknown activity: {mt.group(1)}")
+        return str(m["NUM"][mt.group(1)])
+    return json.loads(re.sub(r"\{act:([a-z-]+)\}", number, path.read_text(encoding="utf-8")))
 
 
 def fill(template, t):
@@ -107,6 +117,7 @@ def js_data(m, t, instance=None):
     s.append(f'const PAIRS={d(m["PAIRS"])};')
     s.append(f'const TIME={d(m["TIME"])};')
     s.append(f'const ACT={d(m["ACT"])};')
+    s.append(f'const ARROWS={d(m["ARROWS"])};')
     s.append(f'const MS={d(m["MS"])};')
     # Static site: no shared db. The Claude artifact build removes the next line (see docs/deployment.md).
     s.append('window.claude={use:async()=>null};')
@@ -140,6 +151,12 @@ TINT = {"L1": "#EAF2FE", "L2": "#E6F6F4", "L3": "#F1EEFE", "L4": "#FDECEA", "L5"
 INK, MUTED, RULE, ARROW = "#1D2433", "#5B6475", "#E4E7EC", "#7D8596"
 
 
+def off_target(m, instance):
+    """Numbers of the activities that do not apply to the platforms chosen in V15."""
+    other = {"b": "android", "c": "ios"}.get((instance or {}).get("variants", {}).get("V15"))
+    return {m["NUM"][a[0]] for a in m["ACT"] if a[8] == other}
+
+
 def swimlane_layout(m, t, instance=None):
     """Geometry of the swimlane diagram: page size, rows, box positions and the arrows to draw."""
     X0, CW, BW, BH1, BH2, GAP, PADR, TOP = 132, 176, 158, 42, 56, 12, 16, 96
@@ -163,21 +180,28 @@ def swimlane_layout(m, t, instance=None):
             yy = rowY[r] + PADR
             for b in [b for b in box if b[2] == r and b[1] == l[0]]:
                 pos[b[0]] = dict(x=X0 + col[l[0]] * CW + (CW - BW) / 2, y=yy, w=BW, h=bh(b)); yy += bh(b) + GAP
-    # Arrows follow the numbering. Same-row hops are horizontal ("h") and are skipped when another box sits in between.
-    links = []
-    for n in range(1, 22):
-        a, b = pos.get(n), pos.get(n + 1)
-        if not a or not b: continue
-        ba, bb = box[n - 1], box[n]
-        if ba[2] == bb[2] and a["x"] != b["x"]:
-            lo, hi = min(a["x"], b["x"]), max(a["x"], b["x"]); y1, y2 = min(a["y"] + a["h"] / 2, b["y"] + b["h"] / 2), max(a["y"] + a["h"] / 2, b["y"] + b["h"] / 2)
-            if any(ob is not ba and ob is not bb and lo < pos[ob[0]]["x"] < hi and pos[ob[0]]["y"] <= y2 and pos[ob[0]]["y"] + pos[ob[0]]["h"] >= y1 for ob in box): continue
-            links.append((n, n + 1, "h"))
-        else:
-            links.append((n, n + 1, "v"))
+    links = [tuple(x) for x in m["ARROWS"]]
     names = {l[0]: (instance or {}).get("lanes", {}).get(l[0], l[1]) for l in lanes}
     subs = {l[0]: l[1] if instance and names[l[0]] != l[1] else t["lane_sub_long"][l[0]] for l in lanes}
     return dict(X0=X0, CW=CW, TOP=TOP, HEAD=HEAD, GB=GB, W=W, H=H, rows=rows, rowY=rowY, pos=pos, links=links, names=names, subs=subs)
+
+
+def arrow_path(a, b, kind):
+    """SVG path of a diagram arrow. Routes are described in model/diagram.json."""
+    right = b["x"] > a["x"]; side = a["x"] + a["w"] if right else a["x"]
+    ax, ay, bx, by = a["x"] + a["w"] / 2, a["y"] + a["h"] / 2, b["x"] + b["w"] / 2, b["y"] + b["h"] / 2
+    if kind == "h":
+        ex = b["x"] if right else b["x"] + b["w"]; dx = (ex - side) / 2
+        return f'M{side} {ay}C{side+dx} {ay} {ex-dx} {by} {ex} {by}'
+    if kind == "s": return f'M{side} {ay}H{bx-9*(1 if right else -1)}Q{bx} {ay} {bx} {ay+9}V{b["y"]}'
+    if kind == "r":
+        ex = b["x"] + b["w"] / 4; return f'M{side} {ay}H{ex}V{b["y"]+b["h"]}'
+    if kind == "l":
+        return f'M{ax} {a["y"]+a["h"]}V{b["y"]+b["h"]*0.75}H{b["x"]+b["w"]}'
+    if kind == "g":
+        sx = a["x"] + a["w"] * 0.75; return f'M{sx} {a["y"]+a["h"]}V{b["y"]-6}H{bx}V{b["y"]}'
+    sy, ey = a["y"] + a["h"], b["y"]; dy = max(18, (ey - sy) / 2)
+    return f'M{ax} {sy}C{ax} {sy+dy} {bx} {ey-dy} {bx} {ey}'
 
 
 def split_lane_name(name):
@@ -225,21 +249,17 @@ def svg_swimlanes(m, t, instance=None, title=None):
         if b: o.append(f'<text x="24" y="{yb+31}" font-size="14" font-weight="700" fill="{INK}">{esc(b)}</text>')
         o.append(f'<text x="24" y="{yb+(49 if b else 32)}" font-size="12" fill="{MUTED}">{phase_range(phs)}</text>')
     for na, nb, kind in g["links"]:
-        a, b = pos[na], pos[nb]
-        ac = (a["x"] + a["w"] / 2, a["y"] + a["h"] / 2); bc = (b["x"] + b["w"] / 2, b["y"] + b["h"] / 2)
-        if kind == "h":
-            sx = a["x"] + a["w"] if b["x"] > a["x"] else a["x"]; ex = b["x"] if b["x"] > a["x"] else b["x"] + b["w"]; dx = (ex - sx) / 2
-            p = f'M{sx} {ac[1]}C{sx+dx} {ac[1]} {ex-dx} {bc[1]} {ex} {bc[1]}'
-        else:
-            sy, ey = a["y"] + a["h"], b["y"]; dy = max(18, (ey - sy) / 2)
-            p = f'M{ac[0]} {sy}C{ac[0]} {sy+dy} {bc[0]} {ey-dy} {bc[0]} {ey}'
+        p = arrow_path(pos[na], pos[nb], kind)
         o.append(f'<path d="{p}" fill="none" stroke="{ARROW}" stroke-width="1.4" marker-end="url(#ah)"/>')
+    off = off_target(m, instance)
     for n, lid, r, lines, _ in box:
         p = pos[n]; c = COLOR[lid]
+        o.append(f'<g opacity="{0.3 if n in off else 1}">')
         o.append(f'<rect x="{p["x"]}" y="{p["y"]}" width="{p["w"]}" height="{p["h"]}" rx="9" fill="{TINT[lid]}" stroke="{c}" stroke-width="1.4"/>')
         o.append(f'<circle cx="{p["x"]+15}" cy="{p["y"]+16}" r="10" fill="{c}"/><text x="{p["x"]+15}" y="{p["y"]+20}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">{n}</text>')
         for k, tx in enumerate(lines):
             o.append(f'<text x="{p["x"]+32}" y="{p["y"]+21+k*16}" font-size="13" fill="{INK}">{esc(tx)}</text>')
+        o.append("</g>")
     for k, tx in enumerate(t["svg_notes"]):
         o.append(f'<text x="24" y="{GB+30+k*20}" font-size="13" fill="{MUTED}">{esc(tx)}</text>')
     o.append("</svg>")
@@ -296,21 +316,22 @@ def drawio_swimlanes(m, t, instance=None, title=None):
              f"swimlaneFillColor=none;strokeColor={c};fontColor={c};collapsible=0;horizontal=1;verticalAlign=middle;{FONT}",
              lx, TOP, CW - 12, GB - TOP)
         for n, blid, r, lines, phases in [b for b in box if b[1] == lid]:
-            p = pos[n]
+            p = pos[n]; dim = "opacity=30;" if n in off_target(m, instance) else ""
             cell(f"act-{n}", "<br>".join(esc(s) for s in lines),
-                 f"rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor={TINT[lid]};strokeColor={c};strokeWidth=1.4;align=left;"
+                 f"rounded=1;arcSize=12;html=1;whiteSpace=wrap;{dim}fillColor={TINT[lid]};strokeColor={c};strokeWidth=1.4;align=left;"
                  f"verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor={INK};{FONT}",
                  p["x"] - lx, p["y"] - TOP, p["w"], p["h"], parent=f"lane-{lid}",
                  data=dict(n=str(n), lane=lid, stage=stages[r][0], phases=", ".join(phases)))
             cell(f"act-{n}-n", str(n), f"ellipse;html=1;fillColor={c};strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;"
                  f"movable=0;resizable=0;{FONT}", 5, 6, 20, 20, parent=f"act-{n}")
     for na, nb, kind in g["links"]:
-        a, b = pos[na], pos[nb]
-        if kind == "h":
-            right = b["x"] > a["x"]
-            ports = f"exitX={1 if right else 0};exitY=0.5;entryX={0 if right else 1};entryY=0.5;"
-        else:
-            ports = "exitX=0.5;exitY=1;entryX=0.5;entryY=0;"
+        a, b = pos[na], pos[nb]; right = b["x"] > a["x"]
+        ports = {"h": f"exitX={1 if right else 0};exitY=0.5;entryX={0 if right else 1};entryY=0.5;",
+                 "v": "exitX=0.5;exitY=1;entryX=0.5;entryY=0;",
+                 "s": f"exitX={1 if right else 0};exitY=0.5;entryX=0.5;entryY=0;",
+                 "r": f"exitX={1 if right else 0};exitY=0.5;entryX=0.25;entryY=1;",
+                 "l": "exitX=0.5;exitY=1;entryX=1;entryY=0.75;",
+                 "g": "exitX=0.75;exitY=1;entryX=0.5;entryY=0;"}[kind]
         cell(f"link-{na}-{nb}", "", f"edgeStyle=orthogonalEdgeStyle;rounded=1;curved=1;html=1;{ports}strokeColor={ARROW};strokeWidth=1.4;"
              f"endArrow=block;endFill=1;endSize=5;", 0, 0, 0, 0, edge=(f"act-{na}", f"act-{nb}"))
     cell("notes", "<br>".join(esc(s) for s in t["svg_notes"]), f"{text}fontSize=13;fontColor={MUTED};", 24, GB + 16, W - 48, 20 * len(t["svg_notes"]) + 8)
@@ -362,20 +383,24 @@ def diff_md(m, t, inst):
         out.append(""); out.append(f'## {t["diff_plan"]}')
         if inst.get("start_date"): out.append(f'{t["diff_plan_start"]}{inst["start_date"]}'); out.append("")
         base = {a[0]: a for a in m["ACT"]}
+        shown = lambda k: str(m["NUM"].get(k, k))
         out.append(f'| {t["diff_h_act"]} | {t["diff_h_days"]} | {t["diff_h_after"]} | {t["diff_h_done"]} |'); out.append("| --- | --- | --- | --- |")
         for k, o in plan.items():
             a = base.get(k)
             if not a: continue
             days = f'{o.get("min", a[3])}–{o.get("max", a[4])}' + (f' ({t["diff_was"]} {a[3]}–{a[4]})' if "min" in o or "max" in o else "")
             done = t["diff_yes"] if o.get("done") is True else o.get("done", "")
-            out.append(f'| {k} {a[1]} | {days} | {", ".join(o.get("after", a[5]))} | {done} |')
+            parts = [f'{t["plat_" + p]}: {t["diff_yes"] if q["done"] is True else q["done"]}' for p, q in o.get("platforms", {}).items() if q.get("done")]
+            parts += [f'{t["plat_" + p]}: {t["rm_blocked"].lower()} ({q["blocked"]})' for p, q in o.get("platforms", {}).items() if q.get("blocked")]
+            done = "; ".join(([str(done)] if done else []) + parts)
+            out.append(f'| {shown(k)} {a[1]} | {days} | {", ".join(map(shown, o.get("after", a[5])))} | {done} |')
         for x in extra:
-            out.append(f'| {x["id"]} {x["name"]} ({t["diff_extra"]}) | {x["min"]}–{x["max"]} | {", ".join(map(str, x.get("after", [])))} | |')
+            out.append(f'| {x["id"]} {x["name"]} ({t["diff_extra"]}) | {x["min"]}–{x["max"]} | {", ".join(map(shown, x.get("after", [])))} | |')
     return "\n".join(out) + "\n"
 
 
 def main():
-    m = load_model(); t = load_strings(LANG)
+    m = load_model(); t = load_strings(LANG, m)
     OUT.mkdir(exist_ok=True)
     (OUT / "index.html").write_text(page(m, t), encoding="utf-8")
     (OUT / "swimlanes.svg").write_text(svg_swimlanes(m, t), encoding="utf-8")

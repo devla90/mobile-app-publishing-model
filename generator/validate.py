@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parent.parent
 MODEL = ROOT / "model"
 problems = []
 say = lambda msg: problems.append(msg)
+PLATFORMS = ("ios", "android", "both")
+TARGETS = {"b": ["ios"], "c": ["android"]}  # V15 options that narrow the project to one platform
 
 
 def check_plan(where, acts):
@@ -20,7 +22,8 @@ def check_plan(where, acts):
         if not cont and not (isinstance(mn, int) and isinstance(mx, int) and 0 <= mn <= mx):
             say(f"{where}: activity {i} needs whole-day durations with 0 <= min <= max")
         for a in after:
-            if a not in acts: say(f"{where}: activity {i} waits for unknown activity {a}")
+            if a.isdigit(): say(f"{where}: activity {i} waits for the number {a}; use its key (docs/conventions.md#activity-keys-and-numbers)")
+            elif a not in acts: say(f"{where}: activity {i} waits for unknown activity {a}")
     state = {}
     def visit(i, path):
         if state.get(i) == 1: say(f"{where}: dependency cycle {' -> '.join(path + [i])}"); return
@@ -29,6 +32,12 @@ def check_plan(where, acts):
         for a in acts[i][2]: visit(a, path + [i])
         state[i] = 2
     for i in acts: visit(i, [])
+
+
+def check_done(where, d):
+    if d is not None and d is not True:
+        try: date.fromisoformat(str(d))
+        except ValueError: say(f"{where} done must be true or a YYYY-MM-DD date")
 
 
 def load(path):
@@ -79,7 +88,7 @@ for s in steps["steps"]:
     if sid in seen: say(f"steps: duplicate id {sid}")
     seen.add(sid)
     if s["phase"] not in phase_ids or not sid.startswith(s["phase"] + "."): say(f"steps: {sid} phase mismatch ({s['phase']})")
-    if s["platform"] not in ("ios", "android", "both"): say(f"steps: {sid} bad platform '{s['platform']}'")
+    if s["platform"] not in PLATFORMS: say(f"steps: {sid} bad platform '{s['platform']}'")
     for a in re.findall(r"A\d\d", s["owner"]):
         if a not in roles: say(f"steps: {sid} owner names unknown role {a}")
     if not re.findall(r"A\d\d", s["owner"]): say(f"steps: {sid} owner has no role id")
@@ -94,7 +103,9 @@ for s in steps["steps"]:
 
 # Platforms
 for pid, p in files["platforms"]["items"].items():
-    if p["platform"] not in ("ios", "android", "both"): say(f"platforms: {pid} bad platform '{p['platform']}'")
+    if p["platform"] not in PLATFORMS: say(f"platforms: {pid} bad platform '{p['platform']}'")
+for vid, v in files["variants"]["items"].items():
+    if v.get("platform", "both") not in PLATFORMS: say(f"variants: {vid} bad platform '{v['platform']}'")
 
 # Renewals, milestones, diagram
 for r in files["renewals"]["items"]:
@@ -105,14 +116,25 @@ for m in files["milestones"]["milestones"]:
     for c in m["checks"]:
         if c["step"] not in step_ids: say(f"milestones: check {c['id']} points to unknown step {c['step']}")
 n_stages = len(phases["stages"])
-base_plan = {str(a["n"]): (a.get("duration", {}).get("min"), a.get("duration", {}).get("max"), [str(x) for x in a.get("after", [])],
-                           a.get("continuous", False)) for a in files["diagram"]["activities"]}
+base_plan = {a["key"]: (a.get("duration", {}).get("min"), a.get("duration", {}).get("max"), a.get("after", []),
+                        a.get("continuous", False)) for a in files["diagram"]["activities"]}
+keys = [a["key"] for a in files["diagram"]["activities"]]
+for k in {x for x in keys if keys.count(x) > 1}: say(f"diagram: duplicate activity key {k}")
+for k in keys:
+    if not re.fullmatch(r"[a-z]+(-[a-z]+)*", k): say(f"diagram: activity key '{k}' must be lowercase words joined by hyphens")
 check_plan("diagram", base_plan)
 for a in files["diagram"]["activities"]:
-    if a["lane"] not in lanes: say(f"diagram: activity {a['n']} unknown lane {a['lane']}")
-    if not 0 <= a["stage"] < n_stages: say(f"diagram: activity {a['n']} stage index out of range")
+    if a["lane"] not in lanes: say(f"diagram: activity {a['key']} unknown lane {a['lane']}")
+    if not 0 <= a["stage"] < n_stages: say(f"diagram: activity {a['key']} stage index out of range")
+    if a.get("platform") not in PLATFORMS: say(f"diagram: activity {a['key']} bad platform '{a.get('platform')}'")
+    if not isinstance(a.get("joint"), bool): say(f"diagram: activity {a['key']} needs joint true or false")
+    if a.get("joint") and a.get("platform") != "both": say(f"diagram: activity {a['key']} is joint, so its platform must be both")
     for ph in a["phases"]:
-        if ph not in phase_ids: say(f"diagram: activity {a['n']} lists unknown phase {ph}")
+        if ph not in phase_ids: say(f"diagram: activity {a['key']} lists unknown phase {ph}")
+
+for x in files["diagram"]["arrows"]:
+    if x[0] not in base_plan or x[1] not in base_plan: say(f"diagram: arrow {x} names an unknown activity")
+    if x[2] not in ("h", "v", "s", "r", "l", "g"): say(f"diagram: arrow {x} has an unknown route")
 
 # Client instances
 clients = ROOT / "clients"
@@ -126,6 +148,10 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
     for v, key in inst.get("variants", {}).items():
         if v not in variant_ids: say(f"{rel}: unknown variant {v}")
         elif key not in {o["key"] for o in files["variants"]["items"][v]["options"]}: say(f"{rel}: variant {v} has no option '{key}'")
+    targets = TARGETS.get(inst.get("variants", {}).get("V15"), ["ios", "android"])
+    for v in inst.get("variants", {}):
+        if files["variants"]["items"].get(v, {}).get("platform", "both") not in targets + ["both"]:
+            say(f"{rel}: variant {v} does not apply to the platforms chosen in V15")
     for r, d in inst.get("renewals", {}).items():
         if r not in renewal_ids: say(f"{rel}: unknown renewal {r}")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(d)): say(f"{rel}: renewal {r} date must be YYYY-MM-DD")
@@ -140,14 +166,20 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         if x.get("lane") not in lanes: say(f"{rel}: extra activity {xid} has unknown lane {x.get('lane')}")
         if not x.get("name"): say(f"{rel}: extra activity {xid} has no name")
         acts[xid] = (x.get("min"), x.get("max"), [str(a) for a in x.get("after", [])], False)
+        if x.get("platform", "both") not in PLATFORMS: say(f"{rel}: extra activity {xid} bad platform '{x['platform']}'")
+        if not isinstance(x.get("joint", True), bool): say(f"{rel}: extra activity {xid} needs joint true or false")
     for k, o in inst.get("plan", {}).items():
+        if k.isdigit(): say(f"{rel}: plan uses the activity number {k}; instances now use keys (docs/conventions.md#activity-keys-and-numbers)"); continue
         if k not in acts: say(f"{rel}: plan names unknown activity {k}"); continue
         mn, mx, after, cont = acts[k]
         acts[k] = (o.get("min", mn), o.get("max", mx), [str(a) for a in o.get("after", after)], cont)
-        d = o.get("done")
-        if d is not None and d is not True:
-            try: date.fromisoformat(str(d))
-            except ValueError: say(f"{rel}: plan {k} done must be true or a YYYY-MM-DD date")
+        check_done(f"{rel}: plan {k}", o.get("done"))
+        for pl, q in o.get("platforms", {}).items():
+            if pl not in targets: say(f"{rel}: plan {k} names platform '{pl}', which is not a target")
+            check_done(f"{rel}: plan {k} {pl}", q.get("done"))
+            mn2, mx2 = q.get("min", o.get("min", mn)), q.get("max", o.get("max", mx))
+            if not (isinstance(mn2, int) and isinstance(mx2, int) and 0 <= mn2 <= mx2): say(f"{rel}: plan {k} {pl} needs whole-day durations with 0 <= min <= max")
+            if "blocked" in q and not (isinstance(q["blocked"], str) and q["blocked"]): say(f"{rel}: plan {k} {pl} blocked must be a text")
     check_plan(str(rel), acts)
 
 # Real client instances and their output (clients/<id>/dist/) must never be versioned (docs/deployment.md#private-client-instances).

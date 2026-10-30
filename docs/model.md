@@ -1,6 +1,6 @@
 # The model on one page
 
-Publishing an app to the App Store and Google Play is a process of 19 phases and 107 steps. The model describes it without deciding who does it or with which tool: each step carries a generic role, and wherever there are alternative ways to do it, a variant. A concrete client is obtained by assigning roles to real teams and picking options.
+Publishing an app to the App Store and Google Play is a process of 19 phases and 108 steps. The model describes it without deciding who does it or with which tool: each step carries a generic role, and wherever there are alternative ways to do it, a variant. A concrete client is obtained by assigning roles to real teams and picking options.
 
 Content (names, notes, descriptions) is in Spanish; see `docs/conventions.md#language`.
 
@@ -20,8 +20,8 @@ Content (names, notes, descriptions) is in Spanish; see `docs/conventions.md#lan
 | Credentials C01–C27 | 27 | Certificates, keys, profiles and tokens: who creates them, where they live, validity, what they enable. |
 | Artifacts F01–F26 | 26 | What is produced and consumed: CSR, .p12, .mobileprovision, .p8, keystore, IPA, AAB, listing, declarations. |
 | Phases S0–S18 | 19 | Group steps. Each has a frequency: once per owner, once per app, every version, cyclic. |
-| Steps S0.1–S18.6 | 107 | Each with role, inputs, outputs, dependencies and variants. |
-| Variants V1–V14 | 14 | Points with alternative ways: where it is built, how it is signed, who holds keys, how it is uploaded, who runs the technology. |
+| Steps S0.1–S18.6 | 108 | Each with role, inputs, outputs, dependencies and variants. |
+| Variants V1–V15 | 15 | Points with alternative ways: where it is built, how it is signed, who holds keys, how it is uploaded, who runs the technology. |
 | Renewals R01–R32 | 25 active | What expires or rotates, with cycle and lead time. |
 | Milestones m1–m10 | 10 | Per-version tracking: 27 checks in total, each linked to a step. |
 
@@ -40,7 +40,7 @@ The 19 phases group into 8 stages; this is how the swimlane diagram is drawn.
 | Review and release | S14–S15 | Every version |
 | Operation and renewal | S16–S18 | Continuous |
 
-The page's "Plan y fechas" card plans the 25 diagram activities: editable days per activity, activities marked done, fast and slow scenarios in separate columns, the critical path and, given a start date, real dates. Instances can add their own activities. The "Roadmap" tab shows the same plan as an executive view: progress, status against today, a Gantt by stage with milestones, and what was done, what comes next and what is late. See `docs/conventions.md#durations-and-the-timeline`.
+The page's "Plan y fechas" card plans the diagram activities: editable days per activity, activities marked done, fast and slow scenarios in separate columns, the critical path and, given a start date, real dates. V15 says which stores the project targets: with one platform the page drops the rest, and with two it can follow each one and show where they meet. Instances can add their own activities. The "Roadmap" tab shows the same plan as an executive view: progress, status against today, a Gantt by stage with milestones, and what was done, what comes next and what is late. See `docs/conventions.md#durations-and-the-timeline`.
 
 ## Underlying rules
 

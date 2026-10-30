@@ -91,7 +91,7 @@ No option text says "default" or "recommended". Every step that changes with the
 - `artifacts.json`: `{ "F01": { "name", "format" } }`.
 - `renewals.json`: `[ { "id": "R01", "name", "group", "cycle_months", "lead_days", "if_expired", "renewed_by", "step" } ]`. `cycle_months: 0` means event- or policy-driven.
 - `milestones.json`: `[ { "id": "m1", "name", "description", "phases": [...], "checks": [ { "id": "c1", "text", "step" } ] } ]`. About 10 milestones for business; checks link to steps so details stay reachable. A tracking record is opened per cycle (a version, a period) or, if the process runs once per item, per item.
-- `diagram.json`: `[ { "n": 1, "lane": "L1", "stage": 0, "lines": ["<line 1>", "<line 2>"], "phases": ["S0"] } ]`. Around 25 boxes. A new step does not automatically get a box.
+- `diagram.json`: `[ { "key": "<stable-slug>", "lane": "L1", "stage": 0, "lines": ["<line 1>", "<line 2>"], "phases": ["S0"] } ]`, in flow order. Instances reference the `key`; the number shown is the position, so adding a box never renumbers by hand. Around 25 boxes. A new step does not automatically get a box.
 
 ### `profiles/PR-<AXES>.json`
 
