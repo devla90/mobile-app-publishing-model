@@ -48,9 +48,9 @@ def load_model():
     m["TIME"] = {f["id"]: [f["duration"]["min"], f["duration"]["max"], f["duration"]["depends_on"]] for f in pha["phases"]}
     m["STAGES"] = [[e["name"], e["phases"]] for e in pha["stages"]]
     m["VER_PH"] = pha["per_version_phases"]
-    # Plan by activity: [key, name, lane, min, max, after, continuous, per_version, platform, joint].
+    # Plan by activity: [key, name, lane, days, after, continuous, per_version, platform, joint].
     # The number people see is the position in the list.
-    m["ACT"] = [[a["key"], " ".join(a["lines"]), a["lane"], a.get("duration", {}).get("min", 0), a.get("duration", {}).get("max", 0),
+    m["ACT"] = [[a["key"], " ".join(a["lines"]), a["lane"], a.get("duration", {}).get("days", 0),
                  a.get("after", []), a.get("continuous", False), all(p in pha["per_version_phases"] for p in a["phases"]),
                  a["platform"], a["joint"]]
                 for a in dia["activities"]]
@@ -154,7 +154,7 @@ INK, MUTED, RULE, ARROW = "#1D2433", "#5B6475", "#E4E7EC", "#7D8596"
 def off_target(m, instance):
     """Numbers of the activities that do not apply to the platforms chosen in V15."""
     other = {"b": "android", "c": "ios"}.get((instance or {}).get("variants", {}).get("V15"))
-    return {m["NUM"][a[0]] for a in m["ACT"] if a[8] == other}
+    return {m["NUM"][a[0]] for a in m["ACT"] if a[7] == other}
 
 
 def swimlane_layout(m, t, instance=None):
@@ -388,14 +388,15 @@ def diff_md(m, t, inst):
         for k, o in plan.items():
             a = base.get(k)
             if not a: continue
-            days = f'{o.get("min", a[3])}–{o.get("max", a[4])}' + (f' ({t["diff_was"]} {a[3]}–{a[4]})' if "min" in o or "max" in o else "")
+            days = f'{o.get("days", a[3])}' + (f' ({t["diff_was"]} {a[3]})' if "days" in o else "")
             done = t["diff_yes"] if o.get("done") is True else o.get("done", "")
             parts = [f'{t["plat_" + p]}: {t["diff_yes"] if q["done"] is True else q["done"]}' for p, q in o.get("platforms", {}).items() if q.get("done")]
             parts += [f'{t["plat_" + p]}: {t["rm_blocked"].lower()} ({q["blocked"]})' for p, q in o.get("platforms", {}).items() if q.get("blocked")]
+            parts += [f'{t["diff_end"]} {x}' for x in [o.get("end")] + [q.get("end") for q in o.get("platforms", {}).values()] if x]
             done = "; ".join(([str(done)] if done else []) + parts)
-            out.append(f'| {shown(k)} {a[1]} | {days} | {", ".join(map(shown, o.get("after", a[5])))} | {done} |')
+            out.append(f'| {shown(k)} {a[1]} | {days} | {", ".join(map(shown, o.get("after", a[4])))} | {done} |')
         for x in extra:
-            out.append(f'| {x["id"]} {x["name"]} ({t["diff_extra"]}) | {x["min"]}–{x["max"]} | {", ".join(map(shown, x.get("after", [])))} | |')
+            out.append(f'| {x["id"]} {x["name"]} ({t["diff_extra"]}) | {x["days"]} | {", ".join(map(shown, x.get("after", [])))} | |')
     return "\n".join(out) + "\n"
 
 

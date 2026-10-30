@@ -1,5 +1,5 @@
 {
-  "description": "The activities of the swimlane diagram, in flow order. `key` is the stable reference, used by `after`, `arrows` and instances; the number shown to people is computed from the position, so an activity is added by inserting it where it belongs. Also: lane, stage (index into phases.json/stages), platform, joint (one shared state and a meeting point for both platforms), text lines, phases covered, and the plan: duration in calendar days (min/max) and the activities that must finish before (after). Continuous activities have no duration. `arrows` are the links drawn on the diagram, a readable summary of the dependencies: [from, to, route]. Routes: h sideways, v down, s out of the side into the top, r out of the side into the bottom, l out of the bottom into the side, g along the gap above the target.",
+  "description": "The activities of the swimlane diagram, in flow order. `key` is the stable reference, used by `after`, `arrows` and instances; the number shown to people is computed from the position, so an activity is added by inserting it where it belongs. Also: lane, stage (index into phases.json/stages), platform, joint (one shared state and a meeting point for both platforms), text lines, phases covered, and the plan: duration in calendar days (days) and the activities that must finish before (after). Continuous activities have no duration. `arrows` are the links drawn on the diagram, a readable summary of the dependencies: [from, to, route]. Routes: h sideways, v down, s out of the side into the top, r out of the side into the bottom, l out of the bottom into the side, g along the gap above the target.",
   "lang": "es",
   "activities": [
     {
@@ -16,8 +16,7 @@
         "S0"
       ],
       "duration": {
-        "min": 2,
-        "max": 10
+        "days": 6
       },
       "after": []
     },
@@ -26,7 +25,7 @@
       "lane": "L5",
       "stage": 0,
       "platform": "both",
-      "joint": true,
+      "joint": false,
       "lines": [
         "Aprueba uso de",
         "tiendas y terceros"
@@ -35,8 +34,7 @@
         "S0"
       ],
       "duration": {
-        "min": 1,
-        "max": 5
+        "days": 3
       },
       "after": [
         "decide-owner"
@@ -56,8 +54,7 @@
         "S1"
       ],
       "duration": {
-        "min": 1,
-        "max": 3
+        "days": 2
       },
       "after": [
         "decide-owner"
@@ -78,8 +75,7 @@
         "S2"
       ],
       "duration": {
-        "min": 2,
-        "max": 30
+        "days": 16
       },
       "after": [
         "decide-owner"
@@ -100,8 +96,7 @@
         "S3"
       ],
       "duration": {
-        "min": 1,
-        "max": 2
+        "days": 2
       },
       "after": [
         "create-identities",
@@ -122,8 +117,7 @@
         "S2"
       ],
       "duration": {
-        "min": 5,
-        "max": 20
+        "days": 13
       },
       "after": [
         "create-developer-accounts"
@@ -144,8 +138,7 @@
         "S4"
       ],
       "duration": {
-        "min": 2,
-        "max": 5
+        "days": 4
       },
       "after": [
         "approve-stores",
@@ -166,8 +159,7 @@
         "S5"
       ],
       "duration": {
-        "min": 1,
-        "max": 1
+        "days": 1
       },
       "after": [
         "assign-access"
@@ -187,8 +179,7 @@
         "S5"
       ],
       "duration": {
-        "min": 1,
-        "max": 1
+        "days": 1
       },
       "after": [
         "define-identifiers"
@@ -208,8 +199,7 @@
         "S5"
       ],
       "duration": {
-        "min": 0,
-        "max": 1
+        "days": 1
       },
       "after": [
         "register-app-ids"
@@ -229,8 +219,7 @@
         "S6"
       ],
       "duration": {
-        "min": 1,
-        "max": 2
+        "days": 2
       },
       "after": [
         "register-app-ids"
@@ -250,8 +239,7 @@
         "S6"
       ],
       "duration": {
-        "min": 1,
-        "max": 4
+        "days": 3
       },
       "after": [
         "register-app-ids",
@@ -273,8 +261,7 @@
         "S6"
       ],
       "duration": {
-        "min": 1,
-        "max": 1
+        "days": 1
       },
       "after": [
         "issue-certificates"
@@ -294,8 +281,7 @@
         "S7"
       ],
       "duration": {
-        "min": 2,
-        "max": 5
+        "days": 4
       },
       "after": [
         "issue-certificates"
@@ -316,8 +302,7 @@
         "S9"
       ],
       "duration": {
-        "min": 1,
-        "max": 4
+        "days": 3
       },
       "after": [
         "hand-over-credentials",
@@ -338,8 +323,7 @@
         "S8"
       ],
       "duration": {
-        "min": 1,
-        "max": 3
+        "days": 2
       },
       "after": [
         "build-and-sign"
@@ -359,8 +343,7 @@
         "S12"
       ],
       "duration": {
-        "min": 2,
-        "max": 10
+        "days": 6
       },
       "after": [
         "create-store-app"
@@ -381,8 +364,7 @@
         "S13"
       ],
       "duration": {
-        "min": 2,
-        "max": 10
+        "days": 6
       },
       "after": [
         "prepare-listing"
@@ -403,8 +385,7 @@
         "S11"
       ],
       "duration": {
-        "min": 3,
-        "max": 16
+        "days": 10
       },
       "after": [
         "build-and-sign",
@@ -425,8 +406,7 @@
         "S13"
       ],
       "duration": {
-        "min": 1,
-        "max": 5
+        "days": 3
       },
       "after": [
         "analyze-binary",
@@ -446,8 +426,7 @@
         "S13"
       ],
       "duration": {
-        "min": 1,
-        "max": 5
+        "days": 3
       },
       "after": [
         "declare-and-approve",
@@ -469,8 +448,7 @@
         "S14"
       ],
       "duration": {
-        "min": 1,
-        "max": 7
+        "days": 4
       },
       "after": [
         "go-no-go"
@@ -490,8 +468,7 @@
         "S15"
       ],
       "duration": {
-        "min": 0,
-        "max": 7
+        "days": 4
       },
       "after": [
         "store-review"

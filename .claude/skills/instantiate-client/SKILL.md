@@ -24,7 +24,7 @@ Do not read `model/steps.json`.
    - L3 (technical executor) is where a vendor goes, if any; that implies `"V14": "b"`.
 3. **Variants.** Ask only about the ones that affect the client. The ones that vary most between clients: V1 (account type), V2 (account ownership), V3 (where it is built), V7 (how it is uploaded), V13 (channel), V15 (target platforms), V14 (who runs the technology). The rest are inherited if not stated. Write the option key (letter).
 4. **Incompatible pairs.** If both roles of a pair end up in lanes with the same name (e.g. custodian and signer both "Proveedor X"), add it as a decision with the rationale and warn that the page will show the alert.
-5. **Renewals and start date.** Only known dates, ISO format, key = renewal ID. If the client has a planned start, set `start_date` (ISO). Use `plan` to mark activities already done or change their days, and `extra_activities` for client-only activities such as a pilot run (format in `docs/conventions.md#durations-and-the-timeline`).
+5. **Renewals and start date.** Only known dates, ISO format, key = renewal ID. If the client has a planned start, set `start_date` (ISO). Use `plan` to mark activities already done, change their days or set the date they end, and `extra_activities` for client-only activities such as a pilot run (format in `docs/conventions.md#durations-and-the-timeline`).
 6. **Decisions.** Each agreement with `date`, `decision`, `owner` and `rationale`. This is the record consulted later.
 7. **Regulatory profile.** `PR-<SECTOR>-<COUNTRY>` in uppercase (`PR-RETAIL-XX`). If the `profiles/` folder does not exist, only the name is stored.
 8. Write the file, then run `python3 generator/validate.py && python3 generator/build.py --no-png`.
