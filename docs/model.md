@@ -40,7 +40,7 @@ The 19 phases group into 8 stages; this is how the swimlane diagram is drawn.
 | Review and release | S14–S15 | Every version |
 | Operation and renewal | S16–S18 | Continuous |
 
-The page's "Plan y fechas" card plans the diagram activities: editable days per activity, activities marked done, fast and slow scenarios in separate columns, the critical path and, given a start date, real dates. V15 says which stores the project targets: with one platform the page drops the rest, and with two it can follow each one and show where they meet. Instances can add their own activities. The "Roadmap" tab shows the same plan as an executive view: progress, status against today, a Gantt by stage with milestones, and what was done, what comes next and what is late. See `docs/conventions.md#durations-and-the-timeline`.
+The page's "Plan y fechas" card plans the diagram activities: one date per activity, days and end dates editable, activities marked done, the critical path and, given a start date, real dates. Changing an end date moves what follows, and the roadmap shows what was postponed. V15 says which stores the project targets: with one platform the page drops the rest, and with two it can follow each one and show where they meet. Instances can add their own activities. The "Roadmap" tab shows the same plan as an executive view: progress, status against today, a Gantt by stage with milestones, and what was done, what comes next and what is late. See `docs/conventions.md#durations-and-the-timeline`.
 
 ## Underlying rules
 

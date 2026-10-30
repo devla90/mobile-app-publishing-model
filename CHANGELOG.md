@@ -4,6 +4,11 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+- **Incompatible with 2.0.0:** one date per activity instead of a fast and a slow scenario. `duration.days` in `diagram.json` is the midpoint of the former range. Instances use `days` and `end`, and `validate.py` rejects `min` and `max`.
+- Changing an activity's end date on the page moves what follows, and the roadmap counts, lists and marks it as postponed.
+- "Aprueba uso de tiendas y terceros" is followed per platform instead of as a joint activity: each store can be approved at a different moment.
+
 ## [2.0.0] - 2026-10-30
 
 ### Added

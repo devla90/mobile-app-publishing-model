@@ -17,10 +17,10 @@ TARGETS = {"b": ["ios"], "c": ["android"]}  # V15 options that narrow the projec
 
 
 def check_plan(where, acts):
-    """acts: {id: (min, max, after, continuous)}. Durations are whole days >= 0, every `after` exists, no cycles."""
-    for i, (mn, mx, after, cont) in acts.items():
-        if not cont and not (isinstance(mn, int) and isinstance(mx, int) and 0 <= mn <= mx):
-            say(f"{where}: activity {i} needs whole-day durations with 0 <= min <= max")
+    """acts: {id: (days, after, continuous)}. Durations are whole days >= 0, every `after` exists, no cycles."""
+    for i, (days, after, cont) in acts.items():
+        if not cont and not (isinstance(days, int) and days >= 0):
+            say(f"{where}: activity {i} needs a whole number of days >= 0")
         for a in after:
             if a.isdigit(): say(f"{where}: activity {i} waits for the number {a}; use its key (docs/conventions.md#activity-keys-and-numbers)")
             elif a not in acts: say(f"{where}: activity {i} waits for unknown activity {a}")
@@ -29,15 +29,22 @@ def check_plan(where, acts):
         if state.get(i) == 1: say(f"{where}: dependency cycle {' -> '.join(path + [i])}"); return
         if state.get(i) == 2 or i not in acts: return
         state[i] = 1
-        for a in acts[i][2]: visit(a, path + [i])
+        for a in acts[i][1]: visit(a, path + [i])
         state[i] = 2
     for i in acts: visit(i, [])
 
 
-def check_done(where, d):
+def check_dates(where, o):
+    """Dates and durations of one plan entry, for an activity or one of its platforms."""
+    d = o.get("done")
     if d is not None and d is not True:
         try: date.fromisoformat(str(d))
         except ValueError: say(f"{where} done must be true or a YYYY-MM-DD date")
+    if "end" in o:
+        try: date.fromisoformat(str(o["end"]))
+        except ValueError: say(f"{where} end must be a YYYY-MM-DD date")
+    if "days" in o and not (isinstance(o["days"], int) and o["days"] >= 0): say(f"{where} days must be a whole number >= 0")
+    if "min" in o or "max" in o: say(f"{where} uses min and max; activities now have one duration, `days` (docs/conventions.md#durations-and-the-timeline)")
 
 
 def load(path):
@@ -116,8 +123,8 @@ for m in files["milestones"]["milestones"]:
     for c in m["checks"]:
         if c["step"] not in step_ids: say(f"milestones: check {c['id']} points to unknown step {c['step']}")
 n_stages = len(phases["stages"])
-base_plan = {a["key"]: (a.get("duration", {}).get("min"), a.get("duration", {}).get("max"), a.get("after", []),
-                        a.get("continuous", False)) for a in files["diagram"]["activities"]}
+base_plan = {a["key"]: (a.get("duration", {}).get("days"), a.get("after", []), a.get("continuous", False))
+             for a in files["diagram"]["activities"]}
 keys = [a["key"] for a in files["diagram"]["activities"]]
 for k in {x for x in keys if keys.count(x) > 1}: say(f"diagram: duplicate activity key {k}")
 for k in keys:
@@ -165,20 +172,19 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         if not xid or xid in base_plan: say(f"{rel}: extra activity needs an id not used by the model ('{xid}')"); continue
         if x.get("lane") not in lanes: say(f"{rel}: extra activity {xid} has unknown lane {x.get('lane')}")
         if not x.get("name"): say(f"{rel}: extra activity {xid} has no name")
-        acts[xid] = (x.get("min"), x.get("max"), [str(a) for a in x.get("after", [])], False)
+        check_dates(f"{rel}: extra activity {xid}", x)
+        acts[xid] = (x.get("days"), [str(a) for a in x.get("after", [])], False)
         if x.get("platform", "both") not in PLATFORMS: say(f"{rel}: extra activity {xid} bad platform '{x['platform']}'")
         if not isinstance(x.get("joint", True), bool): say(f"{rel}: extra activity {xid} needs joint true or false")
     for k, o in inst.get("plan", {}).items():
         if k.isdigit(): say(f"{rel}: plan uses the activity number {k}; instances now use keys (docs/conventions.md#activity-keys-and-numbers)"); continue
         if k not in acts: say(f"{rel}: plan names unknown activity {k}"); continue
-        mn, mx, after, cont = acts[k]
-        acts[k] = (o.get("min", mn), o.get("max", mx), [str(a) for a in o.get("after", after)], cont)
-        check_done(f"{rel}: plan {k}", o.get("done"))
+        days, after, cont = acts[k]
+        acts[k] = (o.get("days", days), [str(a) for a in o.get("after", after)], cont)
+        check_dates(f"{rel}: plan {k}", o)
         for pl, q in o.get("platforms", {}).items():
             if pl not in targets: say(f"{rel}: plan {k} names platform '{pl}', which is not a target")
-            check_done(f"{rel}: plan {k} {pl}", q.get("done"))
-            mn2, mx2 = q.get("min", o.get("min", mn)), q.get("max", o.get("max", mx))
-            if not (isinstance(mn2, int) and isinstance(mx2, int) and 0 <= mn2 <= mx2): say(f"{rel}: plan {k} {pl} needs whole-day durations with 0 <= min <= max")
+            check_dates(f"{rel}: plan {k} {pl}", q)
             if "blocked" in q and not (isinstance(q["blocked"], str) and q["blocked"]): say(f"{rel}: plan {k} {pl} blocked must be a text")
     check_plan(str(rel), acts)
 

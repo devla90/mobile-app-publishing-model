@@ -36,5 +36,5 @@ Ninguna.
 ## Plan
 Fecha de inicio: 2026-11-02
 
-| Actividad | Días (mín.–máx.) | Espera a | Hecha |
+| Actividad | Días | Espera a | Hecha |
 | --- | --- | --- | --- |

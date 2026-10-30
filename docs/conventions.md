@@ -89,15 +89,15 @@ python3 generator/build.py --no-png
 
 ## Durations and the timeline
 
-The plan works on the diagram activities, not on phases. Each activity in `diagram.json` has `duration.min` and `duration.max` in calendar days and `after`, the activities that must finish before it starts. The activities of the last stage are `continuous` and have no duration. `validate.py` checks that durations are whole days with `min <= max`, that every `after` exists and that there are no cycles.
+The plan works on the diagram activities, not on phases. Each activity in `diagram.json` has `duration.days` in calendar days and `after`, the activities that must finish before it starts. The activities of the last stage are `continuous` and have no duration. `validate.py` checks that durations are whole days, that every `after` exists and that there are no cycles.
 
-The page computes two scenarios separately: fast (every activity at its minimum) and slow (every activity at its maximum), and marks the critical path of the slow one. Phase durations in `phases.json` remain as a reference in the step view.
+The page computes one date per activity and marks the critical path. To postpone an activity, change its end date on the page: what follows moves by itself, and the roadmap counts and lists it as postponed against the plan without changes. Phase durations in `phases.json` remain as a reference in the step view.
 
 An instance may set:
 
 - `start_date` (`YYYY-MM-DD`): day 0 of the plan.
-- `plan`: per activity key, `min`, `max`, `after` (replaces the base list) and `done` (`true`, meaning finished at `start_date`, or the real date). A finished activity ends on that date and its dependants start from there.
-- `extra_activities`: the client's own activities, with `id` (not a key used by the model), `name`, `lane`, `min`, `max` and `after`. They chain with the model's activities, and a base activity can wait for them through `plan.<n>.after`.
+- `plan`: per activity key, `days`, `end` (the date it now ends), `after` (replaces the base list) and `done` (`true`, meaning finished at `start_date`, or the real date). A finished activity ends on that date and its dependants start from there.
+- `extra_activities`: the client's own activities, with `id` (not a key used by the model), `name`, `lane`, `days` and `after`. They chain with the model's activities, and a base activity can wait for them through `plan.<n>.after`.
 
 ### Activity keys and numbers
 
@@ -117,7 +117,7 @@ Each activity in `diagram.json` has `platform` (`ios`, `android`, `both`) and `j
 
 V15 chooses the targets. With `b` or `c`, the page leaves out what belongs to the other platform: steps, activities, milestone checks, renewals and variants; the diagrams keep the box dimmed. Without V15 and without `platforms` in the plan, the page shows one plan, as it did before.
 
-An instance follows each platform with `plan.<key>.platforms.<ios|android>`, which accepts `done`, `min`, `max` and `blocked` (a text for the roadmap). `done` at the activity level means finished on every platform. `extra_activities` accept `platform` (default `both`) and `joint` (default `true`).
+An instance follows each platform with `plan.<key>.platforms.<ios|android>`, which accepts `done`, `days`, `end` and `blocked` (a text for the roadmap). `done` at the activity level means finished on every platform. `extra_activities` accept `platform` (default `both`) and `joint` (default `true`).
 
 The roadmap then has three views: Conjunto, iOS and Android. In Conjunto an activity counts as done only when every platform it applies to has finished it, so that percentage is not the average of the other two.
 

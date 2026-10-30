@@ -23,7 +23,7 @@ let clients={},versions={};
 const LS=k=>{try{return JSON.parse(localStorage.getItem(pageKey(k))||"null")}catch(e){return null}};
 const LSW=(k,v)=>{try{localStorage.setItem(pageKey(k),JSON.stringify(v))}catch(e){}};
 // Bumped when stored plans change format. Plans are keyed by activity key, so a change in the flow does not need it.
-const PLAN_V=4;
+const PLAN_V=5;
 // Earlier builds kept every client page under the shared keys: move this page's data out, leave the rest there.
 function moveShared(){let cs,vs;try{cs=JSON.parse(localStorage.getItem("mapm-clients")||"null");vs=JSON.parse(localStorage.getItem("mapm-versions")||"null")}catch(e){return}
   const p=cs&&cs.preset;if(!p||p.name!==PRESET_CLIENT.name)return;if(!LS("mapm-clients")){LSW("mapm-clients",{preset:p});if(vs&&vs.preset)LSW("mapm-versions",{preset:vs.preset})}
@@ -84,7 +84,7 @@ function renderSwim(){
     else if(k==="g")p=`M${a.x+a.w*.75} ${a.y+a.h}V${b.y-6}H${bx}V${b.y}`;
     else{const sy=a.y+a.h,ey=b.y,dy=Math.max(18,(ey-sy)/2);p=`M${ax} ${sy}C${ax} ${sy+dy} ${bx} ${ey-dy} ${bx} ${ey}`}
     s+=`<path class="arr" d="${p}" marker-end="url(#sw-ah)"/>`});
-  BOX.forEach(([n,lid,r,lines])=>{const p=pos[n];const c=`var(${LC[lid]})`;const off=!inScope(ACT[n-1][8]);
+  BOX.forEach(([n,lid,r,lines])=>{const p=pos[n];const c=`var(${LC[lid]})`;const off=!inScope(ACT[n-1][7]);
     s+=`<g class="bx"${off?' opacity=".3"':""} tabindex="0" role="button" data-box="${n}" aria-label="${n}. ${esc(lines.join(" "))}, ${esc(laneLabel(lid))}"><rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="8" fill="var(${LC[lid]}s)" stroke="${c}"/><circle cx="${p.x+13}" cy="${p.y+14}" r="9" fill="${c}"/><text class="num" x="${p.x+13}" y="${p.y+17.5}" text-anchor="middle">${n}</text>${lines.map((t,k)=>`<text x="${p.x+28}" y="${p.y+18+k*15}">${esc(t)}</text>`).join("")}</g>`});
   swim.setAttribute("viewBox",`0 0 ${W} ${H}`);swim.style.width=W+"px";swim.innerHTML=s;
 }
@@ -98,83 +98,97 @@ function renderPairs(){
   el.innerHTML=hits.map(([a,b,risk,sev])=>`<div class="alert"><b>${esc(tf("pair_alert",{a:A[a],b:A[b],lane:laneLabel(laneOfRole[a]),sev:T.severity[sev]||sev}))}</b>${esc(risk)}.${esc(T.pair_alert_tail)}</div>`).join("");
 }
 // ---------- Plan by activity
-// ACT rows: [key, name, lane, min, max, after[], continuous, per_version]; the number shown is the position. A client may override min/max/after,
-// mark an activity done (date or true) and add its own activities (extra). Two scenarios are computed apart:
-// fast (every activity at its min) and slow (every activity at its max). Rows gain [platform, joint]: with two
-// tracked platforms an activity runs once per platform, and a joint activity waits for both (see planNodes).
+// ACT rows: [key, name, lane, days, after[], continuous, per_version, platform, joint]; the number shown is the position.
+// A client may override days and after, mark an activity done (date or true), set the date it ends (end, when it is
+// postponed) and add its own activities (extra). With two tracked platforms an activity runs once per platform, and a
+// joint activity waits for both (see planNodes).
 const planSrc=()=>{const c=cur();return c?{start:c.start||"",plan:c.plan||{},extra:c.extra||[]}:{start:LS("mapm-start")||"",plan:LS("mapm-plan2")||{},extra:[]}};
 async function savePlan(start,plan){const c=cur();if(c){const n={...c,plan};if(start)n.start=start;else delete n.start;await putClient(st.client,n)}else{LSW("mapm-start",start||null);LSW("mapm-plan2",plan)}renderTimeline();renderRoadmap()}
-function planActs(src,ignoreDone){
-  const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],min:r[3],max:r[4],after:r[5],cont:r[6],ver:r[7],plat:r[8],joint:r[9],extra:false,i}));
-  const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,min:x.min,max:x.max,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,extra:true,i:ACT.length+j}));
-  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,min:o.min??a.min,max:o.max??a.max,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),plats:o.platforms||{}}});
+function planActs(src,ignoreDone,ignoreEnd){
+  const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],extra:false,i}));
+  const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,extra:true,i:ACT.length+j}));
+  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),end:ignoreEnd?null:(o.end??null),plats:o.platforms||{}}});
 }
 const dayOf=(start,iso)=>start&&typeof iso==="string"?Math.round((new Date(iso+"T00:00:00")-new Date(start+"T00:00:00"))/DAY):0;
 function planCalc(list,start){
   const by=Object.fromEntries(list.map(a=>[a.id,a]));const r={};
   const go=(id,seen)=>{if(r[id])return r[id];const a=by[id];if(!a||seen.has(id))return null;seen.add(id);
-    const prev=a.after.map(x=>go(x,seen)).filter(Boolean);const f0=Math.max(0,...prev.map(p=>p.fe)),s0=Math.max(0,...prev.map(p=>p.se));
-    if(a.done){const d=dayOf(start,a.done);return r[id]={fs:d,fe:d,ss:d,se:d,done:true}}
-    return r[id]=a.cont?{fs:f0,fe:f0,ss:s0,se:s0}:{fs:f0,fe:f0+a.min,ss:s0,se:s0+a.max}};
+    const prev=a.after.map(x=>go(x,seen)).filter(Boolean);const s0=Math.max(0,...prev.map(p=>p.e));
+    if(a.done){const d=dayOf(start,a.done);return r[id]={s:d,e:d,done:true}}
+    if(a.cont)return r[id]={s:s0,e:s0};
+    if(a.end&&start){const e=dayOf(start,a.end);return r[id]={s:Math.min(s0,e),e}}
+    return r[id]={s:s0,e:s0+a.days}};
   list.forEach(a=>go(a.id,new Set()));
-  // Critical path of the slow scenario: no slack between an activity and the latest finish it can have.
-  const work=list.filter(a=>!a.cont&&!a.done);const endS=Math.max(0,...work.map(a=>r[a.id].se));const lf={};
-  [...work].sort((x,y)=>r[y.id].se-r[x.id].se).forEach(a=>{const succ=work.filter(b=>b.after.includes(a.id));lf[a.id]=succ.length?Math.min(...succ.map(b=>lf[b.id]-b.max)):endS});
-  work.forEach(a=>r[a.id].crit=lf[a.id]-r[a.id].se===0);
-  return{r,endF:Math.max(0,...work.map(a=>r[a.id].fe)),endS};
+  // Critical path: no slack between an activity and the latest finish it can have.
+  const work=list.filter(a=>!a.cont&&!a.done);const end=Math.max(0,...work.map(a=>r[a.id].e));const lf={};
+  [...work].sort((x,y)=>r[y.id].e-r[x.id].e).forEach(a=>{const succ=work.filter(b=>b.after.includes(a.id));lf[a.id]=succ.length?Math.min(...succ.map(b=>lf[b.id]-(r[b.id].e-r[b.id].s))):end});
+  work.forEach(a=>r[a.id].crit=lf[a.id]-r[a.id].e===0);
+  return{r,end};
 }
 // One node per activity and platform; a joint activity is a single node that waits for every platform.
 // An activity off a platform passes through to what it waits for, so that platform's chain does not break.
-function planNodes(acts,ignoreDone){
+function planNodes(acts,ignoreEnd){
   const by=Object.fromEntries(acts.map(a=>[a.id,a]));const ts=targets();const on=(a,p)=>a.plat==="both"||a.plat===p;
   const depOn=(id,p)=>{const d=by[id];if(!d)return[];if(d.joint)return[id];return on(d,p)?[`${id}@${p}`]:d.after.flatMap(x=>depOn(x,p))};
   return acts.flatMap(a=>{
     if(a.joint)return[{...a,act:a.id,track:null,after:[...new Set(ts.flatMap(p=>a.after.flatMap(x=>depOn(x,p))))]}];
-    return ts.filter(p=>on(a,p)).map(p=>{const q=a.plats[p]||{};return{...a,id:`${a.id}@${p}`,act:a.id,track:p,after:[...new Set(a.after.flatMap(x=>depOn(x,p)))],min:q.min??a.min,max:q.max??a.max,done:ignoreDone?null:(a.done??q.done??null)}})})}
+    return ts.filter(p=>on(a,p)).map(p=>{const q=a.plats[p]||{};return{...a,id:`${a.id}@${p}`,act:a.id,track:p,after:[...new Set(a.after.flatMap(x=>depOn(x,p)))],days:q.days??a.days,end:ignoreEnd?null:(q.end??a.end),done:a.done??q.done??null}})})}
 // The plan as one view: "all" or empty gives every activity, "ios" or "android" only that platform's.
-// list and r are keyed by activity, as without platforms; nodes and raw keep the detail per platform.
+// list and r are keyed by activity; nodes and raw keep the detail per platform. moved compares each activity
+// with the plan before any date was changed, for the ones whose end date was set by hand.
 function planView(src,start,view){
-  const acts=planActs(src);if(targets().length===2&&!tracked(src))return{list:acts,...planCalc(acts,start)};
-  const nodes=planNodes(acts);const c=planCalc(nodes,start);const r={};
+  const plain=targets().length===2&&!tracked(src);
+  const build=noEnd=>{const acts=planActs(src,false,noEnd);const nodes=plain?acts.map(a=>({...a,act:a.id,track:null})):planNodes(acts,noEnd);return{acts,nodes,...planCalc(nodes,start)}};
+  const{acts,nodes,r:raw}=build(false);const before=build(true).r;const r={};
   const list=acts.map(a=>{const ns=nodes.filter(n=>n.act===a.id&&(!view||view==="all"||!n.track||n.track===view));if(!ns.length)return null;
-    const qs=ns.map(n=>c.r[n.id]);const all=ns.every(n=>n.done);r[a.id]={fs:Math.min(...qs.map(q=>q.fs)),fe:Math.max(...qs.map(q=>q.fe)),ss:Math.min(...qs.map(q=>q.ss)),se:Math.max(...qs.map(q=>q.se)),done:all,crit:qs.some(q=>q.crit)};
-    return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns}}).filter(Boolean);
+    const qs=ns.map(n=>raw[n.id]);const all=ns.every(n=>n.done);r[a.id]={s:Math.min(...qs.map(q=>q.s)),e:Math.max(...qs.map(q=>q.e)),done:all,crit:qs.some(q=>q.crit)};
+    const hand=ns.filter(n=>n.end&&!n.done).map(n=>raw[n.id].e-before[n.id].e);
+    return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns,moved:hand.length?hand.reduce((x,y)=>Math.abs(y)>Math.abs(x)?y:x):0}}).filter(Boolean);
   const work=list.filter(a=>!a.cont&&!a.done);
-  return{list,r,raw:c.r,nodes,endF:Math.max(0,...work.map(a=>r[a.id].fe)),endS:Math.max(0,...work.map(a=>r[a.id].se))}}
+  return{list,r,raw,nodes,end:Math.max(0,...work.map(a=>r[a.id].e))}}
 // First pending activity where the platforms meet, and when each one is ready for it.
 function planGate(v){
-  const g=v.nodes.filter(n=>!n.track&&!n.done&&!n.cont&&targets().every(p=>n.after.some(x=>x.endsWith("@"+p)))).sort((a,b)=>v.raw[a.id].ss-v.raw[b.id].ss||b.extra-a.extra)[0];if(!g)return null;
-  return{id:g.act,ready:Object.fromEntries(targets().map(p=>[p,Math.max(...g.after.filter(x=>x.endsWith("@"+p)).map(x=>v.raw[x].se))]))}}
+  const g=v.nodes.filter(n=>!n.track&&!n.done&&!n.cont&&targets().every(p=>n.after.some(x=>x.endsWith("@"+p)))).sort((a,b)=>v.raw[a.id].s-v.raw[b.id].s||b.extra-a.extra)[0];if(!g)return null;
+  return{id:g.act,ready:Object.fromEntries(targets().map(p=>[p,Math.max(...g.after.filter(x=>x.endsWith("@"+p)).map(x=>v.raw[x].e))]))}}
 function renderTimeline(){
-  const el=document.getElementById("timeline");const src=planSrc();const s0=src.start;const{list,r,endF,endS}=planView(src,s0);
+  const el=document.getElementById("timeline");const src=planSrc();const s0=src.start;const{list,r,raw,nodes,end}=planView(src,s0);
   const fd=n=>{if(!s0)return tf("tl_day_n",{n});const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"2-digit"})};
-  const lo=Math.min(0,...list.map(a=>r[a.id].fs)),span=Math.max(1,endS-lo);const pct=n=>(n-lo)/span*100;
-  const rows=[...list].sort((x,y)=>r[x.id].ss-r[y.id].ss||r[x.id].fs-r[y.id].fs||x.i-y.i).map(a=>{const q=r[a.id];
-    const bar=(s,e,cls,lab)=>`<div class="pbar"><i>${lab}</i><span class="${cls}" style="left:${pct(s)}%;width:${a.cont?100-pct(s):Math.max(pct(e)-pct(s),.6)}%"></span></div>`;
-    const when=(s,e)=>a.cont?tf("tl_continuous",{d:fd(s)}):a.done?fd(e):`${fd(s)} → ${fd(e)}`;
-    const days=a.cont||a.done?"":`<input type="number" min="0" step="1" value="${a.min}" data-act="${esc(a.id)}" data-f="min" aria-label="${T.tl_min} ${esc(a.id)}"><span>/</span><input type="number" min="0" step="1" value="${a.max}" data-act="${esc(a.id)}" data-f="max" aria-label="${T.tl_max} ${esc(a.id)}">`;
+  const iso=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+  const lo=Math.min(0,...nodes.filter(n=>!n.done).map(n=>raw[n.id].s)),span=Math.max(1,end-lo);const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
+  const moved=a=>a.moved?`<small class="pmoved">${tf(a.moved>0?"tl_moved":"tl_earlier",{n:Math.abs(a.moved)})}</small>`:"";
+  const rows=[...list].sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i).map(a=>{const q=r[a.id];
+    const bar=(s,e,cls)=>`<div class="pbar"><span class="${cls}" style="left:${pct(s)}%;width:${a.cont?100-pct(s):Math.max(pct(e)-pct(s),.6)}%"></span></div>`;
+    const when=(x,s,e)=>a.cont?tf("tl_continuous",{d:fd(s)}):x.done?fd(e):`${fd(s)} → ${fd(e)}`;
+    const days=a.cont||a.done?"":`<input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days" aria-label="${T.tl_h_days} ${esc(a.num)}">`;
     const parts=!a.joint&&a.nodes&&a.nodes.length>1?a.nodes:null;
-    const done=a.cont?"":parts?parts.map(n=>`<label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="donePlat" data-plat="${n.track}" ${n.done?"checked":""}> ${PLAT_LABEL[n.track]}</label>${n.done?`<input type="date" data-act="${esc(a.id)}" data-f="donePlatDate" data-plat="${n.track}" value="${typeof n.done==="string"?esc(n.done):esc(s0)}" aria-label="${PLAT_LABEL[n.track]} · ${T.tl_done_on}">`:""}`).join(""):`<label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done" ${a.done?"checked":""}> ${T.tl_h_done}</label>${a.done?`<input type="date" data-act="${esc(a.id)}" data-f="doneDate" value="${typeof a.done==="string"?esc(a.done):esc(s0)}" aria-label="${T.tl_done_on}">`:""}`;
+    // Each row holds one done box and one date: the day it was done, or the day it ends while it is open.
+    const cell=(x,lab,qq,plat)=>{const pa=plat?` data-plat="${plat}"`:"";const name=plat?"Plat":"";
+      return`<label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}" aria-label="${esc(a.num)} ${T.tl_done_on}">`:`<input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}" aria-label="${esc(a.num)} ${T.tl_end_on}">`}`};
+    const done=a.cont?"":parts?parts.map(n=>cell(n,PLAT_LABEL[n.track],raw[n.id],n.track)).join(""):cell(a,T.tl_h_done,q,"");
     const tags=(a.plat!=="both"?`<small>${tf("tl_only",{p:PLAT_LABEL[a.plat]})}</small>`:"")+(a.joint&&a.nodes&&!a.cont&&tracked(src)?`<small>${T.tl_shared}</small>`:"");
-    return `<div class="prow${q.crit?" crit":""}${a.done?" done":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}${a.extra?`<small>${T.tl_extra}</small>`:""}${tags}<small>${esc(laneLabel(a.lane))}</small></span></div><div class="pdays">${days}</div><div class="pdone-c">${done}</div><div class="pwhen"><span><em>${T.tl_h_fast}</em>${when(q.fs,q.fe)}</span><span><em>${T.tl_h_slow}</em>${when(q.ss,q.se)}</span></div><div class="ptrack">${a.done?bar(q.fs,q.fe,"d","✓"):bar(q.fs,q.fe,"f",T.tl_fast_short)+bar(q.ss,q.se,"s",T.tl_slow_short)}</div></div>`}).join("");
-  const ver=planActs(src,true).filter(a=>a.ver&&!a.cont&&inScope(a.plat));const vids=new Set(ver.map(a=>a.id));const vc=planCalc(ver.map(a=>({...a,after:a.after.filter(x=>vids.has(x))})),"");
-  const crit=[...list].filter(a=>r[a.id].crit).sort((x,y)=>r[x.id].ss-r[y.id].ss).map(a=>a.num).join(" → ");
+    const dates=parts?parts.map(n=>`<span><em>${PLAT_LABEL[n.track]}</em>${when(n,raw[n.id].s,raw[n.id].e)}</span>`).join(""):`<span>${when(a,q.s,q.e)}</span>`;
+    return `<div class="prow${q.crit?" crit":""}${a.done?" done":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}${a.extra?`<small>${T.tl_extra}</small>`:""}${tags}<small>${esc(laneLabel(a.lane))}</small>${moved(a)}</span></div><div class="pdays">${days}</div><div class="pdone-c">${done}</div><div class="pwhen">${dates}</div><div class="ptrack">${bar(q.s,q.e,a.done?"d":"f")}</div></div>`}).join("");
+  const ver=planActs(src,true,true).filter(a=>a.ver&&!a.cont&&inScope(a.plat));const vids=new Set(ver.map(a=>a.id));const vc=planCalc(ver.map(a=>({...a,after:a.after.filter(x=>vids.has(x))})),"");
+  const crit=[...list].filter(a=>r[a.id].crit).sort((x,y)=>r[x.id].s-r[y.id].s).map(a=>a.num).join(" → ");
   el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div><div class="ptools"><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label><button class="btn" type="button" id="tlReset">${T.tl_reset}</button>${cur()?"":`<span class="plain">${T.tl_noclient}</span>`}</div>
-  <div class="phead"><span>${T.tl_h_act}</span><span>${T.tl_h_days}</span><span>${T.tl_h_done}</span><span>${T.tl_h_fast} · ${T.tl_h_slow}</span></div>${rows}
-  <div class="tlsum"><span><b>${T.tl_end}:</b> ${T.tl_end_fast} <b>${fd(endF)}</b> · ${T.tl_end_slow} <b>${fd(endS)}</b>${s0?"":` (${endF}–${endS} ${T.tl_days})`}</span><span><b>${vc.endF}–${vc.endS} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_critical} ${esc(crit)}</span></div>`;
+  <div class="phead"><span>${T.tl_h_act}</span><span>${T.tl_h_days}</span><span>${T.tl_h_done}</span><span>${T.tl_h_when}</span></div>${rows}
+  <div class="tlsum"><span><b>${T.tl_end}:</b> <b>${fd(end)}</b>${s0?"":` (${end} ${T.tl_days})`}</span><span><b>${vc.end} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_critical} ${esc(crit)}</span></div>`;
 }
 function onPlanChange(e){
   const t=e.target;const src=planSrc();
   if(t.id==="tlStart"){savePlan(t.value,src.plan);return}
   const id=t.dataset.act,f=t.dataset.f;if(!id)return;const plan={...src.plan};const o={...(plan[id]||{})};
-  const a=planActs(src).find(x=>x.id===id);const base=ACT.find(x=>x[0]===id);const ext=src.extra.find(x=>String(x.id)===id);const def=base?{min:base[3],max:base[4]}:{min:ext.min,max:ext.max};
-  if(f==="min"||f==="max"){const v=Math.max(0,parseInt(t.value,10)||0);o[f]=v;if(f==="min"&&v>(o.max??a.max))o.max=v;if(f==="max"&&v<(o.min??a.min))o.min=v;
-    if(o.min===def.min)delete o.min;if(o.max===def.max)delete o.max}
-  if(f==="done"){if(t.checked)o.done=src.start||new Date().toISOString().slice(0,10);else delete o.done}
+  const base=ACT.find(x=>x[0]===id);const ext=src.extra.find(x=>String(x.id)===id);const def=base?base[3]:ext.days;
+  if(f==="days"){const v=Math.max(0,parseInt(t.value,10)||0);if(v===def)delete o.days;else o.days=v;delete o.end}
+  if(f==="end"){if(t.value)o.end=t.value;else delete o.end}
+  if(f==="done"){if(t.checked){o.done=src.start||new Date().toISOString().slice(0,10);delete o.end}else delete o.done}
   if(f==="doneDate"&&t.value)o.done=t.value;
-  if(f==="donePlat"||f==="donePlatDate"){const p=t.dataset.plat,pl={...(o.platforms||{})};
+  if(["donePlat","donePlatDate","endPlat"].includes(f)){const p=t.dataset.plat,pl={...(o.platforms||{})};
     if(o.done){targets().forEach(x=>{pl[x]={...(pl[x]||{}),done:o.done}});delete o.done}
-    const q={...(pl[p]||{})};if(f==="donePlatDate"){if(t.value)q.done=t.value}else if(t.checked)q.done=src.start||new Date().toISOString().slice(0,10);else delete q.done;
+    const q={...(pl[p]||{})};
+    if(f==="donePlatDate"){if(t.value)q.done=t.value}
+    else if(f==="endPlat"){if(t.value)q.end=t.value;else delete q.end}
+    else if(t.checked){q.done=src.start||new Date().toISOString().slice(0,10);delete q.end}else delete q.done;
     if(Object.keys(q).length)pl[p]=q;else delete pl[p];if(Object.keys(pl).length)o.platforms=pl;else delete o.platforms}
   if(Object.keys(o).length)plan[id]=o;else delete plan[id];savePlan(src.start,plan);
 }
@@ -182,53 +196,55 @@ async function resetPlan(){const c=cur();const p=st.client==="preset"&&PRESET_CL
   if(c){const n={...c,plan:p&&p.plan?p.plan:{}};if(p&&p.start)n.start=p.start;await putClient(st.client,n)}else{LSW("mapm-plan2",{});}renderTimeline();renderRoadmap();toast(T.tl_reset_done)}
 
 // ---------- Roadmap (executive view of the same plan)
-// Committed dates are the slow scenario; status is computed against today.
+// Status is computed against today.
 function renderRoadmap(){
   const el=document.getElementById("roadmap");const src=planSrc();const s0=src.start;const c=cur();
   if(!s0){el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2></div></div><p class="plain">${T.rm_need_start}</p>`;return}
-  const multi=tracked(src);const view=multi?st.track:"";const pv=planView(src,s0,view);const{list,r,raw,endF,endS}=pv;const today=dayOf(s0,new Date().toISOString().slice(0,10));
+  const multi=tracked(src);const view=multi?st.track:"";const pv=planView(src,s0,view);const{list,r,raw,end}=pv;const today=dayOf(s0,new Date().toISOString().slice(0,10));
   const fd=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
-  const statOf=(a,q)=>{if(a.done)return"done";if(a.cont)return q.ss<=today?"now":"todo";if(q.se<today)return"late";if(q.ss<=today)return"now";return"todo"};const status=a=>statOf(a,r[a.id]);
+  const statOf=(a,q)=>{if(a.done)return"done";if(a.cont)return q.s<=today?"now":"todo";if(q.e<today)return"late";if(q.s<=today)return"now";return"todo"};const status=a=>statOf(a,r[a.id]);
   const work=list.filter(a=>!a.cont);const cnt={done:0,now:0,todo:0,late:0};work.forEach(a=>cnt[status(a)]++);
   // Stage of each activity: its diagram stage; client activities take the latest stage among what they wait for.
   const stageOf={};ACT.forEach((a,i)=>{stageOf[a[0]]=BOX[i][2]});
   const st2=id=>{if(stageOf[id]!==undefined)return stageOf[id];const a=list.find(x=>x.id===id);stageOf[id]=-1;const v=Math.max(0,...(a?a.after:[]).map(st2));return stageOf[id]=v};
   list.forEach(a=>st2(a.id));
-  const lo=Math.min(0,...list.map(a=>r[a.id].fs)),hi=Math.max(endS,today)+14,span=hi-lo;const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
+  // Finished activities do not stretch the axis: one done months ago sits at its left edge.
+  const lo=Math.min(0,today,...pv.nodes.filter(n=>!n.done).map(n=>raw[n.id].s)),hi=Math.max(end,today)+14,span=hi-lo;const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
   // Month ticks
   let ticks="",labels="";const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+lo);d.setDate(1);d.setMonth(d.getMonth()+1);
   for(let k=0;k<24;k++){const n=dayOf(s0,d.toISOString().slice(0,10));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"2-digit"})}</span>`;d.setMonth(d.getMonth()+1)}
   const inRange=today>=lo&&today<=hi;const todayLine=inRange?`<span class="gtoday" style="left:${pct(today)}%"></span>`:"";const todayMark=inRange?`<span class="gtoday" style="left:${pct(today)}%"><i>${T.rm_today}</i></span>`:"";
-  const stEnd=STAGES.map((g,i)=>{const acts=work.filter(a=>stageOf[a.id]===i);return acts.length?{i,name:g[0],end:Math.max(...acts.map(a=>r[a.id].se)),done:acts.every(a=>a.done)}:null}).filter(Boolean);
+  const stEnd=STAGES.map((g,i)=>{const acts=work.filter(a=>stageOf[a.id]===i);return acts.length?{i,name:g[0],end:Math.max(...acts.map(a=>r[a.id].e)),done:acts.every(a=>a.done)}:null}).filter(Boolean);
   const ms=stEnd.map(m=>`<span class="gms${m.done?" done":""}" style="left:${pct(m.end)}%" title="${esc(tf("rm_stage_end",{s:m.name}))}: ${fd(m.end)}"></span>`).join("");
   let rows=`<div class="grow"><div class="gl"><b>◆</b>${T.rm_milestones}</div><div class="gt">${ticks}${ms}${todayLine}</div></div>`;
-  STAGES.forEach((g,i)=>{const acts=list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].ss-r[y.id].ss||x.i-y.i);if(!acts.length)return;
+  STAGES.forEach((g,i)=>{const acts=list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i);if(!acts.length)return;
     rows+=`<div class="grow stg"><div class="gl">${esc(g[0])}</div><div class="gt">${ticks}${todayLine}</div></div>`;
-    acts.forEach(a=>{const tipOf=(x,q)=>x.done?tf("rm_done_on",{d:fd(q.se)}):a.cont?tf("tl_continuous",{d:fd(q.ss)}):`${tf("rm_until",{a:fd(q.ss),b:fd(q.se)})} (${T.tl_end_fast} ${fd(q.fe)})`;
-      const bar=(x,q,cls,lab)=>{const left=pct(q.ss),w=a.cont?100-left:Math.max(pct(q.se)-left,.5);return`<span class="gbar ${a.cont?"cont":statOf(x,q)}${q.crit?" crit":""}${cls}" style="left:${left}%;width:${w}%" title="${esc(a.num+" · "+a.name+" · "+lab+tipOf(x,q))}"></span>`};
+    acts.forEach(a=>{const tipOf=(x,q)=>x.done?tf("rm_done_on",{d:fd(q.e)}):a.cont?tf("tl_continuous",{d:fd(q.s)}):tf("rm_until",{a:fd(q.s),b:fd(q.e)});
+      const bar=(x,q,cls,lab)=>{const left=pct(q.s),w=a.cont?100-left:Math.max(pct(q.e)-left,.5);return`<span class="gbar ${a.cont?"cont":statOf(x,q)}${q.crit?" crit":""}${(x.nodes?x.moved>0:x.end&&!x.done)?" moved":""}${cls}" style="left:${left}%;width:${w}%" title="${esc(a.num+" · "+a.name+" · "+lab+tipOf(x,q))}"></span>`};
       const two=multi&&view==="all"&&!a.joint&&a.nodes.length>1;const marks=two?a.nodes.map((n,k)=>bar(n,raw[n.id]," t"+k,PLAT_LABEL[n.track]+" · ")).join(""):bar(a,r[a.id],"","");
       rows+=`<div class="grow"><div class="gl" title="${esc(a.name)}"><b>${esc(a.num)}</b>${esc(a.name)}</div><div class="gt">${ticks}${marks}${todayLine}</div></div>`})});
   const li=(arr,fn)=>arr.length?`<ul>${arr.map(fn).join("")}</ul>`:`<p class="plain">${T.rm_none}</p>`;
-  const done=work.filter(a=>a.done).sort((x,y)=>r[x.id].se-r[y.id].se);
-  const soon=work.filter(a=>!a.done&&status(a)!=="late"&&r[a.id].ss<=today+30).sort((x,y)=>r[x.id].ss-r[y.id].ss);
-  const late=work.filter(a=>status(a)==="late");
-  const pctDone=work.length?Math.round(cnt.done/work.length*100):0;const left=Math.max(0,endS-today);
+  const done=work.filter(a=>a.done).sort((x,y)=>r[x.id].e-r[y.id].e);
+  const soon=work.filter(a=>!a.done&&status(a)!=="late"&&r[a.id].s<=today+30).sort((x,y)=>r[x.id].s-r[y.id].s);
+  const late=work.filter(a=>status(a)==="late");const moved=work.filter(a=>a.moved>0&&!a.done);
+  const pctDone=work.length?Math.round(cnt.done/work.length*100):0;const left=Math.max(0,end-today);
   let trackBox="",seg="";
   if(multi){const gate=planGate(pv);const gname=gate?list.find(a=>a.id===gate.id):null;
     seg=`<div class="seg" id="rmSeg" role="group" aria-label="${T.rm_view}">${[["all",T.rm_joint],["ios",T.plat_ios],["android",T.plat_android]].map(([k,l])=>`<button type="button" data-track="${k}" aria-pressed="${st.track===k}">${l}</button>`).join("")}</div>`;
     if(view==="all"){const trows=targets().map(p=>{const v=planView(src,s0,p);const w=v.list.filter(a=>!a.cont);const dn=w.filter(a=>a.done).length;const pc=w.length?Math.round(dn/w.length*100):0;
-        const open=w.filter(a=>!a.done).sort((x,y)=>v.r[x.id].ss-v.r[y.id].ss);const blk=open.find(a=>a.plats[p]&&a.plats[p].blocked);
+        const open=w.filter(a=>!a.done).sort((x,y)=>v.r[x.id].s-v.r[y.id].s);const blk=open.find(a=>a.plats[p]&&a.plats[p].blocked);
         return`<div class="trow"><b>${PLAT_LABEL[p]}</b><div class="rmprog"><span style="width:${pc}%"></span></div><span>${pc}% · ${tf("rm_of",{a:dn,b:w.length})}</span><span class="${blk?"tblk":""}">${blk?`${T.rm_blocked}: ${esc(blk.num)} · ${esc(blk.plats[p].blocked)}`:T.rm_no_block}</span><span>${open[0]?`${T.rm_next}: ${esc(open[0].num)} · ${esc(open[0].name)}`:""}</span>${gate?`<span>${tf("rm_ready",{a:esc(gname.num),d:fd(gate.ready[p])})}</span>`:""}</div>`}).join("");
       let gap="";if(gate){const[a,b]=targets().map(p=>gate.ready[p]);const n=Math.abs(a-b);const[p,q]=a<b?targets():[...targets()].reverse();gap=n?tf("rm_gap",{a:esc(gname.num+" · "+gname.name),p:PLAT_LABEL[p],q:PLAT_LABEL[q],n}):tf("rm_gap_none",{a:esc(gname.num+" · "+gname.name)})}
       trackBox=`<div class="rmtrack"><h3>${T.rm_track_h}</h3>${trows}${gap?`<p class="plain">${gap}</p>`:""}<p class="plain">${T.rm_joint_note}</p></div>`}}
   el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}</div></div><button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div>${seg}${trackBox}
-  <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(endS)}</b><span>${tf("rm_best",{d:fd(endF)})} · ${tf("rm_left",{n:left})}</span></div></div>
+  <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi late"><small>${T.rm_moved}</small><b>${moved.length}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(end)}</b><span>${tf("rm_left",{n:left})}</span></div></div>
   <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
   <div class="gantt"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div></div>${rows}</div></div>
-  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_milestones}</span>${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
-  <div class="rmcols"><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].se)})}</small></li>`)}</div>
-  <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].ss),b:fd(r[a.id].se)})}</small></li>`)}</div>
-  <div><h3>${T.rm_list_late}</h3>${li(late,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].ss),b:fd(r[a.id].se)})}</small></li>`)}</div></div>`;
+  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_milestones}</span>${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
+  <div class="rmcols"><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].e)})}</small></li>`)}</div>
+  <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
+  <div><h3>${T.rm_list_late}</h3>${li(late,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
+  <div><h3>${T.rm_list_moved}</h3>${li(moved,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("tl_moved",{n:a.moved})} · ${fd(r[a.id].e)}</small></li>`)}</div></div>`;
 }
 
 // ---------- Track a version (milestones)
