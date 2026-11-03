@@ -130,15 +130,22 @@ function planActs(src,ignoreDone,ignoreEnd){
   const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,steps:[],ms:x.milestone||null,extra:true,i:ACT.length+j}));
   return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),end:ignoreEnd?null:(o.end??null),plats:o.platforms||{}}});
 }
+// Dates in local time: toISOString() is UTC, so west of Greenwich it returns tomorrow in the evening.
+const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const todayISO=()=>isoDate(new Date());
 const dayOf=(start,iso)=>start&&typeof iso==="string"?Math.round((new Date(iso+"T00:00:00")-new Date(start+"T00:00:00"))/DAY):0;
-function planCalc(list,start){
-  const by=Object.fromEntries(list.map(a=>[a.id,a]));const r={};
+// Forecast from today: an open activity whose end has passed is taken to end today, so what follows moves with it
+// and the end date of the plan stays real. It keeps late=true. Without a start date, or with noForecast, it plans
+// as written: that is the reference the deviation is measured against. s0 is the earliest start its predecessors allow.
+function planCalc(list,start,noForecast){
+  const by=Object.fromEntries(list.map(a=>[a.id,a]));const r={};const today=start&&!noForecast?dayOf(start,todayISO()):null;
+  const fin=(s,e,s0)=>{const late=today!==null&&e<today;return{s,e:late?today:e,late,s0}};
   const go=(id,seen)=>{if(r[id])return r[id];const a=by[id];if(!a||seen.has(id))return null;seen.add(id);
     const prev=a.after.map(x=>go(x,seen)).filter(Boolean);const s0=Math.max(0,...prev.map(p=>p.e));
     if(a.done){const d=dayOf(start,a.done);return r[id]={s:d,e:d,done:true}}
     if(a.cont)return r[id]={s:s0,e:s0};
-    if(a.end&&start){const e=dayOf(start,a.end);return r[id]={s:Math.min(s0,e),e}}
-    return r[id]={s:s0,e:s0+a.days}};
+    if(a.end&&start){const e=dayOf(start,a.end);return r[id]=fin(Math.min(s0,e),e,s0)}
+    return r[id]=fin(s0,s0+a.days,s0)};
   list.forEach(a=>go(a.id,new Set()));
   // Critical path: no slack between an activity and the latest finish it can have.
   const work=list.filter(a=>!a.cont&&!a.done);const end=Math.max(0,...work.map(a=>r[a.id].e));const lf={};
@@ -159,10 +166,10 @@ function planNodes(acts,ignoreEnd){
 // with the plan before any date was changed, for the ones whose end date was set by hand.
 function planView(src,start,view){
   const plain=targets().length===2&&!tracked(src);
-  const build=noEnd=>{const acts=planActs(src,false,noEnd);const nodes=plain?acts.map(a=>({...a,act:a.id,track:null})):planNodes(acts,noEnd);return{acts,nodes,...planCalc(nodes,start)}};
+  const build=noEnd=>{const acts=planActs(src,false,noEnd);const nodes=plain?acts.map(a=>({...a,act:a.id,track:null})):planNodes(acts,noEnd);return{acts,nodes,...planCalc(nodes,start,noEnd)}};
   const{acts,nodes,r:raw}=build(false);const before=build(true).r;const r={};
   const list=acts.map(a=>{const ns=nodes.filter(n=>n.act===a.id&&(!view||view==="all"||!n.track||n.track===view));if(!ns.length)return null;
-    const qs=ns.map(n=>raw[n.id]);const all=ns.every(n=>n.done);r[a.id]={s:Math.min(...qs.map(q=>q.s)),e:Math.max(...qs.map(q=>q.e)),done:all,crit:qs.some(q=>q.crit)};
+    const qs=ns.map(n=>raw[n.id]);const all=ns.every(n=>n.done);r[a.id]={s:Math.min(...qs.map(q=>q.s)),e:Math.max(...qs.map(q=>q.e)),done:all,crit:qs.some(q=>q.crit),late:qs.some(q=>q.late)};
     const hand=ns.filter(n=>n.end&&!n.done).map(n=>raw[n.id].e-before[n.id].e);
     return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns,moved:hand.length?hand.reduce((x,y)=>Math.abs(y)>Math.abs(x)?y:x):0}}).filter(Boolean);
   const work=list.filter(a=>!a.cont&&!a.done);
@@ -181,8 +188,8 @@ function renderTimeline(){
   const el=document.getElementById("timeline");const src=planSrc();const s0=src.start;const{list,r,raw,end}=planView(src,s0);
   const fd=n=>{if(!s0)return tf("tl_day_n",{n});const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short"})};
   const iso=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
-  const today=s0?dayOf(s0,new Date().toISOString().slice(0,10)):null;const stageOf=stagesOf(list);
-  const stat=(x,q)=>x.done?"done":today===null?"todo":q.e<today?"late":q.s<=today?"now":"todo";
+  const today=s0?dayOf(s0,todayISO()):null;const stageOf=stagesOf(list);
+  const stat=(x,q)=>x.done?"done":today===null?"todo":q.late?"late":q.s<=today?"now":"todo";
   const blocks=a=>a.done?[]:Object.entries(a.plats).filter(([p,q])=>q.blocked&&targets().includes(p)).map(([p,q])=>(PLAT_LABEL[p]+": "+q.blocked));
   const F={all:a=>true,open:a=>!a.done&&!a.cont,week:a=>!a.done&&!a.cont&&today!==null&&r[a.id].s<=today+7&&r[a.id].e>=today,late:a=>!a.cont&&stat(a,r[a.id])==="late",blocked:a=>blocks(a).length>0};
   const f=F[st.tlFilter]?st.tlFilter:"all";
@@ -222,14 +229,14 @@ function exportCsv(official){
   const c=cur();const live=planSrc();const preset=st.client==="preset"&&PRESET_CLIENT;
   const src=official&&preset?{start:PRESET_CLIENT.start||"",plan:PRESET_CLIENT.plan||{},extra:PRESET_CLIENT.extra||[]}:live;
   const s0=src.start;if(!s0){toast(T.rm_need_start);return}
-  const v=planView(src,s0);const todayIso=new Date().toISOString().slice(0,10);const today=dayOf(s0,todayIso);const stageOf=stagesOf(v.list);
+  const v=planView(src,s0);const todayIso=todayISO();const today=dayOf(s0,todayIso);const stageOf=stagesOf(v.list);
   const iso=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
   const base=(c&&c.baseline)||{};const decs=(c&&c.open)||[];const local=!official&&!!localDiff();
   const rows=[];
   v.list.forEach(a=>(a.nodes||[a]).forEach(n=>{const q=v.raw[n.id]||v.r[a.id];const b=(v.before&&v.before[n.id])||q;const done=!!n.done;
     const cm=base[n.id]??base[n.act];const refE=cm?dayOf(s0,cm):b.e;const refS=cm?refE-(q.e-q.s):b.s;
     const blk=n.track?((a.plats[n.track]||{}).blocked||""):Object.values(a.plats).map(x=>x.blocked).filter(Boolean).join(" | ");
-    const code=done?"done":a.cont?"cont":blk?"blocked":q.e<today?"late":q.s<=today?"now":"todo";
+    const code=done?"done":a.cont?"cont":blk?"blocked":q.late?"late":q.s<=today?"now":"todo";
     const exp=a.cont?"":refE<=refS?(today>=refE?100:0):Math.max(0,Math.min(100,Math.round((today-refS)/(refE-refS)*100)));
     const plat=n.track?PLAT_LABEL[n.track]:a.joint&&tracked(src)?T.csv_joint:PLAT_LABEL[a.plat];
     rows.push([a.num,a.name,(STAGES[stageOf[a.id]]||[""])[0],laneLabel(a.lane),plat,iso(q.s),a.cont?"":iso(q.e),T["tl_st_"+code],a.cont?"":done?100:0,exp,
@@ -255,15 +262,21 @@ function onPlanChange(e){
   const id=t.dataset.act,f=t.dataset.f;if(!id)return;const plan={...src.plan};const o={...(plan[id]||{})};
   const base=ACT.find(x=>x[0]===id);const ext=src.extra.find(x=>String(x.id)===id);const def=base?base[3]:ext.days;
   if(f==="days"){const v=Math.max(0,parseInt(t.value,10)||0);if(v===def)delete o.days;else o.days=v;delete o.end}
+  // An end date before the activity can start (after its predecessors) would shorten it silently: refuse it.
+  if((f==="end"||f==="endPlat")&&t.value&&src.start){const v=planView(src,src.start);const q=v.raw[t.dataset.plat?`${id}@${t.dataset.plat}`:id]||v.r[id];
+    const s0=q&&(q.s0??q.s);if(s0!==undefined&&dayOf(src.start,t.value)<s0){const d=new Date(src.start+"T00:00:00");d.setDate(d.getDate()+s0);
+      toast(tf("tl_end_before",{d:d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})}));renderTimeline();return}
+    // The date the plan already shows is not a postponement: nothing to store.
+    const own=t.dataset.plat?((o.platforms||{})[t.dataset.plat]||{}).end:o.end;if(q&&!own&&dayOf(src.start,t.value)===q.e)return}
   if(f==="end"){if(t.value)o.end=t.value;else delete o.end}
-  if(f==="done"){if(t.checked){o.done=src.start||new Date().toISOString().slice(0,10);delete o.end}else delete o.done}
+  if(f==="done"){if(t.checked){o.done=src.start||todayISO();delete o.end}else delete o.done}
   if(f==="doneDate"&&t.value)o.done=t.value;
   if(["donePlat","donePlatDate","endPlat"].includes(f)){const p=t.dataset.plat,pl={...(o.platforms||{})};
     if(o.done){targets().forEach(x=>{pl[x]={...(pl[x]||{}),done:o.done}});delete o.done}
     const q={...(pl[p]||{})};
     if(f==="donePlatDate"){if(t.value)q.done=t.value}
     else if(f==="endPlat"){if(t.value)q.end=t.value;else delete q.end}
-    else if(t.checked){q.done=src.start||new Date().toISOString().slice(0,10);delete q.end}else delete q.done;
+    else if(t.checked){q.done=src.start||todayISO();delete q.end}else delete q.done;
     if(Object.keys(q).length)pl[p]=q;else delete pl[p];if(Object.keys(pl).length)o.platforms=pl;else delete o.platforms}
   if(Object.keys(o).length)plan[id]=o;else delete plan[id];savePlan(src.start,plan);
 }
@@ -275,16 +288,16 @@ async function resetPlan(){const c=cur();const p=st.client==="preset"&&PRESET_CL
 function renderRoadmap(){
   const el=document.getElementById("roadmap");const src=planSrc();const s0=src.start;const c=cur();
   if(!s0){el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2></div></div><p class="plain">${T.rm_need_start}</p>`;return}
-  const multi=tracked(src);const view=multi?st.track:"";const pv=planView(src,s0,view);const{list,r,raw,end}=pv;const today=dayOf(s0,new Date().toISOString().slice(0,10));
+  const multi=tracked(src);const view=multi?st.track:"";const pv=planView(src,s0,view);const{list,r,raw,end}=pv;const today=dayOf(s0,todayISO());
   const fd=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
-  const statOf=(a,q)=>{if(a.done)return"done";if(a.cont)return q.s<=today?"now":"todo";if(q.e<today)return"late";if(q.s<=today)return"now";return"todo"};const status=a=>statOf(a,r[a.id]);
+  const statOf=(a,q)=>{if(a.done)return"done";if(a.cont)return q.s<=today?"now":"todo";if(q.late)return"late";if(q.s<=today)return"now";return"todo"};const status=a=>statOf(a,r[a.id]);
   const work=list.filter(a=>!a.cont);const cnt={done:0,now:0,todo:0,late:0};work.forEach(a=>cnt[status(a)]++);
   const stageOf=stagesOf(list);
   // Finished activities do not stretch the axis: one done months ago sits at its left edge.
   const lo=Math.min(0,today,...pv.nodes.filter(n=>!n.done).map(n=>raw[n.id].s)),hi=Math.max(end,today)+14,span=hi-lo;const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
   // Month ticks
   let ticks="",labels="";const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+lo);d.setDate(1);d.setMonth(d.getMonth()+1);
-  for(let k=0;k<24;k++){const n=dayOf(s0,d.toISOString().slice(0,10));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"2-digit"})}</span>`;d.setMonth(d.getMonth()+1)}
+  for(let k=0;k<24;k++){const n=dayOf(s0,isoDate(d));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"2-digit"})}</span>`;d.setMonth(d.getMonth()+1)}
   const inRange=today>=lo&&today<=hi;const todayLine=inRange?`<span class="gtoday" style="left:${pct(today)}%"></span>`:"";const todayMark=inRange?`<span class="gtoday" style="left:${pct(today)}%"><i>${T.rm_today}</i></span>`:"";
   // Milestones: activities marked in the model or by the client, one diamond per platform at the date the activity ends.
   const mls=list.filter(a=>a.ms).map(a=>({a,pts:a.nodes.map(n=>({n,q:raw[n.id],done:!!n.done}))})).sort((x,y)=>Math.max(...x.pts.map(p=>p.q.e))-Math.max(...y.pts.map(p=>p.q.e)));
@@ -295,7 +308,7 @@ function renderRoadmap(){
   // A milestone is the end of its activity: the row names the activity, opens it, and lists the dates.
   // With two platforms on different dates, iOS sits in the upper half of the row and Android in the lower one.
   const sameAll=pts=>pts.length>1&&pts.every(p=>p.q.e===pts[0].q.e&&p.done===pts[0].done);
-  const dia=(a,p,pos,lab)=>`<span class="gms ${a.ms.type}${p.done?" done":p.q.e<today?" late":""}${pos}" style="left:${pct(p.q.e)}%" title="${esc(lab+" · "+T["rm_ms_"+a.ms.type])}: ${fd(p.q.e)}"></span>`;
+  const dia=(a,p,pos,lab)=>`<span class="gms ${a.ms.type}${p.done?" done":p.q.late?" late":""}${pos}" style="left:${pct(p.q.e)}%" title="${esc(lab+" · "+T["rm_ms_"+a.ms.type])}: ${fd(p.q.e)}"></span>`;
   const diamonds=(a,pts)=>!pts.length?"":pts.length===1||sameAll(pts)?dia(a,pts[0],"",a.ms.name+(pts.length>1?" · "+T.rm_ms_both:"")):pts.map(p=>dia(a,p,p.n.track==="ios"?" up":" down",msLab(a,p))).join("");
   const short=n=>{const x=new Date(s0+"T00:00:00");x.setDate(x.getDate()+n);return x.toLocaleDateString(T.lang,{day:"numeric",month:"short"})};
   const devTxt=p=>{const cm=committed(p);return cm===null||p.q.e===cm?"":` <i class="${p.q.e>cm?"over":""}">${p.q.e>cm?"+":""}${tf("rm_ms_dev",{n:p.q.e-cm})}</i>`};
@@ -481,9 +494,9 @@ function renderActSheet(key){
   // Both show dates and status per platform, blockers and the open decisions that hold them back.
   const src=planSrc();const v=planView(src,src.start);const a=v.list.find(x=>x.id===key)||planActs(src).find(x=>x.id===key);if(!a)return;
   const ps=actPlats(key);const mine=new Set(actSteps(key));const ids=actStepsIn(key);const x=extraAct(key);
-  const today=src.start?dayOf(src.start,new Date().toISOString().slice(0,10)):null;
+  const today=src.start?dayOf(src.start,todayISO()):null;
   const fd=n=>{if(!src.start)return tf("tl_day_n",{n});const d=new Date(src.start+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
-  const stat=(n,q)=>n.done?"done":today===null?"todo":q.e<today?"late":q.s<=today?"now":"todo";
+  const stat=(n,q)=>n.done?"done":today===null?"todo":q.late?"late":q.s<=today?"now":"todo";
   const nodes=(a.nodes||[a]).filter(n=>!st.actPlat||!n.track||n.track===st.actPlat);
   const when=nodes.map(n=>{const q=v.raw?v.raw[n.id]:v.r[a.id];if(!q)return"";const c=stat(n,q);
     return`<span class="tst ${c}">${n.track&&nodes.length>1?PLAT_LABEL[n.track]+": ":""}${T["tl_st_"+c]}</span> <span>${a.cont?tf("tl_continuous",{d:fd(q.s)}):n.done?fd(q.e):`${fd(q.s)} → ${fd(q.e)}`}</span>`}).filter(Boolean).join("<br>");

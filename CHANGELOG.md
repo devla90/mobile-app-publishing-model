@@ -4,6 +4,11 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Fixed
+- The plan forecasts from today: an open activity whose end has passed is taken to end today and what follows moves with it, so the end date of the plan no longer looks better than it is. It still shows as late.
+- An end date before the activity can start, after its predecessors, is refused with a notice instead of shortening the activity.
+- "Today" is the local date: in the evening, west of Greenwich, the page took it as the next day.
+
 ### Added
 - "Exportar CSV" on the plan and the roadmap: one row per activity and platform with area, dates, status, real and expected progress, deviation against the baseline (or the plan without edits), milestone, blocker, decisions and steps. A header records the source; with local changes the page asks whether to export the official plan or those changes.
 

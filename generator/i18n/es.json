@@ -221,6 +221,7 @@
   "tl_stage_done": "{a} de {b} hechas",
   "tl_end_on": "Fecha de fin",
   "tl_moved": "aplazada {n} días",
+  "tl_end_before": "La fecha de fin no puede ser anterior al {d}: ese día terminan las actividades de las que depende.",
   "tl_h_done": "Hecha",
   "tl_done_on": "Hecha el",
   "tl_continuous": "continua, desde {d}",
