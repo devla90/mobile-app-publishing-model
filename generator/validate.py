@@ -47,6 +47,13 @@ def check_dates(where, o):
     if "min" in o or "max" in o: say(f"{where} uses min and max; activities now have one duration, `days` (docs/conventions.md#durations-and-the-timeline)")
 
 
+def check_milestone(where, a):
+    m = a.get("milestone")
+    if m is None: return
+    if not (isinstance(m, dict) and isinstance(m.get("name"), str) and m["name"]): say(f"{where} milestone needs a name")
+    elif m.get("type") not in ("achievement", "decision"): say(f"{where} milestone type must be achievement or decision")
+
+
 def load(path):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -136,8 +143,22 @@ for a in files["diagram"]["activities"]:
     if a.get("platform") not in PLATFORMS: say(f"diagram: activity {a['key']} bad platform '{a.get('platform')}'")
     if not isinstance(a.get("joint"), bool): say(f"diagram: activity {a['key']} needs joint true or false")
     if a.get("joint") and a.get("platform") != "both": say(f"diagram: activity {a['key']} is joint, so its platform must be both")
+    check_milestone(f"diagram: activity {a['key']}", a)
     for ph in a["phases"]:
         if ph not in phase_ids: say(f"diagram: activity {a['key']} lists unknown phase {ph}")
+
+# Every step belongs to exactly one activity, of a phase and platform that fit it.
+step_by_id = {s["id"]: s for s in steps["steps"]}
+owner_of = {}
+for a in files["diagram"]["activities"]:
+    for sid in a.get("steps", []):
+        s = step_by_id.get(sid)
+        if not s: say(f"diagram: activity {a['key']} lists unknown step {sid}"); continue
+        if sid in owner_of: say(f"diagram: step {sid} is in {owner_of[sid]} and {a['key']}")
+        owner_of[sid] = a["key"]
+        if s["phase"] not in a["phases"]: say(f"diagram: step {sid} is in phase {s['phase']}, which activity {a['key']} does not list")
+        if a.get("platform") != "both" and s["platform"] not in (a.get("platform"), "both"): say(f"diagram: step {sid} is {s['platform']}, but activity {a['key']} is {a.get('platform')}")
+for sid in step_ids - set(owner_of): say(f"diagram: step {sid} belongs to no activity")
 
 for x in files["diagram"]["arrows"]:
     if x[0] not in base_plan or x[1] not in base_plan: say(f"diagram: arrow {x} names an unknown activity")
@@ -173,6 +194,10 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         if x.get("lane") not in lanes: say(f"{rel}: extra activity {xid} has unknown lane {x.get('lane')}")
         if not x.get("name"): say(f"{rel}: extra activity {xid} has no name")
         check_dates(f"{rel}: extra activity {xid}", x)
+        check_milestone(f"{rel}: extra activity {xid}", x)
+        if not all(isinstance(k, str) and k for k in x.get("tasks", [])): say(f"{rel}: extra activity {xid} tasks must be texts")
+        for sid in x.get("refs", []):
+            if sid not in step_ids: say(f"{rel}: extra activity {xid} refs unknown step {sid}")
         acts[xid] = (x.get("days"), [str(a) for a in x.get("after", [])], False)
         if x.get("platform", "both") not in PLATFORMS: say(f"{rel}: extra activity {xid} bad platform '{x['platform']}'")
         if not isinstance(x.get("joint", True), bool): say(f"{rel}: extra activity {xid} needs joint true or false")
@@ -187,6 +212,23 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
             check_dates(f"{rel}: plan {k} {pl}", q)
             if "blocked" in q and not (isinstance(q["blocked"], str) and q["blocked"]): say(f"{rel}: plan {k} {pl} blocked must be a text")
     check_plan(str(rel), acts)
+    # Open decisions and the baseline (docs/conventions.md#decisions-areas-and-baseline)
+    for x in inst.get("open_decisions", []):
+        xid = x.get("id", "?")
+        for f in ("id", "name", "owner"):
+            if not (isinstance(x.get(f), str) and x[f]): say(f"{rel}: open decision {xid} needs {f}")
+        for f in ("due", "opened"):
+            try: date.fromisoformat(str(x.get(f)))
+            except ValueError: say(f"{rel}: open decision {xid} {f} must be a YYYY-MM-DD date")
+        for k in x.get("blocks", []):
+            if k not in acts: say(f"{rel}: open decision {xid} blocks unknown activity {k}")
+        if x.get("platform") and x["platform"] not in targets: say(f"{rel}: open decision {xid} names platform '{x['platform']}', which is not a target")
+    for k, d in inst.get("baseline", {}).items():
+        key, _, plat = k.partition("@")
+        if key not in acts: say(f"{rel}: baseline names unknown activity {key}")
+        if plat and plat not in targets: say(f"{rel}: baseline names platform '{plat}', which is not a target")
+        try: date.fromisoformat(str(d))
+        except ValueError: say(f"{rel}: baseline {k} must be a YYYY-MM-DD date")
 
 # Real client instances and their output (clients/<id>/dist/) must never be versioned (docs/deployment.md#private-client-instances).
 # Client output used to live in dist/clients/ and dist/diff-*.md; nothing may remain tracked there.

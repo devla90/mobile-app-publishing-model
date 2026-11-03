@@ -1,5 +1,5 @@
 {
-  "description": "The activities of the swimlane diagram, in flow order. `key` is the stable reference, used by `after`, `arrows` and instances; the number shown to people is computed from the position, so an activity is added by inserting it where it belongs. Also: lane, stage (index into phases.json/stages), platform, joint (one shared state and a meeting point for both platforms), text lines, phases covered, and the plan: duration in calendar days (days) and the activities that must finish before (after). Continuous activities have no duration. `arrows` are the links drawn on the diagram, a readable summary of the dependencies: [from, to, route]. Routes: h sideways, v down, s out of the side into the top, r out of the side into the bottom, l out of the bottom into the side, g along the gap above the target.",
+  "description": "The activities of the swimlane diagram, in flow order. `key` is the stable reference, used by `after`, `arrows` and instances; the number shown to people is computed from the position, so an activity is added by inserting it where it belongs. Also: lane, stage (index into phases.json/stages), platform, joint (one shared state and a meeting point for both platforms), text lines, phases covered, the steps it groups (every step belongs to exactly one activity), an optional milestone (name and type: achievement or decision) shown on the roadmap, and the plan: duration in calendar days (days) and the activities that must finish before (after). Continuous activities have no duration. `arrows` are the links drawn on the diagram, a readable summary of the dependencies: [from, to, route]. Routes: h sideways, v down, s out of the side into the top, r out of the side into the bottom, l out of the bottom into the side, g along the gap above the target.",
   "lang": "es",
   "activities": [
     {
@@ -15,6 +15,7 @@
       "phases": [
         "S0"
       ],
+      "steps": ["S0.1", "S0.3"],
       "duration": {
         "days": 6
       },
@@ -33,6 +34,7 @@
       "phases": [
         "S0"
       ],
+      "steps": ["S0.2"],
       "duration": {
         "days": 3
       },
@@ -53,6 +55,7 @@
       "phases": [
         "S1"
       ],
+      "steps": ["S1.3", "S1.4", "S1.5"],
       "duration": {
         "days": 2
       },
@@ -74,6 +77,7 @@
         "S1",
         "S2"
       ],
+      "steps": ["S1.1", "S1.2", "S1.6", "S1.7"],
       "duration": {
         "days": 16
       },
@@ -95,6 +99,7 @@
         "S2",
         "S3"
       ],
+      "steps": ["S2.1", "S2.3", "S2.4", "S2.6", "S3.1", "S3.2"],
       "duration": {
         "days": 2
       },
@@ -109,6 +114,10 @@
       "stage": 0,
       "platform": "both",
       "joint": false,
+      "milestone": {
+        "name": "Cuenta de tienda verificada",
+        "type": "achievement"
+      },
       "lines": [
         "Verifican la",
         "entidad"
@@ -116,6 +125,7 @@
       "phases": [
         "S2"
       ],
+      "steps": ["S2.2", "S2.5", "S2.7"],
       "duration": {
         "days": 13
       },
@@ -137,6 +147,7 @@
         "S3",
         "S4"
       ],
+      "steps": ["S3.3", "S3.4", "S3.5", "S4.1", "S4.2", "S4.3"],
       "duration": {
         "days": 4
       },
@@ -158,6 +169,7 @@
       "phases": [
         "S5"
       ],
+      "steps": ["S5.1"],
       "duration": {
         "days": 1
       },
@@ -178,6 +190,7 @@
       "phases": [
         "S5"
       ],
+      "steps": ["S5.2"],
       "duration": {
         "days": 1
       },
@@ -191,6 +204,10 @@
       "stage": 1,
       "platform": "both",
       "joint": false,
+      "milestone": {
+        "name": "App creada en la tienda",
+        "type": "achievement"
+      },
       "lines": [
         "Crea la app",
         "en tiendas"
@@ -198,6 +215,7 @@
       "phases": [
         "S5"
       ],
+      "steps": ["S5.3", "S5.4", "S5.5"],
       "duration": {
         "days": 1
       },
@@ -218,6 +236,7 @@
       "phases": [
         "S6"
       ],
+      "steps": ["S6.1", "S6.10", "S6.12"],
       "duration": {
         "days": 2
       },
@@ -238,6 +257,7 @@
       "phases": [
         "S6"
       ],
+      "steps": ["S6.2", "S6.4", "S6.5", "S6.6", "S6.7", "S6.8", "S6.9", "S6.11", "S6.14"],
       "duration": {
         "days": 3
       },
@@ -260,6 +280,7 @@
       "phases": [
         "S6"
       ],
+      "steps": ["S6.3", "S6.15"],
       "duration": {
         "days": 1
       },
@@ -278,8 +299,10 @@
         "deep links"
       ],
       "phases": [
+        "S6",
         "S7"
       ],
+      "steps": ["S6.13", "S7.1", "S7.2", "S7.3", "S7.4"],
       "duration": {
         "days": 4
       },
@@ -293,6 +316,10 @@
       "stage": 3,
       "platform": "both",
       "joint": false,
+      "milestone": {
+        "name": "Primer build firmado",
+        "type": "achievement"
+      },
       "lines": [
         "Compila, firma y",
         "verifica binario"
@@ -301,6 +328,7 @@
         "S8",
         "S9"
       ],
+      "steps": ["S8.1", "S8.2", "S8.3", "S8.5", "S8.6", "S9.1", "S9.2", "S9.3"],
       "duration": {
         "days": 3
       },
@@ -322,6 +350,7 @@
       "phases": [
         "S8"
       ],
+      "steps": ["S8.4"],
       "duration": {
         "days": 2
       },
@@ -342,6 +371,7 @@
       "phases": [
         "S12"
       ],
+      "steps": ["S12.1", "S12.2", "S12.3", "S12.6", "S12.8", "S12.9"],
       "duration": {
         "days": 6
       },
@@ -363,6 +393,7 @@
         "S12",
         "S13"
       ],
+      "steps": ["S12.4", "S12.5", "S12.7", "S13.2", "S13.3", "S13.4"],
       "duration": {
         "days": 6
       },
@@ -376,6 +407,10 @@
       "stage": 4,
       "platform": "both",
       "joint": false,
+      "milestone": {
+        "name": "Conformidad de QA",
+        "type": "decision"
+      },
       "lines": [
         "Sube el build y",
         "prueba en canales"
@@ -384,6 +419,7 @@
         "S10",
         "S11"
       ],
+      "steps": ["S10.1", "S10.2", "S10.3", "S11.1", "S11.2", "S11.3", "S11.4", "S11.5", "S11.6", "S11.7"],
       "duration": {
         "days": 10
       },
@@ -398,6 +434,10 @@
       "stage": 5,
       "platform": "both",
       "joint": true,
+      "milestone": {
+        "name": "Aprobación de seguridad",
+        "type": "decision"
+      },
       "lines": [
         "Aprobación de",
         "seguridad"
@@ -405,6 +445,7 @@
       "phases": [
         "S13"
       ],
+      "steps": ["S13.1"],
       "duration": {
         "days": 3
       },
@@ -419,12 +460,17 @@
       "stage": 5,
       "platform": "both",
       "joint": true,
+      "milestone": {
+        "name": "Go / No-Go",
+        "type": "decision"
+      },
       "lines": [
         "Decide Go / No-Go"
       ],
       "phases": [
         "S13"
       ],
+      "steps": ["S13.5"],
       "duration": {
         "days": 3
       },
@@ -440,6 +486,10 @@
       "stage": 6,
       "platform": "both",
       "joint": false,
+      "milestone": {
+        "name": "Versión aprobada por la tienda",
+        "type": "achievement"
+      },
       "lines": [
         "Revisan la versión",
         "(Apple y Google)"
@@ -447,6 +497,7 @@
       "phases": [
         "S14"
       ],
+      "steps": ["S14.1", "S14.2", "S14.3"],
       "duration": {
         "days": 4
       },
@@ -460,6 +511,10 @@
       "stage": 6,
       "platform": "both",
       "joint": false,
+      "milestone": {
+        "name": "App publicada",
+        "type": "achievement"
+      },
       "lines": [
         "Libera y despliega",
         "por fases"
@@ -467,6 +522,7 @@
       "phases": [
         "S15"
       ],
+      "steps": ["S15.1", "S15.2", "S15.3"],
       "duration": {
         "days": 4
       },
@@ -488,6 +544,7 @@
         "S16",
         "S17"
       ],
+      "steps": ["S16.1", "S16.3", "S16.4", "S16.5", "S16.6", "S17.1", "S17.2", "S17.6"],
       "continuous": true,
       "after": [
         "release"
@@ -507,6 +564,7 @@
         "S16",
         "S17"
       ],
+      "steps": ["S16.2", "S17.8"],
       "continuous": true,
       "after": [
         "release"
@@ -526,6 +584,7 @@
         "S17",
         "S18"
       ],
+      "steps": ["S17.3", "S17.4", "S17.5", "S17.7"],
       "continuous": true,
       "after": [
         "release"
@@ -544,6 +603,7 @@
       "phases": [
         "S18"
       ],
+      "steps": ["S18.1", "S18.2", "S18.3", "S18.4", "S18.5", "S18.6"],
       "continuous": true,
       "after": [
         "release"

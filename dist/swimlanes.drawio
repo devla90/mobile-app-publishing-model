@@ -34,7 +34,7 @@
         <mxCell id="stage-7" value="&lt;b style=&quot;font-size:14px;color:#1D2433&quot;&gt;Operación y&lt;br&gt;renovación&lt;/b&gt;&lt;br&gt;S16–S18" style="rounded=0;html=1;whiteSpace=wrap;fillColor=none;strokeColor=#E4E7EC;align=left;verticalAlign=top;spacingLeft=8;spacingTop=12;fontSize=12;fontColor=#5B6475;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="16" y="1198" width="1356" height="88" as="geometry" />
         </mxCell>
-        <mxCell id="lane-L1" value="&lt;b style=&quot;font-size:15px&quot;&gt;Canal Digital&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Negocio · dueño del flujo&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#EAF2FE;swimlaneFillColor=none;strokeColor=#1F6FEB;fontColor=#1F6FEB;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
+        <mxCell id="lane-L1" value="&lt;b style=&quot;font-size:13px&quot;&gt;Canal Digital&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px;color:#5B6475&quot;&gt;Negocio · dueño del flujo&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#EAF2FE;swimlaneFillColor=none;strokeColor=#1F6FEB;fontColor=#1F6FEB;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="138" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-1" label="Decide titular&lt;br&gt;y modelo operativo" n="1" lane="L1" stage="Cuentas y acuerdos" phases="S0">
@@ -77,7 +77,7 @@
         <mxCell id="act-24-n" value="24" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-24" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="lane-L2" value="&lt;b style=&quot;font-size:15px&quot;&gt;TI&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Responde por la tecnología&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#E6F6F4;swimlaneFillColor=none;strokeColor=#0E9384;fontColor=#0E9384;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
+        <mxCell id="lane-L2" value="&lt;b style=&quot;font-size:13px&quot;&gt;TI&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px;color:#5B6475&quot;&gt;Responde por la tecnología&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#E6F6F4;swimlaneFillColor=none;strokeColor=#0E9384;fontColor=#0E9384;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="314" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-3" label="Crea correos y&lt;br&gt;cuentas con 2FA" n="3" lane="L2" stage="Cuentas y acuerdos" phases="S1">
@@ -136,7 +136,7 @@
         <mxCell id="act-12-n" value="12" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-12" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-14" label="Configura push y&lt;br&gt;deep links" n="14" lane="L2" stage="Firma y servicios" phases="S7">
+        <object id="act-14" label="Configura push y&lt;br&gt;deep links" n="14" lane="L2" stage="Firma y servicios" phases="S6, S7">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
             <mxGeometry x="3" y="624" width="158" height="56" as="geometry" />
           </mxCell>
@@ -152,7 +152,7 @@
         <mxCell id="act-26-n" value="26" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-26" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="lane-L3" value="&lt;b style=&quot;font-size:15px&quot;&gt;Ejecutor técnico&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;TI interno o tercero (V14)&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F1EEFE;swimlaneFillColor=none;strokeColor=#7A5AF8;fontColor=#7A5AF8;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
+        <mxCell id="lane-L3" value="&lt;b style=&quot;font-size:13px&quot;&gt;Ejecutor técnico&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px;color:#5B6475&quot;&gt;TI interno o tercero (V14)&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F1EEFE;swimlaneFillColor=none;strokeColor=#7A5AF8;fontColor=#7A5AF8;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="490" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-15" label="Compila, firma y&lt;br&gt;verifica binario" n="15" lane="L3" stage="Construcción" phases="S8, S9">
@@ -179,7 +179,7 @@
         <mxCell id="act-25-n" value="25" style="ellipse;html=1;fillColor=#7A5AF8;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-25" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="lane-L4" value="&lt;b style=&quot;font-size:15px&quot;&gt;Seguridad&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Custodia de claves&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#FDECEA;swimlaneFillColor=none;strokeColor=#D92D20;fontColor=#D92D20;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
+        <mxCell id="lane-L4" value="&lt;b style=&quot;font-size:13px&quot;&gt;Seguridad&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px;color:#5B6475&quot;&gt;Custodia de claves&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#FDECEA;swimlaneFillColor=none;strokeColor=#D92D20;fontColor=#D92D20;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="666" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-11" label="Genera claves&lt;br&gt;de firma" n="11" lane="L4" stage="Firma y servicios" phases="S6">
@@ -222,7 +222,7 @@
         <mxCell id="act-27-n" value="27" style="ellipse;html=1;fillColor=#D92D20;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-27" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="lane-L5" value="&lt;b style=&quot;font-size:15px&quot;&gt;Cumplimiento, Legal&lt;br&gt;y Riesgos&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Controles y aprobaciones&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#FEF1E6;swimlaneFillColor=none;strokeColor=#DC6803;fontColor=#DC6803;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
+        <mxCell id="lane-L5" value="&lt;b style=&quot;font-size:13px&quot;&gt;Cumplimiento, Legal y&lt;br&gt;Riesgos&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px;color:#5B6475&quot;&gt;Controles y aprobaciones&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#FEF1E6;swimlaneFillColor=none;strokeColor=#DC6803;fontColor=#DC6803;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="842" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-2" label="Aprueba uso de&lt;br&gt;tiendas y terceros" n="2" lane="L5" stage="Cuentas y acuerdos" phases="S0">
@@ -241,7 +241,7 @@
         <mxCell id="act-18-n" value="18" style="ellipse;html=1;fillColor=#DC6803;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-18" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="lane-L6" value="&lt;b style=&quot;font-size:15px&quot;&gt;Representación legal&lt;br&gt;y Finanzas&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Entidad, poderes y pagos&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F8F3E0;swimlaneFillColor=none;strokeColor=#A3820F;fontColor=#A3820F;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
+        <mxCell id="lane-L6" value="&lt;b style=&quot;font-size:13px&quot;&gt;Representación legal y&lt;br&gt;Finanzas&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px;color:#5B6475&quot;&gt;Entidad, poderes y pagos&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F8F3E0;swimlaneFillColor=none;strokeColor=#A3820F;fontColor=#A3820F;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="1018" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-4" label="Reúne datos legales&lt;br&gt;y de contacto" n="4" lane="L6" stage="Cuentas y acuerdos" phases="S1, S2">
@@ -252,7 +252,7 @@
         <mxCell id="act-4-n" value="4" style="ellipse;html=1;fillColor=#A3820F;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-4" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="lane-L7" value="&lt;b style=&quot;font-size:15px&quot;&gt;Externos&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11.5px;color:#5B6475&quot;&gt;Apple, Google, D&amp;amp;B&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F0F1F4;swimlaneFillColor=none;strokeColor=#667085;fontColor=#667085;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
+        <mxCell id="lane-L7" value="&lt;b style=&quot;font-size:13px&quot;&gt;Externos&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px;color:#5B6475&quot;&gt;Apple, Google, D&amp;amp;B&lt;/span&gt;" style="swimlane;html=1;whiteSpace=wrap;startSize=92;rounded=1;arcSize=8;fillColor=#F0F1F4;swimlaneFillColor=none;strokeColor=#667085;fontColor=#667085;collapsible=0;horizontal=1;verticalAlign=middle;fontFamily=Calibri;" parent="1" vertex="1">
           <mxGeometry x="1194" y="96" width="164" height="1190" as="geometry" />
         </mxCell>
         <object id="act-6" label="Verifican la&lt;br&gt;entidad" n="6" lane="L7" stage="Cuentas y acuerdos" phases="S2">

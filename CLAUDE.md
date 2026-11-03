@@ -8,7 +8,7 @@ This repository is a data model, not an application. Read only what the task nee
 | --- | --- | --- |
 | Understand the model | `docs/model.md` | `model/steps.json` in full |
 | Add or change a step, role, credential, variant | `docs/conventions.md` and the JSON being changed | `generator/`, `dist/` |
-| Instantiate a client | `.claude/skills/instantiate-client/SKILL.md`, `clients/example/instance.json`, `model/variants.json`, `model/actors.json` (only `lanes`) | `model/steps.json` |
+| Instantiate a client | `.claude/skills/instantiate-client/SKILL.md`, `clients/example/instance.json`, `model/variants.json`, `model/actors.json` (only `lanes`), `docs/conventions.md` (plan, platforms, milestones, decisions and baseline) | `model/steps.json` |
 | Validate store data | `.claude/skills/validate-requirements/SKILL.md`, `docs/validation.md` | everything else |
 | Change how the page looks or behaves | `generator/build.py`, `generator/templates/`, `generator/i18n/es.json` | `model/` |
 | Answer why something was decided | `docs/decisions.md` | everything else |
@@ -22,7 +22,7 @@ This repository is a data model, not an application. Read only what the task nee
 4. **Variants, not defaults.** Where there are alternative ways to do something, model it as an option of a variant. No option is "the normal one".
 5. **Dated data.** Every store deadline, limit or cost has a source and a date in `docs/validation.md`. If you change one, update that table.
 6. **Two languages, one rule.** Repository in English: file names, JSON keys, code, comments, docs, skills, commits. Model content in Spanish: JSON *values* (names, notes, descriptions), UI strings in `generator/i18n/es.json`, `docs/validation.md` table rows. Never translate content values to English; never write Spanish keys, identifiers or code comments.
-7. **Enums in English.** `platform` is `ios` / `android` / `both`; `frequency` is `owner` / `app` / `version` / `cycle`; `severity` is `high` / `medium`. Their display labels live in `model/phases.json` (`frequencies`) and `generator/i18n/es.json`.
+7. **Enums in English.** `platform` is `ios` / `android` / `both`; `frequency` is `owner` / `app` / `version` / `cycle`; `severity` is `high` / `medium`; `milestone.type` is `achievement` / `decision`; activities have `platform` and `joint`. Their display labels live in `model/phases.json` (`frequencies`) and `generator/i18n/es.json`.
 
 ## ID structure
 
@@ -37,13 +37,14 @@ This repository is a data model, not an application. Read only what the task nee
 | V | Variation point | `model/variants.json` |
 | key | Activity of the diagram, such as `create-store-app`. Its number is computed from the position | `model/diagram.json` |
 | R | Renewal | `model/renewals.json` |
-| m / c | Milestone and per-version check | `model/milestones.json` |
+| m / c | Version checkpoint and its check (per release; shown as "controles") | `model/milestones.json` |
 
 ## Commands
 
 ```bash
 python3 generator/validate.py                 # syntax, IDs, cross-references (run before every commit)
 python3 generator/build.py --no-png           # fast build
+python3 generator/check_page.py               # styles and strings the page uses exist; with playwright, opens every page
 python3 generator/build.py                    # with PNG (needs playwright)
 python3 generator/check_sources.py            # did any cited official page change?
 python3 generator/check_sources.py --update   # after validating, store the new reference

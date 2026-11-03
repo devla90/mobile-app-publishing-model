@@ -28,5 +28,22 @@
       "owner": "<area, never a person>",
       "rationale": "<why>"
     }
-  ]
+  ],
+  "start_date": "<YYYY-MM-DD>",
+  "plan": {},
+  "extra_activities": [],
+  "open_decisions": [
+    {
+      "id": "D1",
+      "name": "<pending decision>",
+      "owner": "<area, never a person>",
+      "opened": "<YYYY-MM-DD>",
+      "due": "<YYYY-MM-DD>",
+      "status": "<where it stands>",
+      "blocks": [
+        "<activity key>"
+      ]
+    }
+  ],
+  "baseline": {}
 }

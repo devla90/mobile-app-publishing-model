@@ -21,7 +21,7 @@ Do not load `model/steps.json` in full to add one step: `grep '"id": "S6\.'` the
 4. **Neutrality.** No company, country, regulator or client-product names. If the request comes from one client, model the generic case and suggest the detail goes in its `instance.json`.
 5. **Variants, not defaults.** If the request is "replace X with Y" and both are valid, do not replace: add Y as an option of an existing or new variant and mark the affected steps.
 6. **Cross-references.** When adding or retiring:
-   - a step: check `depends_on` of other steps, `step` in `milestones.json` and `renewals.json`, and `phases` in `diagram.json`.
+   - a step: check `depends_on` of other steps, `step` in `milestones.json` and `renewals.json`, and `phases` and `steps` in `diagram.json`.
    - a credential or artifact: grep its ID in `steps.json` (`inputs`/`outputs`).
    - a role: grep `A\d\d` in `owner` of `steps.json`, the lane's `roles` list and `incompatible_pairs`.
    - a variant: grep its ID in `variants` of `steps.json`.

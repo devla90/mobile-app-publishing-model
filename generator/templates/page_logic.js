@@ -10,7 +10,7 @@ const PLAT_LABEL={ios:T.plat_ios,android:T.plat_android,both:T.plat_both};
 const pageKey=k=>PRESET_CLIENT?`${k}:${PRESET_CLIENT.name}`:k;
 
 // ---------- Page state
-let st={plat:"all",role:"",lane:"",phases:[],q:"",onlyVar:false,onlyDoubt:false,sel:"S0.1",view:null,tab:"ov",client:"",version:"",track:"all"};
+let st={plat:"all",role:"",lane:"",act:"",actPlat:"",tlFilter:"all",tlEdit:"",tlStage:{},phases:[],q:"",onlyVar:false,onlyDoubt:false,sel:"S0.1",view:null,tab:"ov",client:"",version:"",track:"all"};
 let rev={};try{rev=JSON.parse(localStorage.getItem(pageKey("mapm-rev"))||"{}")}catch(e){rev={}}
 const save=()=>{try{localStorage.setItem(pageKey("mapm-rev"),JSON.stringify(rev))}catch(e){}};
 try{const h=location.hash.slice(1);if(byId[h])st.sel=h}catch(e){}
@@ -31,7 +31,21 @@ function moveShared(){let cs,vs;try{cs=JSON.parse(localStorage.getItem("mapm-cli
 // instance.json wins over what a browser stored, except for activities edited on the page since the last build.
 function syncPresetPlan(p){const next=PRESET_CLIENT.plan||{};if(!p.planBase||p.planV!==PLAN_V){p.plan=next;p.planBase=next;p.planV=PLAN_V;return}
   const base=p.planBase,plan={...p.plan};new Set([...Object.keys(base),...Object.keys(next)]).forEach(k=>{if(JSON.stringify(plan[k])===JSON.stringify(base[k])){if(next[k])plan[k]=next[k];else delete plan[k]}});p.plan=plan;p.planBase=next}
-function loadLocal(){if(PRESET_CLIENT)moveShared();clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(!PRESET_CLIENT){delete clients.preset;Object.values(clients).forEach(c=>{if(c.plan&&c.planV!==PLAN_V){delete c.plan;c.planV=PLAN_V}})}if(PRESET_CLIENT){if(!clients.preset)clients.preset={...PRESET_CLIENT,planBase:PRESET_CLIENT.plan||{},planV:PLAN_V};else{const p=clients.preset;p.extra=PRESET_CLIENT.extra;syncPresetPlan(p);p.variants={...(PRESET_CLIENT.variants||{}),...(p.variants||{})};if(!p.start&&PRESET_CLIENT.start)p.start=PRESET_CLIENT.start}LSW("mapm-clients",clients)}if(PRESET_CLIENT&&!st.client)st.client="preset"}
+// The start date follows instance.json the same way: kept only if it was changed on the page since the last build.
+function syncPresetStart(p){const next=PRESET_CLIENT.start||"";if(p.startBase===undefined){p.startBase=next;if(!p.start)p.start=next;return}
+  if(!p.start||p.start===p.startBase)p.start=next;p.startBase=next}
+// What this browser holds that instance.json does not: the start date and the activities whose entry differs.
+function localDiff(){const c=cur();if(st.client!=="preset"||!c||!PRESET_CLIENT)return null;const a=c.plan||{},b=PRESET_CLIENT.plan||{};
+  const acts=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>JSON.stringify(a[k])!==JSON.stringify(b[k]));const start=(c.start||"")!==(PRESET_CLIENT.start||"");
+  return acts.length||start?{acts,start}:null}
+function localBanner(){const d=localDiff();if(!d)return"";const parts=[d.start?T.local_start:"",d.acts.length?(d.acts.length===1?T.local_act_one:tf("local_acts",{n:d.acts.length})):""].filter(Boolean).join(" · ");
+  return`<div class="localbar"><span>${tf("local_changes",{what:esc(parts)})}</span><button class="btn" type="button" data-local="copy">${T.local_copy}</button><button class="btn" type="button" data-local="discard">${T.local_discard}</button><textarea class="localjson" readonly hidden></textarea></div>`}
+async function onLocal(e){const b=e.target.closest("[data-local]");if(!b)return;
+  if(b.dataset.local==="discard"){resetPlan();return}
+  const c=cur();const txt=JSON.stringify({start_date:c.start||undefined,plan:c.plan||{}},null,2).replace(/^\{\n|\n\}$/g,"");
+  const show=()=>{const ta=b.parentNode.querySelector(".localjson");ta.hidden=false;ta.value=txt;ta.select()};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>toast(T.local_copied),show);else show()}
+function loadLocal(){if(PRESET_CLIENT)moveShared();clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(!PRESET_CLIENT){delete clients.preset;Object.values(clients).forEach(c=>{if(c.plan&&c.planV!==PLAN_V){delete c.plan;c.planV=PLAN_V}})}if(PRESET_CLIENT){if(!clients.preset)clients.preset={...PRESET_CLIENT,planBase:PRESET_CLIENT.plan||{},planV:PLAN_V,startBase:PRESET_CLIENT.start||""};else{const p=clients.preset;p.extra=PRESET_CLIENT.extra;p.open=PRESET_CLIENT.open;p.baseline=PRESET_CLIENT.baseline;syncPresetPlan(p);p.variants={...(PRESET_CLIENT.variants||{}),...(p.variants||{})};syncPresetStart(p)}LSW("mapm-clients",clients)}if(PRESET_CLIENT&&!st.client)st.client="preset"}
 const uid=()=>Math.random().toString(36).slice(2,10);
 async function putClient(id,data){clients[id]=data;if(db&&canWrite){try{await db.doc("clients/"+id).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-clients",clients)}
 async function putVersion(cid,vid,data){versions[cid]=versions[cid]||{};versions[cid][vid]=data;if(db&&canWrite){try{await db.doc("clients/"+cid+"/versions/"+vid).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-versions",versions)}
@@ -57,7 +71,7 @@ function linkify(t){return esc(t).replace(/\b([ACF]\d{2}|S\d{1,2}\.\d{1,2})\b/g,
   if(!lab)return m;return `<button class="chip" data-go="${k==="S"?"step":k}:${m}"><b>${m}</b>${k==="S"?"":esc(lab)}</button>`})}
 function toast(t){const el=document.getElementById("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2400)}
 function setTab(t){st.tab=t;[["ov",tabOv,ovView],["rm",tabRm,rmView],["vr",tabVr,vrView],["dt",tabDt,dtView],["in",tabIn,inView],["rn",tabRn,rnView]].forEach(([k,b,v])=>{b.setAttribute("aria-selected",k===t);v.hidden=k!==t})}
-function go(id,scroll){st.sel=id;st.view=null;try{history.replaceState(null,"","#"+id)}catch(e){}setTab("dt");render();
+function go(id,scroll){if(st.act&&!actRail(st.act).includes(id)){st.act="";st.actPlat=""}st.sel=id;st.view=null;try{history.replaceState(null,"","#"+id)}catch(e){}setTab("dt");render();
   if(scroll){const el=rail.querySelector(`[data-id="${CSS.escape(id)}"]`);el&&el.scrollIntoView({block:"nearest"})}
   if(matchMedia("(max-width:860px)").matches&&scroll!==false)detail.scrollIntoView({block:"start"})}
 
@@ -71,8 +85,9 @@ function renderSwim(){
   let s=`<defs><marker id="sw-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>`;
   LANES.forEach((l,i)=>{const x=X0+i*CW;s+=`<rect x="${x+6}" y="10" width="${CW-12}" height="60" rx="8" fill="var(${LC[l[0]]}s)"/><rect x="${x+6}" y="10" width="${CW-12}" height="4" rx="2" fill="var(${LC[l[0]]})"/>`});
   rowY.forEach(ry=>{s+=`<line class="rule" x1="0" x2="${W}" y1="${ry}" y2="${ry}"/>`});
-  LANES.forEach((l,i)=>{const cx=X0+i*CW+CW/2;const name=laneLabel(l[0]);const words=name.split(" ");const two=name.length>16&&words.length>1;const l1=two?words.slice(0,Math.ceil(words.length/2)).join(" "):name,l2=two?words.slice(Math.ceil(words.length/2)).join(" "):"";
-    s+=`<text class="hd" x="${cx}" y="${l2?30:36}" text-anchor="middle" fill="var(${LC[l[0]]})">${esc(l1)}</text>${l2?`<text class="hd" x="${cx}" y="45" text-anchor="middle" fill="var(${LC[l[0]]})">${esc(l2)}</text>`:""}<text class="hs" x="${cx}" y="${l2?60:54}" text-anchor="middle">${esc(laneSub(l[0]).slice(0,26))}</text>`});
+  // Lane titles wrap inside their box: up to three lines, then an ellipsis; the full name stays in the tooltip.
+  LANES.forEach((l,i)=>{const x=X0+i*CW,name=laneLabel(l[0]),sub=laneSub(l[0]);
+    s+=`<foreignObject x="${x+9}" y="14" width="${CW-18}" height="56"><div xmlns="http://www.w3.org/1999/xhtml" class="lhd" style="color:var(${LC[l[0]]})" title="${esc(name+" · "+sub)}"><b>${esc(name)}</b><small>${esc(sub)}</small></div></foreignObject>`});
   STAGES.forEach(([n,phs],r)=>{const words=n.split(" ");const a=words.slice(0,Math.ceil(words.length/2)).join(" "),b=words.slice(Math.ceil(words.length/2)).join(" ");
     s+=`<text class="st" x="12" y="${rowY[r]+PADR+12}">${esc(a)}</text><text class="st" x="12" y="${rowY[r]+PADR+27}">${esc(b)}</text><text class="sp" x="12" y="${rowY[r]+PADR+43}">${phs.length>1?phs[0]+"–"+phs.at(-1):phs[0]}</text>`});
   // Same routes as arrow_path in build.py, described in model/diagram.json.
@@ -88,8 +103,14 @@ function renderSwim(){
     s+=`<g class="bx"${off?' opacity=".3"':""} tabindex="0" role="button" data-box="${n}" aria-label="${n}. ${esc(lines.join(" "))}, ${esc(laneLabel(lid))}"><rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="8" fill="var(${LC[lid]}s)" stroke="${c}"/><circle cx="${p.x+13}" cy="${p.y+14}" r="9" fill="${c}"/><text class="num" x="${p.x+13}" y="${p.y+17.5}" text-anchor="middle">${n}</text>${lines.map((t,k)=>`<text x="${p.x+28}" y="${p.y+18+k*15}">${esc(t)}</text>`).join("")}</g>`});
   swim.setAttribute("viewBox",`0 0 ${W} ${H}`);swim.style.width=W+"px";swim.innerHTML=s;
 }
-function openBox(n){const b=BOX.find(x=>x[0]===n);if(!b)return;st.lane=b[1];st.phases=b[4];laneSel.value=b[1];b[4].forEach(p=>openPh.add(p));
-  const first=S.find(s=>b[4].includes(s.ph)&&lanesOf(s).includes(b[1]));if(first)go(first.id,false);else{setTab("dt");render()}window.scrollTo({top:0})}
+// Opening a box shows the steps of that activity, for the platforms in scope.
+const actSteps=key=>{const a=ACT.find(x=>x[0]===key);return a?a[9].filter(id=>byId[id]&&inScope(byId[id].plat)):[]};
+// The client's own activity with this id, if any: it has no steps of its own, but may list tasks and related steps (refs).
+const extraAct=key=>{const c=cur();return(c&&c.extra||[]).find(x=>String(x.id)===key)||null};
+const actRefs=key=>{const x=extraAct(key);return(x&&x.refs||[]).filter(id=>byId[id]&&inScope(byId[id].plat))};
+// Steps the rail shows while an activity is open: its own, or the related ones of a client activity.
+const actRail=key=>{const own=actSteps(key);return own.length?own:actRefs(key)};
+function openBox(n){const a=ACT[n-1];if(a)openAct(a[0])}
 function renderPairs(){
   const el=document.getElementById("pairAlerts");const c=cur();
   const norm=t=>(t||"").trim().toLowerCase();
@@ -105,8 +126,8 @@ function renderPairs(){
 const planSrc=()=>{const c=cur();return c?{start:c.start||"",plan:c.plan||{},extra:c.extra||[]}:{start:LS("mapm-start")||"",plan:LS("mapm-plan2")||{},extra:[]}};
 async function savePlan(start,plan){const c=cur();if(c){const n={...c,plan};if(start)n.start=start;else delete n.start;await putClient(st.client,n)}else{LSW("mapm-start",start||null);LSW("mapm-plan2",plan)}renderTimeline();renderRoadmap()}
 function planActs(src,ignoreDone,ignoreEnd){
-  const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],extra:false,i}));
-  const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,extra:true,i:ACT.length+j}));
+  const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],steps:r[9],ms:r[10],extra:false,i}));
+  const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,steps:[],ms:x.milestone||null,extra:true,i:ACT.length+j}));
   return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),end:ignoreEnd?null:(o.end??null),plats:o.platforms||{}}});
 }
 const dayOf=(start,iso)=>start&&typeof iso==="string"?Math.round((new Date(iso+"T00:00:00")-new Date(start+"T00:00:00"))/DAY):0;
@@ -150,28 +171,47 @@ function planView(src,start,view){
 function planGate(v){
   const g=v.nodes.filter(n=>!n.track&&!n.done&&!n.cont&&targets().every(p=>n.after.some(x=>x.endsWith("@"+p)))).sort((a,b)=>v.raw[a.id].s-v.raw[b.id].s||b.extra-a.extra)[0];if(!g)return null;
   return{id:g.act,ready:Object.fromEntries(targets().map(p=>[p,Math.max(...g.after.filter(x=>x.endsWith("@"+p)).map(x=>v.raw[x].e))]))}}
+// Stage of each activity: its diagram stage; client activities take the latest stage among what they wait for.
+function stagesOf(list){
+  const stageOf={};ACT.forEach((a,i)=>{stageOf[a[0]]=BOX[i][2]});
+  const st2=id=>{if(stageOf[id]!==undefined)return stageOf[id];const a=list.find(x=>x.id===id);stageOf[id]=-1;const v=Math.max(0,...(a?a.after:[]).map(st2));return stageOf[id]=v};
+  list.forEach(a=>st2(a.id));return stageOf}
+// Plan as a compact list: one line per activity, grouped by stage, with filters. Editing opens inside the row.
 function renderTimeline(){
-  const el=document.getElementById("timeline");const src=planSrc();const s0=src.start;const{list,r,raw,nodes,end}=planView(src,s0);
-  const fd=n=>{if(!s0)return tf("tl_day_n",{n});const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"2-digit"})};
+  const el=document.getElementById("timeline");const src=planSrc();const s0=src.start;const{list,r,raw,end}=planView(src,s0);
+  const fd=n=>{if(!s0)return tf("tl_day_n",{n});const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short"})};
   const iso=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
-  const lo=Math.min(0,...nodes.filter(n=>!n.done).map(n=>raw[n.id].s)),span=Math.max(1,end-lo);const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
-  const moved=a=>a.moved?`<small class="pmoved">${tf(a.moved>0?"tl_moved":"tl_earlier",{n:Math.abs(a.moved)})}</small>`:"";
-  const rows=[...list].sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i).map(a=>{const q=r[a.id];
-    const bar=(s,e,cls)=>`<div class="pbar"><span class="${cls}" style="left:${pct(s)}%;width:${a.cont?100-pct(s):Math.max(pct(e)-pct(s),.6)}%"></span></div>`;
-    const when=(x,s,e)=>a.cont?tf("tl_continuous",{d:fd(s)}):x.done?fd(e):`${fd(s)} → ${fd(e)}`;
-    const days=a.cont||a.done?"":`<input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days" aria-label="${T.tl_h_days} ${esc(a.num)}">`;
-    const parts=!a.joint&&a.nodes&&a.nodes.length>1?a.nodes:null;
-    // Each row holds one done box and one date: the day it was done, or the day it ends while it is open.
+  const today=s0?dayOf(s0,new Date().toISOString().slice(0,10)):null;const stageOf=stagesOf(list);
+  const stat=(x,q)=>x.done?"done":today===null?"todo":q.e<today?"late":q.s<=today?"now":"todo";
+  const blocks=a=>a.done?[]:Object.entries(a.plats).filter(([p,q])=>q.blocked&&targets().includes(p)).map(([p,q])=>(PLAT_LABEL[p]+": "+q.blocked));
+  const F={all:a=>true,open:a=>!a.done&&!a.cont,week:a=>!a.done&&!a.cont&&today!==null&&r[a.id].s<=today+7&&r[a.id].e>=today,late:a=>!a.cont&&stat(a,r[a.id])==="late",blocked:a=>blocks(a).length>0};
+  const f=F[st.tlFilter]?st.tlFilter:"all";
+  const partsOf=a=>!a.joint&&a.nodes&&a.nodes.length>1?a.nodes:null;
+  const when=(a,x,q)=>a.cont?tf("tl_continuous",{d:fd(q.s)}):x.done?fd(q.e):q.s===q.e?fd(q.e):`${fd(q.s)} → ${fd(q.e)}`;
+  const chip=(code,lab)=>`<span class="tst ${code}">${esc(lab)}</span>`;
+  const row=a=>{const q=r[a.id];const parts=partsOf(a);const open=st.tlEdit===a.id;
+    const one=(x,qq,lab)=>{const c=stat(x,qq);return chip(c,(lab?lab+": ":"")+T["tl_st_"+c])};
+    const chips=a.cont?chip("todo",T.tl_st_cont):(parts?parts.map(n=>one(n,raw[n.id],PLAT_LABEL[n.track])).join(""):one(a,q,""))+(blocks(a).length?chip("blocked",T.tl_st_blocked):"")+(a.moved>0?chip("moved",tf("tl_moved",{n:a.moved})):"");
+    const dates=parts?parts.map(n=>`<span><em>${PLAT_LABEL[n.track]}</em>${when(a,n,raw[n.id])}</span>`).join(""):`<span>${when(a,a,q)}</span>`;
+    const meta=[laneLabel(a.lane),a.plat!=="both"?tf("tl_only",{p:PLAT_LABEL[a.plat]}):"",a.extra?T.tl_extra:"",a.joint&&a.nodes&&!a.cont&&tracked(src)?T.tl_shared:""].filter(Boolean).map(esc).join(" · ");
+    // Each platform holds one done box and one date: the day it was done, or the day it ends while it is open.
     const cell=(x,lab,qq,plat)=>{const pa=plat?` data-plat="${plat}"`:"";const name=plat?"Plat":"";
-      return`<label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}" aria-label="${esc(a.num)} ${T.tl_done_on}">`:`<input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}" aria-label="${esc(a.num)} ${T.tl_end_on}">`}`};
-    const done=a.cont?"":parts?parts.map(n=>cell(n,PLAT_LABEL[n.track],raw[n.id],n.track)).join(""):cell(a,T.tl_h_done,q,"");
-    const tags=(a.plat!=="both"?`<small>${tf("tl_only",{p:PLAT_LABEL[a.plat]})}</small>`:"")+(a.joint&&a.nodes&&!a.cont&&tracked(src)?`<small>${T.tl_shared}</small>`:"");
-    const dates=parts?parts.map(n=>`<span><em>${PLAT_LABEL[n.track]}</em>${when(n,raw[n.id].s,raw[n.id].e)}</span>`).join(""):`<span>${when(a,q.s,q.e)}</span>`;
-    return `<div class="prow${q.crit?" crit":""}${a.done?" done":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}${a.extra?`<small>${T.tl_extra}</small>`:""}${tags}<small>${esc(laneLabel(a.lane))}</small>${moved(a)}</span></div><div class="pdays">${days}</div><div class="pdone-c">${done}</div><div class="pwhen">${dates}</div><div class="ptrack">${bar(q.s,q.e,a.done?"d":"f")}</div></div>`}).join("");
+      return`<div class="pcell"><label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<label>${T.tl_done_on} <input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}"></label>`:`<label>${T.tl_end_on} <input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}"></label>`}</div>`};
+    const n=a.steps.filter(id=>byId[id]&&inScope(byId[id].plat)).length;
+    const edit=open&&!a.cont?`<div class="pedit">${a.done?"":`<label class="pdays">${T.tl_h_days} <input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days"></label>`}${parts?parts.map(x=>cell(x,PLAT_LABEL[x.track],raw[x.id],x.track)).join(""):cell(a,T.tl_h_done,q,"")}${blocks(a).map(b=>`<small class="pblk">${esc(b)}</small>`).join("")}</div>`:"";
+    return`<div class="prow${q.crit?" crit":""}${a.done?" done":""}${open?" open":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}<small>${meta} · <button class="plink" type="button" data-openact="${esc(a.id)}">${n?tf("act_open",{n}):T.act_view}</button></small></span></div><div class="pst">${chips}</div><div class="pwhen">${dates}</div><div class="pact">${a.cont?"":`<button class="btn" type="button" data-tledit="${esc(a.id)}" aria-expanded="${open}">${open?T.tl_close:T.tl_edit}</button>`}</div>${edit}</div>`};
+  const groups=STAGES.map((g,i)=>({i,name:g[0],acts:list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i)})).filter(g=>g.acts.length);
+  // On load only the first stage with open work is unfolded; the reader's own choice wins after that.
+  const firstOpen=(groups.find(g=>g.acts.some(a=>!a.done&&!a.cont))||groups[0]||{}).i;
+  const body=groups.map(g=>{const shown=g.acts.filter(F[f]);if(!shown.length)return"";const work=g.acts.filter(a=>!a.cont);const dn=work.filter(a=>a.done).length;
+    const open=f!=="all"||(st.tlStage[g.i]??g.i===firstOpen);
+    return`<details class="pstage" data-stage="${g.i}"${open?" open":""}><summary><b>${esc(g.name)}</b><small>${work.length?tf("tl_stage_done",{a:dn,b:work.length}):""}</small></summary>${shown.map(row).join("")}</details>`}).join("")||`<p class="plain">${T.tl_f_none}</p>`;
+  const counts=Object.fromEntries(Object.entries(F).map(([k,fn])=>[k,list.filter(fn).length]));
+  const filters=`<div class="seg ptfilter" role="group" aria-label="${T.tl_filter}">${["all","open","week","late","blocked"].map(k=>`<button type="button" data-tlf="${k}" aria-pressed="${f===k}">${T["tl_f_"+k]} <small>${counts[k]}</small></button>`).join("")}</div>`;
   const ver=planActs(src,true,true).filter(a=>a.ver&&!a.cont&&inScope(a.plat));const vids=new Set(ver.map(a=>a.id));const vc=planCalc(ver.map(a=>({...a,after:a.after.filter(x=>vids.has(x))})),"");
   const crit=[...list].filter(a=>r[a.id].crit).sort((x,y)=>r[x.id].s-r[y.id].s).map(a=>a.num).join(" → ");
-  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div><div class="ptools"><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label><button class="btn" type="button" id="tlReset">${T.tl_reset}</button>${cur()?"":`<span class="plain">${T.tl_noclient}</span>`}</div>
-  <div class="phead"><span>${T.tl_h_act}</span><span>${T.tl_h_days}</span><span>${T.tl_h_done}</span><span>${T.tl_h_when}</span></div>${rows}
+  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div>${localBanner()}<div class="ptools"><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label><button class="btn" type="button" id="tlReset">${T.tl_reset}</button>${cur()?"":`<span class="plain">${T.tl_noclient}</span>`}</div>
+  ${filters}${body}
   <div class="tlsum"><span><b>${T.tl_end}:</b> <b>${fd(end)}</b>${s0?"":` (${end} ${T.tl_days})`}</span><span><b>${vc.end} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_critical} ${esc(crit)}</span></div>`;
 }
 function onPlanChange(e){
@@ -204,30 +244,66 @@ function renderRoadmap(){
   const fd=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
   const statOf=(a,q)=>{if(a.done)return"done";if(a.cont)return q.s<=today?"now":"todo";if(q.e<today)return"late";if(q.s<=today)return"now";return"todo"};const status=a=>statOf(a,r[a.id]);
   const work=list.filter(a=>!a.cont);const cnt={done:0,now:0,todo:0,late:0};work.forEach(a=>cnt[status(a)]++);
-  // Stage of each activity: its diagram stage; client activities take the latest stage among what they wait for.
-  const stageOf={};ACT.forEach((a,i)=>{stageOf[a[0]]=BOX[i][2]});
-  const st2=id=>{if(stageOf[id]!==undefined)return stageOf[id];const a=list.find(x=>x.id===id);stageOf[id]=-1;const v=Math.max(0,...(a?a.after:[]).map(st2));return stageOf[id]=v};
-  list.forEach(a=>st2(a.id));
+  const stageOf=stagesOf(list);
   // Finished activities do not stretch the axis: one done months ago sits at its left edge.
   const lo=Math.min(0,today,...pv.nodes.filter(n=>!n.done).map(n=>raw[n.id].s)),hi=Math.max(end,today)+14,span=hi-lo;const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
   // Month ticks
   let ticks="",labels="";const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+lo);d.setDate(1);d.setMonth(d.getMonth()+1);
   for(let k=0;k<24;k++){const n=dayOf(s0,d.toISOString().slice(0,10));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"2-digit"})}</span>`;d.setMonth(d.getMonth()+1)}
   const inRange=today>=lo&&today<=hi;const todayLine=inRange?`<span class="gtoday" style="left:${pct(today)}%"></span>`:"";const todayMark=inRange?`<span class="gtoday" style="left:${pct(today)}%"><i>${T.rm_today}</i></span>`:"";
-  const stEnd=STAGES.map((g,i)=>{const acts=work.filter(a=>stageOf[a.id]===i);return acts.length?{i,name:g[0],end:Math.max(...acts.map(a=>r[a.id].e)),done:acts.every(a=>a.done)}:null}).filter(Boolean);
-  const ms=stEnd.map(m=>`<span class="gms${m.done?" done":""}" style="left:${pct(m.end)}%" title="${esc(tf("rm_stage_end",{s:m.name}))}: ${fd(m.end)}"></span>`).join("");
-  let rows=`<div class="grow"><div class="gl"><b>◆</b>${T.rm_milestones}</div><div class="gt">${ticks}${ms}${todayLine}</div></div>`;
+  // Milestones: activities marked in the model or by the client, one diamond per platform at the date the activity ends.
+  const mls=list.filter(a=>a.ms).map(a=>({a,pts:a.nodes.map(n=>({n,q:raw[n.id],done:!!n.done}))})).sort((x,y)=>Math.max(...x.pts.map(p=>p.q.e))-Math.max(...y.pts.map(p=>p.q.e)));
+  const msLab=(a,p)=>a.ms.name+(p.n.track&&a.nodes.length>1?" · "+PLAT_LABEL[p.n.track]:"");
+  // Committed dates come from the baseline of instance.json, per platform (key@ios) or per activity.
+  const base=(c&&c.baseline)||{};const committed=p=>{const k=base[p.n.id]??base[p.n.act];return k?dayOf(s0,k):null};
+  let msRows="";
+  // A milestone is the end of its activity: the row names the activity, opens it, and lists the dates.
+  // With two platforms on different dates, iOS sits in the upper half of the row and Android in the lower one.
+  const sameAll=pts=>pts.length>1&&pts.every(p=>p.q.e===pts[0].q.e&&p.done===pts[0].done);
+  const dia=(a,p,pos,lab)=>`<span class="gms ${a.ms.type}${p.done?" done":p.q.e<today?" late":""}${pos}" style="left:${pct(p.q.e)}%" title="${esc(lab+" · "+T["rm_ms_"+a.ms.type])}: ${fd(p.q.e)}"></span>`;
+  const diamonds=(a,pts)=>!pts.length?"":pts.length===1||sameAll(pts)?dia(a,pts[0],"",a.ms.name+(pts.length>1?" · "+T.rm_ms_both:"")):pts.map(p=>dia(a,p,p.n.track==="ios"?" up":" down",msLab(a,p))).join("");
+  const short=n=>{const x=new Date(s0+"T00:00:00");x.setDate(x.getDate()+n);return x.toLocaleDateString(T.lang,{day:"numeric",month:"short"})};
+  const devTxt=p=>{const cm=committed(p);return cm===null||p.q.e===cm?"":` <i class="${p.q.e>cm?"over":""}">${p.q.e>cm?"+":""}${tf("rm_ms_dev",{n:p.q.e-cm})}</i>`};
+  const msDates=pts=>pts.length===1||sameAll(pts)?`<span>${short(pts[0].q.e)}${devTxt(pts[0])}</span>`:pts.map(p=>`<span><em>${PLAT_LABEL[p.n.track]}</em>${short(p.q.e)}${devTxt(p)}</span>`).join("");
+  mls.forEach(({a,pts})=>{msRows+=`<div class="grow msrow"><div class="gl" data-gomsact="${esc(a.id)}" role="button" tabindex="0" title="${esc(a.ms.name+" · "+T["rm_ms_"+a.ms.type]+" · "+a.num+" "+a.name)}"><b>◆</b>${esc(a.ms.name)} <small>${esc(tf("rm_ms_from",{n:a.num})+" · "+a.name)}</small></div><div class="gt">${ticks}${pts.map(p=>{const cm=committed(p);return cm===null?"":`<span class="gbase${pts.length>1&&!sameAll(pts)?(p.n.track==="ios"?" up":" down"):""}" style="left:${pct(cm)}%" title="${esc(msLab(a,p)+" · "+T.rm_base_mark+": "+fd(cm))}"></span>`}).join("")}${diamonds(a,pts)}${todayLine}</div><div class="gd">${msDates(pts)}</div></div>`});
+  let rows="";
   STAGES.forEach((g,i)=>{const acts=list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i);if(!acts.length)return;
     rows+=`<div class="grow stg"><div class="gl">${esc(g[0])}</div><div class="gt">${ticks}${todayLine}</div></div>`;
     acts.forEach(a=>{const tipOf=(x,q)=>x.done?tf("rm_done_on",{d:fd(q.e)}):a.cont?tf("tl_continuous",{d:fd(q.s)}):tf("rm_until",{a:fd(q.s),b:fd(q.e)});
       const bar=(x,q,cls,lab)=>{const left=pct(q.s),w=a.cont?100-left:Math.max(pct(q.e)-left,.5);return`<span class="gbar ${a.cont?"cont":statOf(x,q)}${q.crit?" crit":""}${(x.nodes?x.moved>0:x.end&&!x.done)?" moved":""}${cls}" style="left:${left}%;width:${w}%" title="${esc(a.num+" · "+a.name+" · "+lab+tipOf(x,q))}"></span>`};
       const two=multi&&view==="all"&&!a.joint&&a.nodes.length>1;const marks=two?a.nodes.map((n,k)=>bar(n,raw[n.id]," t"+k,PLAT_LABEL[n.track]+" · ")).join(""):bar(a,r[a.id],"","");
-      rows+=`<div class="grow"><div class="gl" title="${esc(a.name)}"><b>${esc(a.num)}</b>${esc(a.name)}</div><div class="gt">${ticks}${marks}${todayLine}</div></div>`})});
+      // The milestone of this activity, at the end of its bar.
+      const msMark=!a.ms?"":two?a.nodes.map((n,k)=>dia(a,{n,q:raw[n.id],done:!!n.done},k?" down":" up",msLab(a,{n}))).join(""):dia(a,{n:a,q:r[a.id],done:!!a.done},"",a.ms.name);
+      rows+=`<div class="grow" data-act="${esc(a.id)}"><div class="gl" data-openact="${esc(a.id)}" role="button" tabindex="0" title="${esc(a.name+(a.steps.length?" · "+a.steps.filter(id=>byId[id]&&inScope(byId[id].plat)&&(view!=="ios"&&view!=="android"||byId[id].plat==="both"||byId[id].plat===view)).join(", "):""))}"><b>${esc(a.num)}</b>${esc(a.name)}${a.ms?`<small class="msn">◆ ${esc(a.ms.name)}</small>`:""}</div><div class="gt">${ticks}${marks}${msMark}${todayLine}</div></div>`})});
   const li=(arr,fn)=>arr.length?`<ul>${arr.map(fn).join("")}</ul>`:`<p class="plain">${T.rm_none}</p>`;
   const done=work.filter(a=>a.done).sort((x,y)=>r[x.id].e-r[y.id].e);
   const soon=work.filter(a=>!a.done&&status(a)!=="late"&&r[a.id].s<=today+30).sort((x,y)=>r[x.id].s-r[y.id].s);
   const late=work.filter(a=>status(a)==="late");const moved=work.filter(a=>a.moved>0&&!a.done);
+  // Executive summary: overall status, next milestone, publication and open blockers.
+  const blocked=work.filter(a=>!a.done&&Object.entries(a.plats).some(([p,q])=>q.blocked&&(!view||view==="all"||p===view)&&targets().includes(p)));
+  const nextPts=mls.flatMap(({a,pts})=>pts.filter(p=>!p.done).map(p=>({a,p}))).sort((x,y)=>x.p.q.e-y.p.q.e);const nx=nextPts[0];
+  // Deviation: the largest gap between the current and the committed date among pending milestones.
+  const devs=nextPts.map(x=>({...x,cm:committed(x.p)})).filter(x=>x.cm!==null).map(x=>({...x,dv:x.p.q.e-x.cm}));const dev=devs.sort((x,y)=>y.dv-x.dv)[0];
+  const stCode=late.length?"late":moved.length||blocked.length||(dev&&dev.dv>0)?"risk":"ok";
+  const why=stCode==="late"?tf("rm_status_why_late",{n:late.length}):moved.length||blocked.length?tf("rm_status_why_risk",{m:moved.length,b:blocked.length}):dev&&dev.dv>0?tf("rm_status_why_dev",{n:dev.dv}):T.rm_status_why_ok;
+  const pub=list.find(a=>a.id==="release");
+  const summary=`<div class="rmsum"><div class="st-${stCode}"><small>${T.rm_status}</small><b>${T["rm_status_"+stCode]}</b><span>${why}</span></div>
+    <div><small>${T.rm_next_ms}</small><b>${nx?esc(msLab(nx.a,nx.p)):T.rm_next_ms_none}</b>${nx?`<span>${tf("rm_next_ms_in",{d:fd(nx.p.q.e),n:Math.max(0,nx.p.q.e-today)})}</span>`:""}</div>
+    <div><small>${T.rm_publish}</small><b>${pub?fd(r[pub.id].e):fd(end)}</b><span>${tf("rm_left",{n:Math.max(0,(pub?r[pub.id].e:end)-today)})}</span></div>
+    <div><small>${T.rm_dev}</small>${dev?`<b>${dev.dv>0?tf("rm_dev_late",{n:dev.dv}):dev.dv<0?tf("rm_dev_ahead",{n:-dev.dv}):T.rm_dev_ok}</b><span>${dev.dv?tf("rm_dev_of",{a:esc(msLab(dev.a,dev.p))}):""}</span>`:`<b>${T.rm_dev_none}</b><span>${T.rm_dev_none_hint}</span>`}</div>
+    <div><small>${T.rm_blocks}</small><b>${blocked.length}</b><span>${[...new Set(blocked.flatMap(a=>Object.values(a.plats).map(q=>q.blocked).filter(Boolean)).map(x=>x.split(/[:(]/)[0].trim()))].slice(0,3).map(esc).join("<br>")}</span></div></div>`;
   const pctDone=work.length?Math.round(cnt.done/work.length*100):0;const left=Math.max(0,end-today);
+  // Open decisions from instance.json, with what they hold back.
+  const numOf=k=>{const a=list.find(x=>x.id===k);return a?a.num:k};
+  const decs=((c&&c.open)||[]).filter(x=>!x.platform||!view||view==="all"||x.platform===view).sort((x,y)=>x.due.localeCompare(y.due));
+  const decBox=`<div class="rmsec"><h3>${T.rm_dec_h}</h3>${decs.length?`<div class="rmtabw"><table class="rmtab"><thead><tr><th>${T.rm_dec_h_id}</th><th>${T.rm_dec_h_owner}</th><th>${T.rm_dec_h_due}</th><th>${T.rm_dec_h_open}</th><th>${T.rm_dec_h_blocks}</th></tr></thead><tbody>${decs.map(x=>{const due=dayOf(s0,x.due);const op=today-dayOf(s0,x.opened);
+    return`<tr><td><b>${esc(x.id)}</b> ${esc(x.name)}${x.status?`<small>${esc(x.status)}</small>`:""}</td><td>${esc(x.owner)}</td><td class="${due<today?"over":""}">${fd(due)}<small>${due<today?tf("rm_dec_overdue",{n:today-due}):tf("rm_dec_left",{n:due-today})}</small></td><td>${tf("rm_dec_days",{n:Math.max(0,op)})}</td><td>${(x.blocks||[]).map(numOf).map(esc).join(", ")}${x.platform?`<small>${PLAT_LABEL[x.platform]}</small>`:""}</td></tr>`}).join("")}</tbody></table></div>`:`<p class="plain">${T.rm_dec_none}</p>`}</div>`;
+  // By area: what each lane has open now, in the next two weeks, late and blocked.
+  const areas=[...new Set(work.map(a=>a.lane))].map(l=>{const acts=work.filter(a=>a.lane===l&&!a.done);const ids=f=>acts.filter(f).map(a=>esc(a.num)).join(", ");
+    return{l,now:ids(a=>r[a.id].s<=today&&r[a.id].e>=today),next:ids(a=>r[a.id].s>today&&r[a.id].s<=today+14),late:ids(a=>status(a)==="late"),blk:ids(a=>blocked.includes(a))}}).filter(x=>x.now||x.next||x.late||x.blk);
+  const areaBox=`<div class="rmsec"><h3>${T.rm_area_h}</h3>${areas.length?`<div class="rmtabw"><table class="rmtab"><thead><tr><th></th><th>${T.rm_area_h_now}</th><th>${T.rm_area_h_next}</th><th>${T.rm_late}</th><th>${T.rm_blocked}</th></tr></thead><tbody>${areas.map(x=>`<tr><td><b>${esc(laneLabel(x.l))}</b></td><td>${x.now||"—"}</td><td>${x.next||"—"}</td><td class="${x.late?"over":""}">${x.late||"—"}</td><td>${x.blk||"—"}</td></tr>`).join("")}</tbody></table></div>`:`<p class="plain">${T.rm_area_none}</p>`}</div>`;
+  const isoOf=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+  const baseJson=JSON.stringify({baseline:Object.fromEntries(mls.flatMap(({pts})=>pts.map(p=>[p.n.id,isoOf(p.q.e)])))},null,2).replace(/^\{\n|\n\}$/g,"");
   let trackBox="",seg="";
   if(multi){const gate=planGate(pv);const gname=gate?list.find(a=>a.id===gate.id):null;
     seg=`<div class="seg" id="rmSeg" role="group" aria-label="${T.rm_view}">${[["all",T.rm_joint],["ios",T.plat_ios],["android",T.plat_android]].map(([k,l])=>`<button type="button" data-track="${k}" aria-pressed="${st.track===k}">${l}</button>`).join("")}</div>`;
@@ -236,15 +312,18 @@ function renderRoadmap(){
         return`<div class="trow"><b>${PLAT_LABEL[p]}</b><div class="rmprog"><span style="width:${pc}%"></span></div><span>${pc}% · ${tf("rm_of",{a:dn,b:w.length})}</span><span class="${blk?"tblk":""}">${blk?`${T.rm_blocked}: ${esc(blk.num)} · ${esc(blk.plats[p].blocked)}`:T.rm_no_block}</span><span>${open[0]?`${T.rm_next}: ${esc(open[0].num)} · ${esc(open[0].name)}`:""}</span>${gate?`<span>${tf("rm_ready",{a:esc(gname.num),d:fd(gate.ready[p])})}</span>`:""}</div>`}).join("");
       let gap="";if(gate){const[a,b]=targets().map(p=>gate.ready[p]);const n=Math.abs(a-b);const[p,q]=a<b?targets():[...targets()].reverse();gap=n?tf("rm_gap",{a:esc(gname.num+" · "+gname.name),p:PLAT_LABEL[p],q:PLAT_LABEL[q],n}):tf("rm_gap_none",{a:esc(gname.num+" · "+gname.name)})}
       trackBox=`<div class="rmtrack"><h3>${T.rm_track_h}</h3>${trows}${gap?`<p class="plain">${gap}</p>`:""}<p class="plain">${T.rm_joint_note}</p></div>`}}
-  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}</div></div><button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div>${seg}${trackBox}
+  const msGantt=mls.length?`<div class="rmsec"><h3>${T.rm_milestones}</h3><div class="gantt msg"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div><div></div></div>${msRows}</div></div><div class="rmleg"><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_leg_ms}</span>${multi&&view==="all"?`<span>${T.rm_leg_ms_pl}</span>`:""}<span>${T.rm_leg_ms_open}</span><span><i style="border-left:2px dotted var(--muted);width:0;height:12px"></i>${T.rm_base_mark}</span></div></div>`:"";
+  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}</div></div><div>${mls.length&&c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${decBox}${msGantt}
+  <details class="rmdetail"${st.rmOpen?" open":""}><summary>${T.rm_detail}</summary>${trackBox}
   <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi late"><small>${T.rm_moved}</small><b>${moved.length}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(end)}</b><span>${tf("rm_left",{n:left})}</span></div></div>
   <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
+  ${areaBox}
   <div class="gantt"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div></div>${rows}</div></div>
-  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_milestones}</span>${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
-  <div class="rmcols"><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].e)})}</small></li>`)}</div>
+  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span>${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
+  <div class="rmcols"><div><h3>${T.rm_list_ms}</h3>${li(nextPts.slice(0,5),({a,p})=>`<li><b>◆</b> ${esc(msLab(a,p))} <small>${fd(p.q.e)} · ${T["rm_ms_"+a.ms.type]}</small></li>`)}</div><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_late}</h3>${li(late,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
-  <div><h3>${T.rm_list_moved}</h3>${li(moved,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("tl_moved",{n:a.moved})} · ${fd(r[a.id].e)}</small></li>`)}</div></div>`;
+  <div><h3>${T.rm_list_moved}</h3>${li(moved,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("tl_moved",{n:a.moved})} · ${fd(r[a.id].e)}</small></li>`)}</div></div></details>`;
 }
 
 // ---------- Track a version (milestones)
@@ -312,6 +391,7 @@ async function setRen(id,val){const c=cur();if(c){const ren={...(c.ren||{})};if(
 // ---------- Explore the model
 function visible(s){
   if(!inScope(s.plat))return false;
+  if(st.act&&!actRail(st.act).includes(s.id))return false;
   if(st.plat!=="all"&&s.plat!==st.plat&&s.plat!=="both")return false;
   if(st.role&&!roleIds(s).includes(st.role))return false;
   if(st.lane&&!lanesOf(s).includes(st.lane))return false;
@@ -337,25 +417,65 @@ function renderRail(){
 function stepChips(all,cls){const ids=all.filter(i=>inScope(byId[i].plat));return ids.length?ids.map(i=>`<button class="chip ${cls}" data-go="step:${i}">${esc(byId[i].name)}<small>${i}</small></button>`).join(""):`<span class="none">${T.step_none}</span>`}
 function renderStep(){
   const s=byId[st.sel];if(!s)return;const r=rev[s.id]||{};const i=order.indexOf(s.id);const ph=PH.find(p=>p[0]===s.ph);const roles=roleIds(s);
-  const inPh=S.filter(x=>x.ph===s.ph);const posIn=inPh.indexOf(s)+1;const stage=STAGES.find(g=>g[1].includes(s.ph));const tm=TIME[s.ph];
-  detail.innerHTML=`<div class="crumbline"><span>${esc(FREQ[ph[2]])}</span><span class="sep">›</span><span>${stage?esc(stage[0]):""}</span><span class="sep">›</span><span>${esc(ph[1])}</span>${tm&&tm[1]?`<span class="sep">·</span><span class="tm">${T.step_phase} <b>${tm[0]}–${tm[1]}</b> ${T.step_days}</span>`:""}<span class="pos">${tf("step_pos",{i:posIn,n:inPh.length})}</span></div>
-  <h2><span class="mono">${s.id} · <span class="pl ${s.plat}">${PLAT_LABEL[s.plat]}</span></span>${esc(s.name)}</h2>
-  <dl class="kv"><dt>${T.step_who}</dt><dd>${roles.map(a=>`<button class="rolechip" data-go="A:${a}"><b>${esc(A[a])}</b><span>${esc(laneLabel(laneOfRole[a]))} · ${a}</span></button>`).join("")}<div class="plain" style="margin-top:4px">${esc(s.resp)}</div></dd>
-    <dt>${T.step_with}</dt><dd>${linkify(s.inp)}</dd><dt>${T.step_produces}</dt><dd>${linkify(s.out)}</dd>
-    ${s.vars.length?`<dt>${T.step_depends}</dt><dd>${s.vars.map(v=>{const ch=variantOf(v);const opt=ch?V[v][1].find(o=>o.startsWith(ch+")")):"";return `<button class="chip var" data-go="V:${v}"><b>${v}</b>${esc(V[v][0])}${opt?` <small>${esc(opt)}</small>`:""}</button>`}).join("")}<div class="plain" style="margin-top:2px">${cur()?T.step_variant_chosen:T.step_variant_each}</div></dd>`:""}</dl>
-  <div class="flow3"><div class="col"><h4>${T.step_before}</h4>${stepChips(s.deps,"need")}</div><div class="mid arrow">→</div><div class="col"><h4>${T.step_after}</h4>${stepChips(s.enables,"enab")}</div></div>
-  ${s.note?`<div class="note">${linkify(s.note)}</div>`:""}
-  <div class="box"><h3>${T.rev_title}</h3><p class="plain">${T.rev_hint}</p><div class="revbtns"><button class="btn clear" data-rev="clear" aria-pressed="${r.s==="clear"}">${T.rev_clear}</button><button class="btn doubt" data-rev="doubt" aria-pressed="${r.s==="doubt"}">${T.rev_doubt}</button>${r.s?`<button class="btn" data-rev="">${T.rev_remove}</button>`:""}</div>
-    <label for="note-${s.id.replace(".","-")}" class="plain" style="display:block;margin-top:10px">${T.note_label}</label><textarea id="note-${s.id.replace(".","-")}" data-note>${esc(r.n||"")}</textarea></div>
+  const inPh=S.filter(x=>x.ph===s.ph);const posIn=inPh.indexOf(s)+1;const stage=STAGES.find(g=>g[1].includes(s.ph));
+  // Opened from an activity: the essentials first, the rest under "Más detalle", and prev/next within the activity.
+  const inAct=st.act&&actSteps(st.act).includes(s.id);let seq=inAct?actStepsIn(st.act):null;if(seq&&!seq.includes(s.id))seq=actSteps(st.act);const k=seq?seq.indexOf(s.id):-1;
+  const who=`<dt>${T.step_who}</dt><dd>${roles.map(a=>`<button class="rolechip" data-go="A:${a}"><b>${esc(A[a])}</b><span>${esc(laneLabel(laneOfRole[a]))} · ${a}</span></button>`).join("")}<div class="plain" style="margin-top:4px">${esc(s.resp)}</div></dd>`;
+  const tech=`<dt>${T.step_with}</dt><dd>${linkify(s.inp)}</dd><dt>${T.step_produces}</dt><dd>${linkify(s.out)}</dd>
+    ${s.vars.length?`<dt>${T.step_depends}</dt><dd>${s.vars.map(v=>{const ch=variantOf(v);const opt=ch?V[v][1].find(o=>o.startsWith(ch+")")):"";return `<button class="chip var" data-go="V:${v}"><b>${v}</b>${esc(V[v][0])}${opt?` <small>${esc(opt)}</small>`:""}</button>`}).join("")}<div class="plain" style="margin-top:2px">${cur()?T.step_variant_chosen:T.step_variant_each}</div></dd>`:""}`;
+  const flow=`<div class="flow3"><div class="col"><h4>${T.step_before}</h4>${stepChips(s.deps,"need")}</div><div class="mid arrow">→</div><div class="col"><h4>${T.step_after}</h4>${stepChips(s.enables,"enab")}</div></div>
+  ${s.note?`<div class="note">${linkify(s.note)}</div>`:""}`;
+  const review=`<div class="box"><h3>${T.rev_title}</h3><p class="plain">${T.rev_hint}</p><div class="revbtns"><button class="btn clear" data-rev="clear" aria-pressed="${r.s==="clear"}">${T.rev_clear}</button><button class="btn doubt" data-rev="doubt" aria-pressed="${r.s==="doubt"}">${T.rev_doubt}</button>${r.s?`<button class="btn" data-rev="">${T.rev_remove}</button>`:""}</div>
+    <label for="note-${s.id.replace(".","-")}" class="plain" style="display:block;margin-top:10px">${T.note_label}</label><textarea id="note-${s.id.replace(".","-")}" data-note>${esc(r.n||"")}</textarea></div>`;
+  const title=`<h2><span class="mono">${s.id} · <span class="pl ${s.plat}">${PLAT_LABEL[s.plat]}</span></span>${esc(s.name)}</h2>`;
+  if(seq){const n=ACT.findIndex(x=>x[0]===st.act)+1;const p=seq[k-1],q=seq[k+1];
+    detail.innerHTML=`<div class="actbar"><button class="chip" type="button" data-actback>← ${T.act_back}</button><span>${esc(tf("act_filter",{n}))} · ${tf("step_pos",{i:k+1,n:seq.length})}</span></div>
+  ${title}<dl class="kv">${who}</dl>${flow}<details class="more"><summary>${T.step_more}</summary><dl class="kv">${tech}</dl>${review}</details>
+  <div class="nav"><button class="btn" data-actnav="${p||""}" ${p?"":"disabled"} title="${p?esc(byId[p].name):""}">${T.nav_prev}${p?` <span class="mono">${p}</span>`:""}</button><button class="btn" data-actnav="${q||""}" ${q?"":"disabled"} title="${q?esc(byId[q].name):""}">${T.nav_next}${q?` <span class="mono">${q}</span>`:""} →</button></div>`;return}
+  detail.innerHTML=`<div class="crumbline"><span>${esc(FREQ[ph[2]])}</span><span class="sep">›</span><span>${stage?esc(stage[0]):""}</span><span class="sep">›</span><span>${esc(ph[1])}</span><span class="pos">${tf("step_pos",{i:posIn,n:inPh.length})}</span></div>
+  ${title}<dl class="kv">${who}${tech}</dl>${flow}${review}
   <div class="nav"><button class="btn" data-nav="-1" ${i===0?"disabled":""} title="${i>0?esc(byId[order[i-1]].name):""}">${T.nav_prev}${i>0?` <span class="mono">${order[i-1]}</span>`:""}</button><button class="btn" data-nav="1" ${i===order.length-1?"disabled":""} title="${i<order.length-1?esc(byId[order[i+1]].name):""}">${T.nav_next}${i<order.length-1?` <span class="mono">${order[i+1]}</span>`:""} →</button></div>`;
 }
+// ---------- Activity sheet: the steps of one activity, as a short task list
+const actPlats=key=>{const a=ACT.find(x=>x[0]===key);const p=a?a[7]:(extraAct(key)||{}).platform||"both";return p==="both"?targets():[p]};
+const actStepsIn=key=>actSteps(key).filter(id=>!st.actPlat||byId[id].plat==="both"||byId[id].plat===st.actPlat);
+function openAct(key){st.act=key;st.actPlat="";st.view=["ACT",key];st.lane="";st.phases=[];laneSel.value="";actRail(key).forEach(id=>openPh.add(byId[id].ph));setTab("dt");render();window.scrollTo({top:0})}
+function renderActSheet(key){
+  // Every activity opens here: model activities with their steps, client activities with their tasks and related steps.
+  // Both show dates and status per platform, blockers and the open decisions that hold them back.
+  const src=planSrc();const v=planView(src,src.start);const a=v.list.find(x=>x.id===key)||planActs(src).find(x=>x.id===key);if(!a)return;
+  const ps=actPlats(key);const mine=new Set(actSteps(key));const ids=actStepsIn(key);const x=extraAct(key);
+  const today=src.start?dayOf(src.start,new Date().toISOString().slice(0,10)):null;
+  const fd=n=>{if(!src.start)return tf("tl_day_n",{n});const d=new Date(src.start+"T00:00:00");d.setDate(d.getDate()+n);return d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})};
+  const stat=(n,q)=>n.done?"done":today===null?"todo":q.e<today?"late":q.s<=today?"now":"todo";
+  const nodes=(a.nodes||[a]).filter(n=>!st.actPlat||!n.track||n.track===st.actPlat);
+  const when=nodes.map(n=>{const q=v.raw?v.raw[n.id]:v.r[a.id];if(!q)return"";const c=stat(n,q);
+    return`<span class="tst ${c}">${n.track&&nodes.length>1?PLAT_LABEL[n.track]+": ":""}${T["tl_st_"+c]}</span> <span>${a.cont?tf("tl_continuous",{d:fd(q.s)}):n.done?fd(q.e):`${fd(q.s)} → ${fd(q.e)}`}</span>`}).filter(Boolean).join("<br>");
+  const blk=Object.entries(a.plats||{}).filter(([p,q])=>q.blocked&&!a.done&&(!st.actPlat||p===st.actPlat)).map(([p,q])=>`<span>${PLAT_LABEL[p]}: ${esc(q.blocked)}</span>`).join("");
+  const c=cur();const decs=((c&&c.open)||[]).filter(d=>(d.blocks||[]).includes(key)||d.id===key);
+  const dec=decs.map(d=>`<span><b>${esc(d.id)}</b> ${esc(d.name)} · ${esc(d.owner)} · ${T.rm_dec_h_due.toLowerCase()} ${fd(dayOf(src.start,d.due))}${d.status?` <small>${esc(d.status)}</small>`:""}</span>`).join("");
+  const tabs=ps.length>1?`<div class="seg" role="group" aria-label="${T.rm_view}">${[["",T.act_all],...ps.map(p=>[p,PLAT_LABEL[p]])].map(([k,l])=>`<button type="button" data-actplat="${k}" aria-pressed="${st.actPlat===k}">${l}</button>`).join("")}</div>`:"";
+  // Previous steps link to their detail; those of another activity say which one.
+  const actNum=sid=>{const k=ACT.findIndex(x=>x[9].includes(sid));return k<0?"":String(k+1)};
+  const items=ids.map(id=>{const s=byId[id];const deps=s.deps.filter(d=>byId[d]&&inScope(byId[d].plat));
+    const need=deps.length?deps.map(d=>`<span><button class="plink" type="button" data-go="step:${d}">${esc(byId[d].name)}</button>${mine.has(d)?"":` <small>${tf("act_from",{n:actNum(d)})}</small>`}</span>`).join(""):`<span>${T.step_none}</span>`;
+    return`<li class="astep"><div class="ahead"><span class="pl ${s.plat}">${PLAT_LABEL[s.plat]}</span><b>${esc(s.name)}</b><span class="mono">${id}</span><button class="btn" type="button" data-go="step:${id}">${T.act_detail} →</button></div>
+    <dl class="ameta"><dt>${T.step_who}</dt><dd>${esc(roleIds(s).map(r=>A[r]).join(", "))}</dd><dt>${T.act_needs}</dt><dd class="aneeds">${need}</dd></dl></li>`}).join("");
+  const refs=actRefs(key).filter(id=>!st.actPlat||byId[id].plat==="both"||byId[id].plat===st.actPlat);
+  const tasks=(x&&x.tasks)||[];
+  const info=`<dl class="ameta asum">${when?`<dt>${T.act_when}</dt><dd>${when}</dd>`:""}${blk?`<dt>${T.rm_blocked}</dt><dd class="aneeds ablk">${blk}</dd>`:""}${dec?`<dt>${T.act_decisions}</dt><dd class="aneeds">${dec}</dd>`:""}</dl>`;
+  detail.innerHTML=`<div class="crumbline"><span>${esc(tf("act_filter",{n:a.num}))}</span><span class="sep">·</span><span>${esc(laneLabel(a.lane))}</span>${a.extra?`<span class="sep">·</span><span>${T.tl_extra}</span>`:""}<span class="pos">${ids.length?tf("tl_steps",{n:ids.length}):""}</span></div><h2>${esc(a.name)}</h2>${tabs}${info}
+  ${tasks.length?`<h3 class="ah3">${T.act_tasks}</h3><ul class="atasks">${tasks.map(k=>`<li>${esc(k)}</li>`).join("")}</ul>`:""}
+  ${ids.length?`<h3 class="ah3">${T.act_steps}</h3><ol class="asteps">${items}</ol>`:""}
+  ${refs.length?`<h3 class="ah3">${T.act_refs}</h3><ul class="arefs">${refs.map(id=>`<li><button class="plink" type="button" data-go="step:${id}">${esc(byId[id].name)}</button> <span class="mono">${id}</span>${actNum(id)?` <small>${tf("act_from",{n:actNum(id)})}</small>`:""}</li>`).join("")}</ul>`:""}
+  ${!ids.length&&!tasks.length&&!refs.length?`<p class="plain">${T.act_empty}</p>`:""}`}
 function stepsWith(pred){return S.filter(pred).map(s=>s.id)}
-function renderEntity(kind,id){let title="",body="";
+function renderEntity(kind,id){if(kind==="ACT"){renderActSheet(id);return}let title="",body="";
   if(kind==="A"){const resp=stepsWith(s=>roleIds(s).includes(id));title=A[id];body=`<p class="plain">${id} · ${T.ent_area}${esc(laneLabel(laneOfRole[id]))}. ${tf("ent_owner_in",{n:resp.length})}</p><div class="lookup">${stepChips(resp,"")}</div>`}
   else if(kind==="C"||kind==="F"){const d=(kind==="C"?C:F)[id];const prod=stepsWith(s=>new RegExp("\\b"+id+"\\b").test(s.out));const cons=stepsWith(s=>new RegExp("\\b"+id+"\\b").test(s.inp+" "+s.note));title=d[0];body=`<p class="plain">${id} · ${kind==="C"?T.ent_validity:T.ent_format}${esc(d[1])}</p><dl class="kv"><dt>${T.ent_produced_in}</dt><dd>${stepChips(prod,"need")}</dd><dt>${T.ent_consumed_in}</dt><dd>${stepChips(cons,"enab")}</dd></dl>`}
   else if(kind==="V"){const d=V[id];const used=stepsWith(s=>s.vars.includes(id));const ch=variantOf(id);title=d[0];body=`<p class="plain">${id} · ${T.ent_variation}</p><ul class="vopts">${d[1].map(o=>`<li ${ch&&o.startsWith(ch+")")?'style="font-weight:600;color:var(--accent-ink)"':""}>${esc(o)}${ch&&o.startsWith(ch+")")?T.ent_chosen:""}</li>`).join("")}</ul><div class="box"><h3>${T.ent_steps_change}</h3>${stepChips(used,"")}</div>`}
   detail.innerHTML=`<div class="crumb"><button class="chip" data-go="step:${st.sel}"><b>←</b>${T.back_to}${esc(byId[st.sel].name)}</button></div><h2>${esc(title)}</h2>${body}`}
-function renderFilterChip(){const ph=st.phases.length===1?`${st.phases[0]} ${PH.find(p=>p[0]===st.phases[0])[1]}`:st.phases.join(", ");fchip.innerHTML=st.phases.length?`<span class="filterchip">${st.lane?esc(laneLabel(st.lane))+" · ":""}${esc(ph)}<button type="button" data-clear aria-label="${T.filter_remove}">✕</button></span>`:""}
+function renderFilterChip(){if(st.act){const i=ACT.findIndex(x=>x[0]===st.act);const x=extraAct(st.act);fchip.innerHTML=`<span class="filterchip">${esc(tf("act_filter",{n:i<0?st.act:i+1}))} · ${esc(i<0?(x?x.name:""):ACT[i][1])}<button type="button" data-clear aria-label="${T.filter_remove}">✕</button></span>`;return}const ph=st.phases.length===1?`${st.phases[0]} ${PH.find(p=>p[0]===st.phases[0])[1]}`:st.phases.join(", ");fchip.innerHTML=st.phases.length?`<span class="filterchip">${st.lane?esc(laneLabel(st.lane))+" · ":""}${esc(ph)}<button type="button" data-clear aria-label="${T.filter_remove}">✕</button></span>`:""}
 function renderClients(){const ids=Object.keys(clients).sort((a,b)=>(clients[a].name||"").localeCompare(clients[b].name||""));clientSel.innerHTML=`<option value="">${T.client_base_option}</option>`+ids.map(i=>`<option value="${i}" ${i===st.client?"selected":""}>${esc(clients[i].name)}</option>`).join("")}
 
 // ---------- Global render
@@ -381,13 +501,25 @@ ms.addEventListener("change",async e=>{const n=e.target.closest("[data-note]");i
 instBox.addEventListener("click",e=>{if(e.target.closest("#saveInst"))saveInst();if(e.target.closest("#goNew"))newClient()});
 renlist.addEventListener("change",e=>{const i=e.target.closest("[data-ren]");if(i)setRen(i.dataset.ren,i.value)});
 document.getElementById("timeline").addEventListener("change",onPlanChange);
-document.getElementById("roadmap").addEventListener("click",e=>{if(e.target.id==="rmPrint"){setTab("rm");window.print()}const b=e.target.closest("[data-track]");if(b){st.track=b.dataset.track;renderRoadmap()}});
-document.getElementById("timeline").addEventListener("click",e=>{if(e.target.id==="tlReset")resetPlan()});
+document.getElementById("roadmap").addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches(".rmdetail"))st.rmOpen=e.target.open},true);
+document.getElementById("roadmap").addEventListener("click",e=>{onLocal(e);if(e.target.id==="rmPrint"){setTab("rm");const dt=document.querySelector(".rmdetail");if(dt)dt.open=true;window.print()}
+  if(e.target.id==="rmBase"){const txt=e.target.dataset.json;const show=()=>{const ta=document.getElementById("rmBaseTxt");ta.hidden=false;ta.value=txt;ta.select()};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>toast(T.rm_base_copied),show);else show()}const b=e.target.closest("[data-track]");if(b){st.track=b.dataset.track;renderRoadmap()}
+  // A milestone leads to its activity in the schedule, on the same tab; the schedule row opens the steps.
+  const gm=e.target.closest("[data-gomsact]");if(gm){st.rmOpen=true;renderRoadmap();const row=document.querySelector(`.rmdetail .grow[data-act="${CSS.escape(gm.dataset.gomsact)}"]`);
+    if(row){row.scrollIntoView({block:"center",behavior:"smooth"});row.classList.add("flash");setTimeout(()=>row.classList.remove("flash"),2400)}return}
+  const o=e.target.closest("[data-openact]");if(o)openAct(o.dataset.openact)});
+document.getElementById("timeline").addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches(".pstage")&&st.tlFilter==="all")st.tlStage[d.dataset.stage]=d.open},true);
+document.getElementById("timeline").addEventListener("click",e=>{onLocal(e);if(e.target.id==="tlReset")resetPlan();
+  const ed=e.target.closest("[data-tledit]");if(ed){st.tlEdit=st.tlEdit===ed.dataset.tledit?"":ed.dataset.tledit;renderTimeline();return}
+  const fl=e.target.closest("[data-tlf]");if(fl){st.tlFilter=fl.dataset.tlf;renderTimeline();return}const o=e.target.closest("[data-openact]");if(o)openAct(o.dataset.openact)});
 renlist.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(!g)return;const[k,id]=g.dataset.go.split(":");go(id,true)});
 rail.addEventListener("click",e=>{const li=e.target.closest(".step");if(li)go(li.dataset.id,false)});
 rail.addEventListener("keydown",e=>{const li=e.target.closest(".step");if(li&&(e.key==="Enter"||e.key===" ")){e.preventDefault();go(li.dataset.id,false)}});
 rail.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches("details.phase")){d.open?openPh.add(d.dataset.ph):openPh.delete(d.dataset.ph)}},true);
 detail.addEventListener("click",e=>{
+  const ap=e.target.closest("[data-actplat]");if(ap){st.actPlat=ap.dataset.actplat;render();return}
+  if(e.target.closest("[data-actback]")){st.view=["ACT",st.act];render();window.scrollTo({top:0});return}
+  const an=e.target.closest("[data-actnav]");if(an&&an.dataset.actnav){go(an.dataset.actnav,false);return}
   const g=e.target.closest("[data-go]");if(g){const[k,id]=g.dataset.go.split(":");if(k==="step")go(id,true);else{st.view=[k,id];render()}return}
   const r=e.target.closest("[data-rev]");if(r){const c=rev[st.sel]||{};const v=r.dataset.rev;rev[st.sel]={...c,s:v||undefined};if(!v&&!c.n)delete rev[st.sel];save();render();return}
   const n=e.target.closest("[data-nav]");if(n){let i=order.indexOf(st.sel);do{i+=Number(n.dataset.nav)}while(order[i]&&!inScope(byId[order[i]].plat));if(order[i])go(order[i],true)}});
@@ -397,7 +529,7 @@ Object.entries(A).forEach(([k,v])=>{const o=document.createElement("option");o.v
 LANES.forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=`${k} · ${v}`;laneSel.appendChild(o)});
 roleSel.addEventListener("change",()=>{st.role=roleSel.value;render()});
 laneSel.addEventListener("change",()=>{st.lane=laneSel.value;render()});
-fchip.addEventListener("click",e=>{if(e.target.closest("[data-clear]")){st.phases=[];st.lane="";laneSel.value="";render()}});
+fchip.addEventListener("click",e=>{if(e.target.closest("[data-clear]")){st.phases=[];st.lane="";st.act="";st.actPlat="";laneSel.value="";render()}});
 q.addEventListener("input",()=>{st.q=q.value.trim();renderRail()});
 onlyVar.addEventListener("change",()=>{st.onlyVar=onlyVar.checked;renderRail()});
 onlyDoubt.addEventListener("change",()=>{st.onlyDoubt=onlyDoubt.checked;renderRail()});

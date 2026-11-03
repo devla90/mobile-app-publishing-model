@@ -20,7 +20,8 @@
     "V7": "c",
     "V8": "a",
     "V13": "a",
-    "V14": "b"
+    "V14": "b",
+    "V15": "a"
   },
   "renewals": {
     "R01": "2026-11-01",
@@ -32,6 +33,54 @@
       "decision": "El titular de las cuentas es la entidad, no el proveedor",
       "owner": "Canales Digitales",
       "rationale": "Apple exige que las apps financieras las publique la propia entidad (guía 3.2.1)"
+    }
+  ],
+  "extra_activities": [
+    {
+      "id": "X1",
+      "name": "Piloto interno con colaboradores",
+      "lane": "L1",
+      "platform": "both",
+      "joint": true,
+      "after": [
+        "upload-and-test"
+      ],
+      "days": 14,
+      "milestone": {
+        "name": "Piloto cerrado",
+        "type": "achievement"
+      },
+      "tasks": [
+        "Elegir participantes y criterios de salida",
+        "Ejecutar el piloto y registrar incidencias",
+        "Cerrar con un informe para el Go / No-Go"
+      ],
+      "refs": [
+        "S11.3",
+        "S11.4"
+      ]
+    }
+  ],
+  "plan": {
+    "go-no-go": {
+      "after": [
+        "security-approval",
+        "declare-and-approve",
+        "X1"
+      ]
+    }
+  },
+  "open_decisions": [
+    {
+      "id": "D1",
+      "name": "Quién custodia el original de las claves",
+      "owner": "Ciberseguridad",
+      "opened": "2026-10-14",
+      "due": "2026-11-06",
+      "status": "Pendiente",
+      "blocks": [
+        "hand-over-credentials"
+      ]
     }
   ]
 }
