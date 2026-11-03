@@ -125,6 +125,8 @@ Where something belongs:
 
 When the same client activity shows up in a second or third client, move it up instead of copying it.
 
+IDs of client activities use a prefix per theme and a number (`PI1` for a pilot run, `ST1` for waiting on a store access), never the prefix of the client's decisions (`D`) or open points (`O`): an activity that waits for decision D1 is not decision D1. `validate.py` rejects an activity with the id of an open decision.
+
 ### Milestones
 
 Roadmap milestones are not the version checkpoints of `milestones.json` (m1–m10, "controles" on the page), which track each release. An activity can carry `milestone`: `{ "name": "<text>", "type": "achievement" | "decision" }`. Achievements mark that something is ready; decisions mark that someone has to approve. The roadmap draws one diamond per platform at the date the activity ends, lists the next ones and shows the next milestone in its summary. Instances add their own on `extra_activities`. The base model marks only what business asks about: verified account, app created, first signed build, QA sign-off, security approval, Go / No-Go, store approval and publication.
@@ -133,7 +135,9 @@ Roadmap milestones are not the version checkpoints of `milestones.json` (m1–m1
 
 An instance may list `open_decisions`: `{ "id", "name", "owner", "opened", "due", "status", "platform", "blocks": [activity keys] }`, the decisions that hold the plan back. The roadmap shows them first, with the days they have been open and whether they are overdue. `decisions` stays as the log of what was decided.
 
-`baseline` holds the committed date of each milestone: `{ "<key>": "YYYY-MM-DD" }`, or `"<key>@ios"` per platform. The roadmap marks it next to each milestone and shows the largest deviation in its summary. The button "Copiar hitos como línea base" copies the current milestone dates in that format; paste them when the plan is approved and do not change them afterwards.
+`baseline` holds the committed end of each activity: `{ "<key>": "YYYY-MM-DD" }`, or `"<key>@ios"` per platform. The roadmap marks it next to each milestone and shows the largest deviation in its summary. The button "Copiar plan como línea base" copies the current end of every activity in that format; paste it when the plan is approved and do not change it afterwards.
+
+"Exportar CSV", on the plan and on the roadmap, writes one row per activity and platform: area, platform, start and end, status, real and expected progress, the reference end and the deviation in days, milestone, blocker, decisions and steps. Real progress is what is done (0 or 100); expected progress is the share of the committed period already gone, so a gap between both shows a risk before the due date. Without a baseline the reference is the plan without page edits, and the file says so. The first rows record the client, the date, the start date and whether the data includes changes held only in that browser; with such changes the page asks whether to export the official plan or those changes. The file uses semicolons and UTF-8 so Excel in Spanish opens it in columns.
 
 The roadmap opens with what a committee needs (summary, decisions and blockers, milestones) and keeps the rest under "Detalle para la gestión": progress per platform, open work by area, the full schedule and the lists.
 
