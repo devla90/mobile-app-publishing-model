@@ -44,7 +44,7 @@ This repository is a data model, not an application. Read only what the task nee
 ```bash
 python3 generator/validate.py                 # syntax, IDs, cross-references (run before every commit)
 python3 generator/build.py --no-png           # fast build
-python3 generator/check_page.py               # styles and strings the page uses exist; with playwright, opens every page
+python3 generator/check_page.py               # styles and strings; with playwright, opens every page and runs the plan tests (CI requires it; CHECK_PAGE_BROWSER=chrome uses the installed browser)
 python3 generator/build.py                    # with PNG (needs playwright)
 python3 generator/check_sources.py            # did any cited official page change?
 python3 generator/check_sources.py --update   # after validating, store the new reference

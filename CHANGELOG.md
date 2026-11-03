@@ -4,6 +4,9 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- Plan tests in `check_page.py`, on `clients/example` with a fixed clock: forecast from today, platforms and joint activities, postponements, refused end dates, the CSV export and the local date. Every pull request runs them in a browser (`--require-browser`); locally they are optional, and `CHECK_PAGE_BROWSER=chrome` or `msedge` uses the browser already installed instead of downloading one.
+
 ### Fixed
 - The plan forecasts from today: an open activity whose end has passed is taken to end today and what follows moves with it, so the end date of the plan no longer looks better than it is. It still shows as late.
 - An end date before the activity can start, after its predecessors, is refused with a notice instead of shortening the activity.

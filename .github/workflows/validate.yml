@@ -20,3 +20,11 @@ jobs:
         run: python3 generator/validate.py
       - name: Build dist/ (no PNG)
         run: python3 generator/build.py --no-png
+      # The page and the plan it computes, in a browser: styles, UI strings, every page opening, and the plan tests
+      # on clients/example (forecast, platforms, postponements, CSV export) with a fixed clock.
+      - name: Install playwright and Chromium
+        run: |
+          python3 -m pip install --quiet playwright==1.64.1
+          python3 -m playwright install --with-deps chromium
+      - name: Check pages and plan
+        run: python3 generator/check_page.py --require-browser

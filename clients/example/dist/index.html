@@ -645,14 +645,16 @@ function planNodes(acts,ignoreEnd){
 // with the plan before any date was changed, for the ones whose end date was set by hand.
 function planView(src,start,view){
   const plain=targets().length===2&&!tracked(src);
-  const build=noEnd=>{const acts=planActs(src,false,noEnd);const nodes=plain?acts.map(a=>({...a,act:a.id,track:null})):planNodes(acts,noEnd);return{acts,nodes,...planCalc(nodes,start,noEnd)}};
-  const{acts,nodes,r:raw}=build(false);const before=build(true).r;const r={};
+  // Three readings of the plan: current (forecast and page edits), same (forecast, no edits: what moved by hand) and
+  // before (as written: no forecast, no edits: the reference for the deviation when there is no baseline).
+  const build=(noEnd,noForecast)=>{const acts=planActs(src,false,noEnd);const nodes=plain?acts.map(a=>({...a,act:a.id,track:null})):planNodes(acts,noEnd);return{acts,nodes,...planCalc(nodes,start,noForecast)}};
+  const{acts,nodes,r:raw}=build(false,false);const same=build(true,false).r;const before=build(true,true).r;const r={};
   const list=acts.map(a=>{const ns=nodes.filter(n=>n.act===a.id&&(!view||view==="all"||!n.track||n.track===view));if(!ns.length)return null;
     const qs=ns.map(n=>raw[n.id]);const all=ns.every(n=>n.done);r[a.id]={s:Math.min(...qs.map(q=>q.s)),e:Math.max(...qs.map(q=>q.e)),done:all,crit:qs.some(q=>q.crit),late:qs.some(q=>q.late)};
-    const hand=ns.filter(n=>n.end&&!n.done).map(n=>raw[n.id].e-before[n.id].e);
+    const hand=ns.filter(n=>n.end&&!n.done).map(n=>raw[n.id].e-same[n.id].e);
     return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns,moved:hand.length?hand.reduce((x,y)=>Math.abs(y)>Math.abs(x)?y:x):0}}).filter(Boolean);
   const work=list.filter(a=>!a.cont&&!a.done);
-  return{list,r,raw,nodes,before,end:Math.max(0,...work.map(a=>r[a.id].e))}}
+  return{list,r,raw,nodes,before,same,end:Math.max(0,...work.map(a=>r[a.id].e))}}
 // First pending activity where the platforms meet, and when each one is ready for it.
 function planGate(v){
   const g=v.nodes.filter(n=>!n.track&&!n.done&&!n.cont&&targets().every(p=>n.after.some(x=>x.endsWith("@"+p)))).sort((a,b)=>v.raw[a.id].s-v.raw[b.id].s||b.extra-a.extra)[0];if(!g)return null;
@@ -720,7 +722,7 @@ function exportCsv(official){
     const plat=n.track?PLAT_LABEL[n.track]:a.joint&&tracked(src)?T.csv_joint:PLAT_LABEL[a.plat];
     rows.push([a.num,a.name,(STAGES[stageOf[a.id]]||[""])[0],laneLabel(a.lane),plat,iso(q.s),a.cont?"":iso(q.e),T["tl_st_"+code],a.cont?"":done?100:0,exp,
       a.cont?"":iso(refE),a.cont?"":q.e-refE,cm?T.csv_ref_base:T.csv_ref_plan,a.ms?a.ms.name:"",blk,decs.filter(d=>((d.blocks||[]).includes(a.id)||d.id===a.id)&&(!d.platform||!n.track||d.platform===n.track)).map(d=>d.id).join(" "),
-      n.end&&!done?q.e-b.e:0,q.crit?T.csv_yes:"",a.steps.join(" ")])}));
+      n.end&&!done?q.e-((v.same&&v.same[n.id])||b).e:0,q.crit?T.csv_yes:"",a.steps.join(" ")])}));
   const head=["csv_h_num","csv_h_act","csv_h_stage","csv_h_owner","csv_h_plat","csv_h_start","csv_h_end","csv_h_status","csv_h_real","csv_h_expected","csv_h_ref_end","csv_h_dev","csv_h_ref","csv_h_ms","csv_h_block","csv_h_dec","csv_h_moved","csv_h_crit","csv_h_steps"].map(k=>T[k]);
   const meta=[[T.csv_client,c?c.name:T.client_base_option],[T.csv_generated,todayIso],[T.csv_start,s0],[T.csv_source,local?T.csv_src_local:T.csv_src_official],[T.csv_baseline,Object.keys(base).length?T.csv_ref_base:T.csv_ref_plan],[]];
   const cell=x=>{const s=String(x??"");return/[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
