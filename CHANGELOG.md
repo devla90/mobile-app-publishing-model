@@ -4,6 +4,29 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- `open_decisions` in instances: the roadmap lists each open decision with owner, due date, days open and the activities it holds back.
+- `baseline` in instances: committed date per milestone. The roadmap marks it, shows the largest deviation in its summary and can copy the current milestone dates as a baseline.
+- "Por área" in the roadmap: what each area has in progress, in the next two weeks, late and blocked.
+
+### Changed
+- "Plan y fechas" is a compact list: one line per activity with status and dates, grouped by stage with only the first stage with open work unfolded on load, and filters (all, pending, this week, late, blocked). Days, done and end dates are edited inside the row. The small bars are gone; the schedule lives in the roadmap.
+- The roadmap opens with summary, decisions and milestones; progress, areas, schedule and lists move under "Detalle para la gestión".
+- Every activity opens a sheet with dates and status per platform, blockers and the open decisions that hold it back. Client activities accept `tasks` and `refs` (related model steps), checked by `validate.py`.
+- `generator/check_page.py`: checks that every class the page writes has a style and every UI string exists; with playwright, opens every page and fails on errors.
+- Notice on "Plan y fechas" and the roadmap when a browser holds changes that are not in `instance.json`, with buttons to copy them for `instance.json` or discard them.
+- Named milestones: `milestone` on activities (name, and type achievement or decision), also on a client's `extra_activities`. The roadmap draws them per platform instead of the unnamed end of each stage, and lists the next ones.
+- Milestones name the activity they close (number and name); a click opens the detailed schedule on the same tab and highlights that activity, whose row shows the milestone name and opens the steps, list their dates per platform (with the deviation when there is a baseline), place iOS above and Android below when the dates differ, and also appear at the end of their activity in the detailed schedule.
+- Roadmap summary: status (on time, at risk or late, with the reason), next milestone, publication date and open blockers.
+- `steps` on each activity of `diagram.json`: every step belongs to exactly one activity, of a phase and platform that fit it, checked by `validate.py`.
+- Activity sheet: "Ver pasos" in "Plan y fechas", a box of the diagram or an activity in the roadmap opens a short list of its steps (who, what it needs), with tabs per platform.
+- A step opened from an activity shows the essentials first, keeps inputs, variants and the review under "Más detalle", and moves only within the activity ("Paso i de n").
+### Fixed
+- The per-version checkpoints of "Seguir una versión" are called "controles", so "hitos" means only the roadmap milestones.
+- The step view no longer shows the phase duration range, which contradicted the single date per activity.
+- `CLAUDE.md`, the `instantiate-client` skill, the example instance and the starter kit describe activity keys, steps per activity, platforms, milestones, open decisions and the baseline.
+- A start date stored in a browser hid a new `start_date` from `instance.json`. It now follows the same rule as the plan.
+
 ## [3.0.0] - 2026-10-30
 
 ### Changed

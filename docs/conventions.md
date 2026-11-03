@@ -47,7 +47,7 @@ Every file in `model/` has `description`, `lang` and then the data. Every elemen
 
 1. Pick the phase. The ID is `<phase>.<next number>`. Do not reorder existing ones.
 2. Add the object to `steps.json` in ID order.
-3. If the step is new to the swimlane diagram, check whether an activity in `diagram.json` already covers it. If not, do not add it to the diagram: the activities are a summary, not a mirror.
+3. Add its ID to the `steps` of the activity in `diagram.json` that covers it. Every step belongs to exactly one activity, of a phase and platform that fit it; `validate.py` checks it. Only if no activity covers it, consider a new one: the activities are a summary, not a mirror.
 4. If it introduces a new credential or artifact, create that first with its ID.
 5. If it repeats per version, check whether a check in `milestones.json` should link to it.
 6. Run `python3 generator/validate.py && python3 generator/build.py --no-png` and open the page to see the step in its phase.
@@ -91,7 +91,7 @@ python3 generator/build.py --no-png
 
 The plan works on the diagram activities, not on phases. Each activity in `diagram.json` has `duration.days` in calendar days and `after`, the activities that must finish before it starts. The activities of the last stage are `continuous` and have no duration. `validate.py` checks that durations are whole days, that every `after` exists and that there are no cycles.
 
-The page computes one date per activity and marks the critical path. To postpone an activity, change its end date on the page: what follows moves by itself, and the roadmap counts and lists it as postponed against the plan without changes. Phase durations in `phases.json` remain as a reference in the step view.
+The page computes one date per activity and marks the critical path. To postpone an activity, change its end date on the page: what follows moves by itself, and the roadmap counts and lists it as postponed against the plan without changes. Phase durations in `phases.json` are reference data for whoever estimates a new activity; the page does not show them, so every date comes from the activities.
 
 An instance may set:
 
@@ -111,6 +111,32 @@ Prefer a step inside an existing activity before adding one: the diagram is a su
 
 Instances from version 1.3.0 use numbers, and `validate.py` rejects them. Replace each number with its key, using the table in `docs/decisions.md`, row 23.
 
+### Client activities
+
+An activity of `extra_activities` may carry `tasks` (texts: what has to be done) and `refs` (IDs of model steps it relates to). `refs` do not move those steps: a step still belongs to exactly one activity, and the sheet shows them apart as related steps. Every activity, of the model or of the client, opens a sheet with its dates and status per platform, blockers, the open decisions that hold it back, and its steps, tasks or related steps.
+
+Where something belongs:
+
+| It happens in | It goes in |
+| --- | --- |
+| One client only | An activity of that client's `extra_activities`, with `tasks` and `refs` |
+| Several clients | The model: an activity with its steps, or an option of a variant |
+| One sector or country | The regulatory profile (`PR-<SECTOR>-<COUNTRY>`) |
+
+When the same client activity shows up in a second or third client, move it up instead of copying it.
+
+### Milestones
+
+Roadmap milestones are not the version checkpoints of `milestones.json` (m1–m10, "controles" on the page), which track each release. An activity can carry `milestone`: `{ "name": "<text>", "type": "achievement" | "decision" }`. Achievements mark that something is ready; decisions mark that someone has to approve. The roadmap draws one diamond per platform at the date the activity ends, lists the next ones and shows the next milestone in its summary. Instances add their own on `extra_activities`. The base model marks only what business asks about: verified account, app created, first signed build, QA sign-off, security approval, Go / No-Go, store approval and publication.
+
+### Decisions, areas and baseline
+
+An instance may list `open_decisions`: `{ "id", "name", "owner", "opened", "due", "status", "platform", "blocks": [activity keys] }`, the decisions that hold the plan back. The roadmap shows them first, with the days they have been open and whether they are overdue. `decisions` stays as the log of what was decided.
+
+`baseline` holds the committed date of each milestone: `{ "<key>": "YYYY-MM-DD" }`, or `"<key>@ios"` per platform. The roadmap marks it next to each milestone and shows the largest deviation in its summary. The button "Copiar hitos como línea base" copies the current milestone dates in that format; paste them when the plan is approved and do not change them afterwards.
+
+The roadmap opens with what a committee needs (summary, decisions and blockers, milestones) and keeps the rest under "Detalle para la gestión": progress per platform, open work by area, the full schedule and the lists.
+
 ### Platforms
 
 Each activity in `diagram.json` has `platform` (`ios`, `android`, `both`) and `joint`. A `joint` activity has one state and waits for every platform: it is a meeting point, such as a shared approval. The others run once per platform, so one platform can move ahead of the other. An activity that does not apply to a platform is skipped for it, and what comes next waits for what that activity waited for.
@@ -121,4 +147,4 @@ An instance follows each platform with `plan.<key>.platforms.<ios|android>`, whi
 
 The roadmap then has three views: Conjunto, iOS and Android. In Conjunto an activity counts as done only when every platform it applies to has finished it, so that percentage is not the average of the other two.
 
-The base model never gets client activities; that keeps it neutral. Edits made on the page are stored per client in the browser or the artifact database; to make them permanent, copy them into `instance.json`. After a rebuild, the page adopts the new `plan` from `instance.json` and keeps only the activities edited on the page since the previous build.
+The base model never gets client activities; that keeps it neutral. Edits made on the page are stored per client in the browser or the artifact database; to make them permanent, copy them into `instance.json`. After a rebuild, the page adopts the new `plan` and `start_date` from `instance.json` and keeps only what was edited on the page since the previous build. While a browser holds changes that are not in `instance.json`, the plan and the roadmap show a notice with two buttons: copy them in the format of `instance.json`, or discard them.

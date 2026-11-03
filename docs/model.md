@@ -23,11 +23,11 @@ Content (names, notes, descriptions) is in Spanish; see `docs/conventions.md#lan
 | Steps S0.1–S18.6 | 108 | Each with role, inputs, outputs, dependencies and variants. |
 | Variants V1–V15 | 15 | Points with alternative ways: where it is built, how it is signed, who holds keys, how it is uploaded, who runs the technology. |
 | Renewals R01–R32 | 25 active | What expires or rotates, with cycle and lead time. |
-| Milestones m1–m10 | 10 | Per-version tracking: 27 checks in total, each linked to a step. |
+| Version checkpoints m1–m10 | 10 | Per-version tracking in `milestones.json` ("controles" on the page): 27 checks in total, each linked to a step. Not to be confused with the roadmap milestones, which are activities marked with `milestone`. |
 
 ## Stages (for presenting)
 
-The 19 phases group into 8 stages; this is how the swimlane diagram is drawn.
+The 19 phases group into 8 stages; this is how the swimlane diagram is drawn. Each activity of the diagram lists its steps, and each step belongs to exactly one activity, so the page can show which steps an activity has for each platform. Opening an activity shows a short sheet of its steps; a step opened from there shows the essentials first and moves only within that activity.
 
 | Stage | Phases | Frequency |
 | --- | --- | --- |
@@ -40,7 +40,7 @@ The 19 phases group into 8 stages; this is how the swimlane diagram is drawn.
 | Review and release | S14–S15 | Every version |
 | Operation and renewal | S16–S18 | Continuous |
 
-The page's "Plan y fechas" card plans the diagram activities: one date per activity, days and end dates editable, activities marked done, the critical path and, given a start date, real dates. Changing an end date moves what follows, and the roadmap shows what was postponed. V15 says which stores the project targets: with one platform the page drops the rest, and with two it can follow each one and show where they meet. Instances can add their own activities. The "Roadmap" tab shows the same plan as an executive view: progress, status against today, a Gantt by stage with milestones, and what was done, what comes next and what is late. See `docs/conventions.md#durations-and-the-timeline`.
+The page's "Plan y fechas" card plans the diagram activities: one date per activity, days and end dates editable, activities marked done, the critical path and, given a start date, real dates. Changing an end date moves what follows, and the roadmap shows what was postponed. V15 says which stores the project targets: with one platform the page drops the rest, and with two it can follow each one and show where they meet. Instances can add their own activities. The "Roadmap" tab shows the same plan as an executive view: a summary (status, next milestone, publication and open blockers), progress against today, a Gantt by stage with named milestones, and what was done, what comes next and what is late. See `docs/conventions.md#durations-and-the-timeline`.
 
 ## Underlying rules
 

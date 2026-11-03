@@ -91,7 +91,17 @@ No option text says "default" or "recommended". Every step that changes with the
 - `artifacts.json`: `{ "F01": { "name", "format" } }`.
 - `renewals.json`: `[ { "id": "R01", "name", "group", "cycle_months", "lead_days", "if_expired", "renewed_by", "step" } ]`. `cycle_months: 0` means event- or policy-driven.
 - `milestones.json`: `[ { "id": "m1", "name", "description", "phases": [...], "checks": [ { "id": "c1", "text", "step" } ] } ]`. About 10 milestones for business; checks link to steps so details stay reachable. A tracking record is opened per cycle (a version, a period) or, if the process runs once per item, per item.
-- `diagram.json`: `[ { "key": "<stable-slug>", "lane": "L1", "stage": 0, "lines": ["<line 1>", "<line 2>"], "phases": ["S0"] } ]`, in flow order. Instances reference the `key`; the number shown is the position, so adding a box never renumbers by hand. Around 25 boxes. A new step does not automatically get a box.
+- `diagram.json`, in flow order:
+
+  ```json
+  { "activities": [ { "key": "<stable-slug>", "lane": "L1", "stage": 0, "platform": "both", "joint": false,
+                      "milestone": { "name": "<what business asks about>", "type": "achievement" },
+                      "lines": ["<line 1>", "<line 2>"], "phases": ["S0"], "steps": ["S0.1", "S0.3"],
+                      "duration": { "days": 5 }, "after": ["<key>"] } ],
+    "arrows": [ ["<key>", "<key>", "v"] ] }
+  ```
+
+  Instances reference the `key`; the number shown is the position, so adding a box never renumbers by hand. Around 25 boxes. Every step belongs to exactly one activity (`steps`). `platform` and `joint` only matter if the process forks; drop them otherwise. `milestone` marks the few activities whose end business asks about. `arrows` is a readable summary of `after`, with a route per arrow.
 
 ### `profiles/PR-<AXES>.json`
 
@@ -120,9 +130,17 @@ Same shape as a partial instance plus a list of controls. Name it by the axes th
   "variants": { "V1": "a", "V14": "b" },
   "open_variants": { "V4": "<assumed option and why; where it will be closed (session, question)>" },
   "renewals": { "R01": "2026-11-01" },
-  "decisions": [ { "date": "2026-10-14", "decision": "<what>", "owner": "<team>", "rationale": "<why>" } ]
+  "decisions": [ { "date": "2026-10-14", "decision": "<what>", "owner": "<team>", "rationale": "<why>" } ],
+  "start_date": "2026-11-02",
+  "plan": { "<key>": { "done": true, "days": 3, "end": "<YYYY-MM-DD>", "platforms": { "ios": { "blocked": "<why>" } } } },
+  "extra_activities": [ { "id": "X1", "name": "<client-only activity>", "lane": "L1", "days": 10, "after": ["<key>"],
+                          "tasks": ["<what has to be done>"], "refs": ["<model step it relates to>"] } ],
+  "open_decisions": [ { "id": "D1", "name": "<pending decision>", "owner": "<team>", "opened": "<date>", "due": "<date>", "blocks": ["<key>"] } ],
+  "baseline": { "<key>": "<committed YYYY-MM-DD>" }
 }
 ```
+
+`plan` overrides days, marks what is done and records postponements (`end`); `open_decisions` are what holds the plan back; `baseline` is set once, when the plan is approved, and measures the deviation.
 
 Lanes with no real owner keep the base's generic name. No personal names: areas or companies only.
 
@@ -131,6 +149,7 @@ Lanes with no real owner keep the base's generic name. No personal names: areas 
 | Rule | Why |
 | --- | --- |
 | Stable IDs, never renumbered; retired IDs stay unused | External documents, tickets and minutes cite them |
+| Activities have a stable key; their number is the position | Inserting an activity must not move the state of every client |
 | Neutral base | One base serves every client; client facts would leak and go stale |
 | Variants, not defaults | Each client picks; nothing is "normal" |
 | Dated external data with source | External rules change; a monthly job re-checks the cited pages. Statuses: `OK`, `CORRECTED`, `INTERNAL` (company policy, cite document and version; not watched by the job), `NO SOURCE` |

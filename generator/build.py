@@ -48,11 +48,11 @@ def load_model():
     m["TIME"] = {f["id"]: [f["duration"]["min"], f["duration"]["max"], f["duration"]["depends_on"]] for f in pha["phases"]}
     m["STAGES"] = [[e["name"], e["phases"]] for e in pha["stages"]]
     m["VER_PH"] = pha["per_version_phases"]
-    # Plan by activity: [key, name, lane, days, after, continuous, per_version, platform, joint].
+    # Plan by activity: [key, name, lane, days, after, continuous, per_version, platform, joint, steps, milestone].
     # The number people see is the position in the list.
     m["ACT"] = [[a["key"], " ".join(a["lines"]), a["lane"], a.get("duration", {}).get("days", 0),
                  a.get("after", []), a.get("continuous", False), all(p in pha["per_version_phases"] for p in a["phases"]),
-                 a["platform"], a["joint"]]
+                 a["platform"], a["joint"], a.get("steps", []), a.get("milestone")]
                 for a in dia["activities"]]
     num = {a["key"]: i + 1 for i, a in enumerate(dia["activities"])}
     m["NUM"] = num
@@ -115,7 +115,6 @@ def js_data(m, t, instance=None):
     s.append(f'const VER_PH={d(m["VER_PH"])};')
     s.append(f'const REN={d(m["REN"])};')
     s.append(f'const PAIRS={d(m["PAIRS"])};')
-    s.append(f'const TIME={d(m["TIME"])};')
     s.append(f'const ACT={d(m["ACT"])};')
     s.append(f'const ARROWS={d(m["ARROWS"])};')
     s.append(f'const MS={d(m["MS"])};')
@@ -130,6 +129,8 @@ def js_data(m, t, instance=None):
             inst["plan"] = instance["plan"]
         if instance.get("extra_activities"):
             inst["extra"] = instance["extra_activities"]
+        inst["open"] = instance.get("open_decisions", [])
+        inst["baseline"] = instance.get("baseline", {})
         s.append(f'const PRESET_CLIENT={d(inst)};')
     else:
         s.append('const PRESET_CLIENT=null;')
@@ -204,11 +205,19 @@ def arrow_path(a, b, kind):
     return f'M{ax} {sy}C{ax} {sy+dy} {bx} {ey-dy} {bx} {ey}'
 
 
-def split_lane_name(name):
-    words = name.split(" ")
-    if len(name) <= 16 or len(words) == 1: return [name]
-    k = len(words) // 2 + len(words) % 2
-    return [" ".join(words[:k]), " ".join(words[k:])]
+def split_lane_name(name, width=22, most=3):
+    """Lane title in lines of about `width` characters, at most `most` lines; the last one ends in an ellipsis if cut."""
+    lines, line = [], ""
+    for w in name.split(" "):
+        if line and len(line) + 1 + len(w) > width: lines.append(line); line = w
+        else: line = f"{line} {w}".strip()
+    lines.append(line)
+    if len(lines) > most: lines = lines[:most]; lines[-1] = lines[-1][:width - 1].rstrip() + "…"
+    return lines
+
+
+def fit(text, width=30):
+    return text if len(text) <= width else text[:width - 1].rstrip(" ,") + "…"
 
 
 def split_stage_name(name):
@@ -235,10 +244,11 @@ def svg_swimlanes(m, t, instance=None, title=None):
     for i, l in enumerate(lanes):
         lid = l[0]; x = X0 + i * CW; cx = x + CW / 2; c = COLOR[lid]
         o.append(f'<rect x="{x+6}" y="{TOP}" width="{CW-12}" height="78" rx="8" fill="{TINT[lid]}"/><rect x="{x+6}" y="{TOP}" width="{CW-12}" height="5" rx="2" fill="{c}"/>')
-        lines = split_lane_name(g["names"][lid])
+        lines = split_lane_name(g["names"][lid]); y0 = TOP + 24 + (3 - len(lines)) * 7.5
+        o.append(f'<title>{esc(g["names"][lid])}</title>')
         for k, n in enumerate(lines):
-            o.append(f'<text x="{cx}" y="{TOP+28+k*17}" text-anchor="middle" font-size="15" font-weight="700" fill="{c}">{esc(n)}</text>')
-        o.append(f'<text x="{cx}" y="{TOP+28+len(lines)*17+4}" text-anchor="middle" font-size="11.5" fill="{MUTED}">{esc(g["subs"][lid])}</text>')
+            o.append(f'<text x="{cx}" y="{y0+k*15}" text-anchor="middle" font-size="13" font-weight="700" fill="{c}">{esc(n)}</text>')
+        o.append(f'<text x="{cx}" y="{y0+len(lines)*15+3}" text-anchor="middle" font-size="10.5" fill="{MUTED}">{esc(fit(g["subs"][lid]))}</text>')
     for i in range(len(lanes) + 1):
         x = X0 + i * CW; o.append(f'<line x1="{x}" x2="{x}" y1="{HEAD}" y2="{GB}" stroke="{RULE}"/>')
     for ry in rowY + [GB]:
@@ -310,8 +320,8 @@ def drawio_swimlanes(m, t, instance=None, title=None):
              f"spacingLeft=8;spacingTop=12;fontSize=12;fontColor={MUTED};{FONT}", 16, rowY[r], W - 32, rows[r])
     for i, l in enumerate(lanes):
         lid = l[0]; lx = X0 + i * CW + 6; c = COLOR[lid]
-        label = f'<b style="font-size:15px">{"<br>".join(esc(s) for s in split_lane_name(g["names"][lid]))}</b><br>' \
-                f'<span style="font-size:11.5px;color:{MUTED}">{esc(g["subs"][lid])}</span>'
+        label = f'<b style="font-size:13px">{"<br>".join(esc(s) for s in split_lane_name(g["names"][lid]))}</b><br>' \
+                f'<span style="font-size:10.5px;color:{MUTED}">{esc(fit(g["subs"][lid]))}</span>'
         cell(f"lane-{lid}", label, f"swimlane;html=1;whiteSpace=wrap;startSize={HEAD - TOP};rounded=1;arcSize=8;fillColor={TINT[lid]};"
              f"swimlaneFillColor=none;strokeColor={c};fontColor={c};collapsible=0;horizontal=1;verticalAlign=middle;{FONT}",
              lx, TOP, CW - 12, GB - TOP)
@@ -374,6 +384,12 @@ def diff_md(m, t, inst):
             hits.append(tf(t, "diff_pair_line", a=m["A"][a], b=m["A"][b], lane=lanes.get(la), sev=t["severity"].get(sev, sev), risk=risk))
     out.append(""); out.append(f'## {t["diff_pairs"]}')
     out += hits or [t["diff_none"]]
+    if inst.get("open_decisions"):
+        out.append(""); out.append(f'## {t["diff_open"]}')
+        out.append(f'| ID | {t["diff_h_decision"]} | {t["diff_h_owner"]} | {t["diff_h_due"]} | {t["diff_h_blocks"]} |'); out.append("| --- | --- | --- | --- | --- |")
+        num = lambda k: str(m["NUM"].get(k, k))
+        for x in inst["open_decisions"]:
+            out.append(f'| {x["id"]} | {x["name"]} | {x["owner"]} | {x["due"]} | {", ".join(map(num, x.get("blocks", [])))}{" (" + t["plat_" + x["platform"]] + ")" if x.get("platform") else ""} |')
     if inst.get("decisions"):
         out.append(""); out.append(f'## {t["diff_decisions"]}')
         out.append(f'| {t["diff_h_date"]} | {t["diff_h_decision"]} | {t["diff_h_owner"]} | {t["diff_h_rationale"]} |'); out.append("| --- | --- | --- | --- |")
