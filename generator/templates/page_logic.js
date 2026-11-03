@@ -166,7 +166,7 @@ function planView(src,start,view){
     const hand=ns.filter(n=>n.end&&!n.done).map(n=>raw[n.id].e-before[n.id].e);
     return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns,moved:hand.length?hand.reduce((x,y)=>Math.abs(y)>Math.abs(x)?y:x):0}}).filter(Boolean);
   const work=list.filter(a=>!a.cont&&!a.done);
-  return{list,r,raw,nodes,end:Math.max(0,...work.map(a=>r[a.id].e))}}
+  return{list,r,raw,nodes,before,end:Math.max(0,...work.map(a=>r[a.id].e))}}
 // First pending activity where the platforms meet, and when each one is ready for it.
 function planGate(v){
   const g=v.nodes.filter(n=>!n.track&&!n.done&&!n.cont&&targets().every(p=>n.after.some(x=>x.endsWith("@"+p)))).sort((a,b)=>v.raw[a.id].s-v.raw[b.id].s||b.extra-a.extra)[0];if(!g)return null;
@@ -210,10 +210,45 @@ function renderTimeline(){
   const filters=`<div class="seg ptfilter" role="group" aria-label="${T.tl_filter}">${["all","open","week","late","blocked"].map(k=>`<button type="button" data-tlf="${k}" aria-pressed="${f===k}">${T["tl_f_"+k]} <small>${counts[k]}</small></button>`).join("")}</div>`;
   const ver=planActs(src,true,true).filter(a=>a.ver&&!a.cont&&inScope(a.plat));const vids=new Set(ver.map(a=>a.id));const vc=planCalc(ver.map(a=>({...a,after:a.after.filter(x=>vids.has(x))})),"");
   const crit=[...list].filter(a=>r[a.id].crit).sort((x,y)=>r[x.id].s-r[y.id].s).map(a=>a.num).join(" → ");
-  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div>${localBanner()}<div class="ptools"><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label><button class="btn" type="button" id="tlReset">${T.tl_reset}</button>${cur()?"":`<span class="plain">${T.tl_noclient}</span>`}</div>
+  el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div>${localBanner()}<div class="ptools"><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label><button class="btn" type="button" id="tlReset">${T.tl_reset}</button><button class="btn" type="button" data-csv="start">${T.csv_export}</button>${cur()?"":`<span class="plain">${T.tl_noclient}</span>`}</div>
   ${filters}${body}
   <div class="tlsum"><span><b>${T.tl_end}:</b> <b>${fd(end)}</b>${s0?"":` (${end} ${T.tl_days})`}</span><span><b>${vc.end} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_critical} ${esc(crit)}</span></div>`;
 }
+// ---------- Export the plan as CSV (opens in Excel; imports in project tools)
+// One row per activity and platform. Real progress is what is done; expected progress is the share of the committed
+// period already gone (baseline in instance.json, or the plan without page edits when there is none); the deviation
+// is the current end minus that reference. The header says where the data came from.
+function exportCsv(official){
+  const c=cur();const live=planSrc();const preset=st.client==="preset"&&PRESET_CLIENT;
+  const src=official&&preset?{start:PRESET_CLIENT.start||"",plan:PRESET_CLIENT.plan||{},extra:PRESET_CLIENT.extra||[]}:live;
+  const s0=src.start;if(!s0){toast(T.rm_need_start);return}
+  const v=planView(src,s0);const todayIso=new Date().toISOString().slice(0,10);const today=dayOf(s0,todayIso);const stageOf=stagesOf(v.list);
+  const iso=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+  const base=(c&&c.baseline)||{};const decs=(c&&c.open)||[];const local=!official&&!!localDiff();
+  const rows=[];
+  v.list.forEach(a=>(a.nodes||[a]).forEach(n=>{const q=v.raw[n.id]||v.r[a.id];const b=(v.before&&v.before[n.id])||q;const done=!!n.done;
+    const cm=base[n.id]??base[n.act];const refE=cm?dayOf(s0,cm):b.e;const refS=cm?refE-(q.e-q.s):b.s;
+    const blk=n.track?((a.plats[n.track]||{}).blocked||""):Object.values(a.plats).map(x=>x.blocked).filter(Boolean).join(" | ");
+    const code=done?"done":a.cont?"cont":blk?"blocked":q.e<today?"late":q.s<=today?"now":"todo";
+    const exp=a.cont?"":refE<=refS?(today>=refE?100:0):Math.max(0,Math.min(100,Math.round((today-refS)/(refE-refS)*100)));
+    const plat=n.track?PLAT_LABEL[n.track]:a.joint&&tracked(src)?T.csv_joint:PLAT_LABEL[a.plat];
+    rows.push([a.num,a.name,(STAGES[stageOf[a.id]]||[""])[0],laneLabel(a.lane),plat,iso(q.s),a.cont?"":iso(q.e),T["tl_st_"+code],a.cont?"":done?100:0,exp,
+      a.cont?"":iso(refE),a.cont?"":q.e-refE,cm?T.csv_ref_base:T.csv_ref_plan,a.ms?a.ms.name:"",blk,decs.filter(d=>((d.blocks||[]).includes(a.id)||d.id===a.id)&&(!d.platform||!n.track||d.platform===n.track)).map(d=>d.id).join(" "),
+      n.end&&!done?q.e-b.e:0,q.crit?T.csv_yes:"",a.steps.join(" ")])}));
+  const head=["csv_h_num","csv_h_act","csv_h_stage","csv_h_owner","csv_h_plat","csv_h_start","csv_h_end","csv_h_status","csv_h_real","csv_h_expected","csv_h_ref_end","csv_h_dev","csv_h_ref","csv_h_ms","csv_h_block","csv_h_dec","csv_h_moved","csv_h_crit","csv_h_steps"].map(k=>T[k]);
+  const meta=[[T.csv_client,c?c.name:T.client_base_option],[T.csv_generated,todayIso],[T.csv_start,s0],[T.csv_source,local?T.csv_src_local:T.csv_src_official],[T.csv_baseline,Object.keys(base).length?T.csv_ref_base:T.csv_ref_plan],[]];
+  const cell=x=>{const s=String(x??"");return/[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
+  // Semicolons and a BOM so Excel in Spanish opens it in columns with accents intact.
+  const csv="\ufeff"+[...meta,head,...rows].map(r=>r.map(cell).join(";")).join("\r\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=`plan-${((c&&c.name)||"modelo").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}-${todayIso}.csv`;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast(T.csv_done)}
+// With local changes the reader chooses the official plan or their own; otherwise it exports directly.
+function onCsv(e){const b=e.target.closest("[data-csv]");if(!b)return false;const m=b.dataset.csv;
+  if(m==="start"){if(localDiff()){const box=b.parentNode.querySelector(".csvask");if(box){box.hidden=!box.hidden;return true}
+      b.insertAdjacentHTML("afterend",`<span class="csvask">${T.csv_ask} <button class="btn" type="button" data-csv="official">${T.csv_official}</button><button class="btn" type="button" data-csv="local">${T.csv_local}</button></span>`);return true}
+    exportCsv(true);return true}
+  exportCsv(m==="official");const box=b.closest(".csvask");if(box)box.hidden=true;return true}
 function onPlanChange(e){
   const t=e.target;const src=planSrc();
   if(t.id==="tlStart"){savePlan(t.value,src.plan);return}
@@ -303,7 +338,8 @@ function renderRoadmap(){
     return{l,now:ids(a=>r[a.id].s<=today&&r[a.id].e>=today),next:ids(a=>r[a.id].s>today&&r[a.id].s<=today+14),late:ids(a=>status(a)==="late"),blk:ids(a=>blocked.includes(a))}}).filter(x=>x.now||x.next||x.late||x.blk);
   const areaBox=`<div class="rmsec"><h3>${T.rm_area_h}</h3>${areas.length?`<div class="rmtabw"><table class="rmtab"><thead><tr><th></th><th>${T.rm_area_h_now}</th><th>${T.rm_area_h_next}</th><th>${T.rm_late}</th><th>${T.rm_blocked}</th></tr></thead><tbody>${areas.map(x=>`<tr><td><b>${esc(laneLabel(x.l))}</b></td><td>${x.now||"—"}</td><td>${x.next||"—"}</td><td class="${x.late?"over":""}">${x.late||"—"}</td><td>${x.blk||"—"}</td></tr>`).join("")}</tbody></table></div>`:`<p class="plain">${T.rm_area_none}</p>`}</div>`;
   const isoOf=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
-  const baseJson=JSON.stringify({baseline:Object.fromEntries(mls.flatMap(({pts})=>pts.map(p=>[p.n.id,isoOf(p.q.e)])))},null,2).replace(/^\{\n|\n\}$/g,"");
+  // The baseline holds the committed end of every activity (per platform), so the export can measure each deviation.
+  const baseJson=JSON.stringify({baseline:Object.fromEntries(pv.nodes.filter(n=>!n.cont).map(n=>[n.id,isoOf(raw[n.id].e)]))},null,2).replace(/^\{\n|\n\}$/g,"");
   let trackBox="",seg="";
   if(multi){const gate=planGate(pv);const gname=gate?list.find(a=>a.id===gate.id):null;
     seg=`<div class="seg" id="rmSeg" role="group" aria-label="${T.rm_view}">${[["all",T.rm_joint],["ios",T.plat_ios],["android",T.plat_android]].map(([k,l])=>`<button type="button" data-track="${k}" aria-pressed="${st.track===k}">${l}</button>`).join("")}</div>`;
@@ -313,7 +349,7 @@ function renderRoadmap(){
       let gap="";if(gate){const[a,b]=targets().map(p=>gate.ready[p]);const n=Math.abs(a-b);const[p,q]=a<b?targets():[...targets()].reverse();gap=n?tf("rm_gap",{a:esc(gname.num+" · "+gname.name),p:PLAT_LABEL[p],q:PLAT_LABEL[q],n}):tf("rm_gap_none",{a:esc(gname.num+" · "+gname.name)})}
       trackBox=`<div class="rmtrack"><h3>${T.rm_track_h}</h3>${trows}${gap?`<p class="plain">${gap}</p>`:""}<p class="plain">${T.rm_joint_note}</p></div>`}}
   const msGantt=mls.length?`<div class="rmsec"><h3>${T.rm_milestones}</h3><div class="gantt msg"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div><div></div></div>${msRows}</div></div><div class="rmleg"><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_leg_ms}</span>${multi&&view==="all"?`<span>${T.rm_leg_ms_pl}</span>`:""}<span>${T.rm_leg_ms_open}</span><span><i style="border-left:2px dotted var(--muted);width:0;height:12px"></i>${T.rm_base_mark}</span></div></div>`:"";
-  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}</div></div><div>${mls.length&&c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${decBox}${msGantt}
+  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}</div></div><div><button class="btn" type="button" data-csv="start">${T.csv_export}</button> ${c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${decBox}${msGantt}
   <details class="rmdetail"${st.rmOpen?" open":""}><summary>${T.rm_detail}</summary>${trackBox}
   <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi late"><small>${T.rm_moved}</small><b>${moved.length}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(end)}</b><span>${tf("rm_left",{n:left})}</span></div></div>
   <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
@@ -502,14 +538,14 @@ instBox.addEventListener("click",e=>{if(e.target.closest("#saveInst"))saveInst()
 renlist.addEventListener("change",e=>{const i=e.target.closest("[data-ren]");if(i)setRen(i.dataset.ren,i.value)});
 document.getElementById("timeline").addEventListener("change",onPlanChange);
 document.getElementById("roadmap").addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches(".rmdetail"))st.rmOpen=e.target.open},true);
-document.getElementById("roadmap").addEventListener("click",e=>{onLocal(e);if(e.target.id==="rmPrint"){setTab("rm");const dt=document.querySelector(".rmdetail");if(dt)dt.open=true;window.print()}
+document.getElementById("roadmap").addEventListener("click",e=>{if(onCsv(e))return;onLocal(e);if(e.target.id==="rmPrint"){setTab("rm");const dt=document.querySelector(".rmdetail");if(dt)dt.open=true;window.print()}
   if(e.target.id==="rmBase"){const txt=e.target.dataset.json;const show=()=>{const ta=document.getElementById("rmBaseTxt");ta.hidden=false;ta.value=txt;ta.select()};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>toast(T.rm_base_copied),show);else show()}const b=e.target.closest("[data-track]");if(b){st.track=b.dataset.track;renderRoadmap()}
   // A milestone leads to its activity in the schedule, on the same tab; the schedule row opens the steps.
   const gm=e.target.closest("[data-gomsact]");if(gm){st.rmOpen=true;renderRoadmap();const row=document.querySelector(`.rmdetail .grow[data-act="${CSS.escape(gm.dataset.gomsact)}"]`);
     if(row){row.scrollIntoView({block:"center",behavior:"smooth"});row.classList.add("flash");setTimeout(()=>row.classList.remove("flash"),2400)}return}
   const o=e.target.closest("[data-openact]");if(o)openAct(o.dataset.openact)});
 document.getElementById("timeline").addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches(".pstage")&&st.tlFilter==="all")st.tlStage[d.dataset.stage]=d.open},true);
-document.getElementById("timeline").addEventListener("click",e=>{onLocal(e);if(e.target.id==="tlReset")resetPlan();
+document.getElementById("timeline").addEventListener("click",e=>{if(onCsv(e))return;onLocal(e);if(e.target.id==="tlReset")resetPlan();
   const ed=e.target.closest("[data-tledit]");if(ed){st.tlEdit=st.tlEdit===ed.dataset.tledit?"":ed.dataset.tledit;renderTimeline();return}
   const fl=e.target.closest("[data-tlf]");if(fl){st.tlFilter=fl.dataset.tlf;renderTimeline();return}const o=e.target.closest("[data-openact]");if(o)openAct(o.dataset.openact)});
 renlist.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(!g)return;const[k,id]=g.dataset.go.split(":");go(id,true)});

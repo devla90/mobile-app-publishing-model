@@ -4,6 +4,13 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- "Exportar CSV" on the plan and the roadmap: one row per activity and platform with area, dates, status, real and expected progress, deviation against the baseline (or the plan without edits), milestone, blocker, decisions and steps. A header records the source; with local changes the page asks whether to export the official plan or those changes.
+
+### Changed
+- `validate.py` rejects a client activity with the id of an open decision; client activities use a prefix per theme.
+- The baseline covers every activity: "Copiar plan como línea base" copies the end date of each one, per platform.
+
 ## [3.1.0] - 2026-11-03
 
 ### Added

@@ -195,6 +195,7 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         if not x.get("name"): say(f"{rel}: extra activity {xid} has no name")
         check_dates(f"{rel}: extra activity {xid}", x)
         check_milestone(f"{rel}: extra activity {xid}", x)
+        if xid in {str(d.get("id")) for d in inst.get("open_decisions", [])}: say(f"{rel}: extra activity {xid} has the id of an open decision; give activities their own prefix (docs/conventions.md#client-activities)")
         if not all(isinstance(k, str) and k for k in x.get("tasks", [])): say(f"{rel}: extra activity {xid} tasks must be texts")
         for sid in x.get("refs", []):
             if sid not in step_ids: say(f"{rel}: extra activity {xid} refs unknown step {sid}")
