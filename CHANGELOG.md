@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-11-03
+
 ### Added
 - `open_decisions` in instances: the roadmap lists each open decision with owner, due date, days open and the activities it holds back.
 - `baseline` in instances: committed date per milestone. The roadmap marks it, shows the largest deviation in its summary and can copy the current milestone dates as a baseline.
