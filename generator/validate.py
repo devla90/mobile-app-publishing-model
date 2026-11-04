@@ -157,6 +157,14 @@ for a in files["diagram"]["activities"]:
     for ph in a["phases"]:
         if ph not in phase_ids: say(f"diagram: activity {a['key']} lists unknown phase {ph}")
 
+# A step that exists only with one option of a variant names it in applies_if (docs/conventions.md#stepsjson).
+for s in steps["steps"]:
+    for vid, key in s.get("applies_if", {}).items():
+        v = files["variants"]["items"].get(vid)
+        if v is None: say(f"steps: {s['id']} applies_if names unknown variant {vid}"); continue
+        if key not in [o["key"] for o in v["options"]]: say(f"steps: {s['id']} applies_if names unknown option {vid} {key}")
+        if vid not in s.get("variants", []): say(f"steps: {s['id']} applies_if names {vid}, which is not in its variants")
+
 # Every step belongs to exactly one activity, of a phase and platform that fit it.
 step_by_id = {s["id"]: s for s in steps["steps"]}
 owner_of = {}
@@ -234,6 +242,25 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         for k in x.get("blocks", []):
             if k not in acts: say(f"{rel}: open decision {xid} blocks unknown activity {k}")
         if x.get("platform") and x["platform"] not in targets: say(f"{rel}: open decision {xid} names platform '{x['platform']}', which is not a target")
+    # Steps a client does in another activity of the model (docs/conventions.md#client-activities).
+    plat_of = {a["key"]: a["platform"] for a in files["diagram"]["activities"]}
+    for sid, to in inst.get("step_moves", {}).items():
+        s = step_by_id.get(sid)
+        if not s: say(f"{rel}: step_moves names unknown step {sid}"); continue
+        if to not in plat_of: say(f"{rel}: step_moves sends {sid} to {to}, which is not an activity of the model"); continue
+        if owner_of.get(sid) == to: say(f"{rel}: step_moves sends {sid} to {to}, where it already is")
+        if plat_of[to] != "both" and s["platform"] not in (plat_of[to], "both"): say(f"{rel}: step {sid} is {s['platform']}, but activity {to} is {plat_of[to]}")
+    # Notes the client keeps on an activity, shown on its sheet.
+    for k, ns in inst.get("notes", {}).items():
+        if k not in acts: say(f"{rel}: notes name unknown activity {k}")
+        if not (isinstance(ns, list) and ns and all(isinstance(x, str) and x for x in ns)): say(f"{rel}: notes of {k} must be a list of texts")
+    # Conditional steps that do not apply to this client, each with its reason.
+    for sid, why in inst.get("step_skips", {}).items():
+        s = step_by_id.get(sid)
+        if not s: say(f"{rel}: step_skips names unknown step {sid}"); continue
+        if not (isinstance(why, str) and why): say(f"{rel}: step_skips {sid} needs a reason")
+        if not s.get("note", "").startswith("Condicional"): say(f"{rel}: step {sid} is not conditional in the model, so it cannot be skipped")
+        if sid in inst.get("step_moves", {}): say(f"{rel}: step {sid} is both moved and skipped")
     # Risks: what may still happen, with its severity, owner and mitigation (docs/conventions.md#decisions-areas-and-baseline).
     taken = {x.get("id") for x in inst.get("open_decisions", [])} | {str(x.get("id")) for x in inst.get("extra_activities", [])}
     seen = set()

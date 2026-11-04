@@ -374,7 +374,7 @@
     {
       "id": "S5.2",
       "phase": "S5",
-      "name": "Registrar un App ID por target (T01–T06) y activar capacidades",
+      "name": "Registrar un App ID por target (app principal y cada extensión) y activar capacidades",
       "platform": "ios",
       "owner": "A05 o A09 con acceso",
       "inputs": "Bundle ID",
@@ -384,7 +384,7 @@
         "S5.1"
       ],
       "variants": [],
-      "note": "Se repite por cada target: app principal y extensiones."
+      "note": "Un App ID por cada binario: la app principal y cada extensión (por ejemplo, la extensión de servicio de notificaciones para imágenes o contenido cifrado, o un widget). Las extensiones usan el ID de la app con un sufijo. Las capacidades activadas deben coincidir con las del proyecto o el build no se firma."
     },
     {
       "id": "S5.3",
@@ -428,6 +428,9 @@
       "variants": [
         "V11"
       ],
+      "applies_if": {
+        "V11": "b"
+      },
       "note": "Flujo alternativo: identificador heredado, cambio de Team ID en iOS, upload key del dueño anterior o reset."
     },
     {

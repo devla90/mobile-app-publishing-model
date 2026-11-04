@@ -21,6 +21,7 @@
     "V8": "a",
     "V13": "a",
     "V14": "b",
+    "V11": "a",
     "V15": "a"
   },
   "renewals": {
@@ -83,6 +84,17 @@
       ]
     }
   ],
+  "notes": {
+    "create-developer-accounts": [
+      "El nombre legal de la organización debe escribirse **exactamente como figura en el D-U-N-S**; si no coincide, la verificación de la entidad se detiene."
+    ]
+  },
+  "step_skips": {
+    "S3.5": "La app no se distribuye en la Unión Europea"
+  },
+  "step_moves": {
+    "S1.5": "create-developer-accounts"
+  },
   "risks": [
     {
       "id": "RG1",

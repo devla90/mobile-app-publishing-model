@@ -55,7 +55,7 @@
       "phases": [
         "S1"
       ],
-      "steps": ["S1.3", "S1.4", "S1.5"],
+      "steps": ["S1.3", "S1.5"],
       "duration": {
         "days": 2
       },
@@ -96,10 +96,11 @@
         "de desarrollador"
       ],
       "phases": [
+        "S1",
         "S2",
         "S3"
       ],
-      "steps": ["S2.1", "S2.3", "S2.4", "S2.6", "S3.1", "S3.2"],
+      "steps": ["S1.4", "S2.1", "S2.3", "S2.4", "S2.6", "S3.1", "S3.2"],
       "duration": {
         "days": 2
       },

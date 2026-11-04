@@ -133,6 +133,21 @@ def plan_tests(browser):
     check(page.evaluate("()=>!!(document.querySelector('.rmdetail .gantt').compareDocumentPosition(document.getElementById('rmDecs'))&Node.DOCUMENT_POSITION_FOLLOWING)"), "detail: the schedule should come before the decisions")
     page.locator(".rmfocus [data-gofocus='rmDecs']").first.click()
     check(page.evaluate("()=>document.getElementById('rmDecs').open"), "detail: a decision in the committee block should open its table")
+    # A step moved by the instance shows in its new activity, with a note, and leaves the old one.
+    page.evaluate("()=>openAct('create-developer-accounts')")
+    check("S1.5" in page.inner_text("#detail") and "movido desde la actividad 3" in page.inner_text("#detail"), "step moves: the step should show in its new activity with a note")
+    check(page.locator("#detail .anotes b").count() == 1 and "exactamente como figura" in page.inner_text("#detail .anotes"), "notes: the sheet should show the client's notes with their bold text")
+    # Lanes follow instance.json even when the browser kept an older copy of the client.
+    page.evaluate("()=>{const c=JSON.parse(localStorage.getItem(pageKey('mapm-clients')));c.preset.lanes={...c.preset.lanes,L2:'old'};localStorage.setItem(pageKey('mapm-clients'),JSON.stringify(c))}")
+    page.reload(); check(page.evaluate("()=>cur().lanes.L2")==page.evaluate("()=>PRESET_CLIENT.lanes.L2"), "lanes: a rebuilt page should take the lanes of instance.json")
+    # A conditional step the instance skips leaves the steps and is named with its reason.
+    page.evaluate("()=>openAct('assign-access')")
+    check("S3.5" not in page.inner_text("#detail .asteps") and "No aplican en este cliente" in page.inner_text("#detail"), "step skips: a skipped step should leave the list and be named with its reason")
+    # A step that exists only with another option of a chosen variant (applies_if) leaves the sheet too.
+    page.evaluate("()=>openAct('create-store-app')")
+    check("S5.5" not in page.inner_text("#detail .asteps") and "se eligió V11 a)" in page.inner_text("#detail"), "applies_if: a step of another option should leave the sheet with its reason")
+    page.evaluate("()=>openAct('create-identities')")
+    check("S1.5" not in page.inner_text("#detail .asteps"), "step moves: the step should leave the activity of the model")
     page.evaluate("()=>openAct('verify-entity')")
     check("RG1" in page.inner_text("#detail"), "risks: the activity sheet should list the risks that affect it")
     with page.expect_download() as dl: page.evaluate("()=>downloadInstance()")

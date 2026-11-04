@@ -22,9 +22,10 @@ Perfil regulatorio: PR-<SECTOR>-<PAIS>
 | V8 Push en iOS | a) Clave APNs (token) |
 | V13 Canal de distribución | a) Tiendas públicas (modelado) |
 | V14 Modelo de ejecución tecnológica | b) Un tercero gobernado por TI |
+| V11 Origen de la app | a) App nueva (modelado) |
 | V15 Plataformas objetivo | a) iOS y Android |
 
-Sin elegir: V4, V5, V6, V9, V10, V11, V12
+Sin elegir: V4, V5, V6, V9, V10, V12
 
 ## Alertas de segregación de roles
 Ninguna.
@@ -33,6 +34,22 @@ Ninguna.
 | ID | Decisión | Responsable | Fecha límite | Frena |
 | --- | --- | --- | --- | --- |
 | D1 | Quién custodia el original de las claves | Ciberseguridad | 2026-11-06 | 13 |
+
+## Pasos movidos
+| Paso | En el modelo | En el cliente |
+| --- | --- | --- |
+| S1.5 | 3 | 5 |
+
+## Notas por actividad
+
+**5**
+- El nombre legal de la organización debe escribirse **exactamente como figura en el D-U-N-S**; si no coincide, la verificación de la entidad se detiene.
+
+## Pasos que no aplican
+| Paso | En el modelo | Motivo |
+| --- | --- | --- |
+| S5.5 | 10 | se eligió V11 a) App nueva (modelado) |
+| S3.5 | 7 | La app no se distribuye en la Unión Europea |
 
 ## Riesgos
 | ID | Riesgo | Severidad | Afecta | Responsable |
