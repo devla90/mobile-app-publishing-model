@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-11-04
+
 ### Added
 - `calendar` in instances: working weekdays, holidays with their name and the official source. The roadmap draws each holiday in the schedule, the edit row says whether days are working or calendar days, and `diff.md` lists the calendar. Client activities accept `"calendar": "calendar"`.
 - `notes` in instances: short notes per activity, shown on the activity sheet under "Notas del cliente" (with `**bold**`) and listed in `diff.md`.
