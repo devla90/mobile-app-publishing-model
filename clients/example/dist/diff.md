@@ -34,6 +34,11 @@ Ninguna.
 | --- | --- | --- | --- | --- |
 | D1 | Quién custodia el original de las claves | Ciberseguridad | 2026-11-06 | 13 |
 
+## Riesgos
+| ID | Riesgo | Severidad | Afecta | Responsable |
+| --- | --- | --- | --- | --- |
+| RG1 | La verificación de la entidad tarda más de lo planificado | Media | 6 | Canales Digitales |
+
 ## Decisiones
 | Fecha | Decisión | Responsable | Motivo |
 | --- | --- | --- | --- |

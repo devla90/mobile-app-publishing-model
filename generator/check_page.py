@@ -124,6 +124,17 @@ def plan_tests(browser):
     check(any(r[15] == "D1" for r in rows if r[1].startswith("Custodia")), "csv: an open decision should appear on the activity it holds back")
     # The page hands back the whole instance.json with this browser's plan and a dated entry in plan_log.
     check("Plan actualizado el" in page.inner_text("#roadmap .rmhead"), "plan log: the roadmap should say when the plan was updated")
+    # Open risks show in the committee view and on the sheet of the activity they affect.
+    # The committee block names open decisions and high risks only; the full tables sit in the detail section.
+    check("D1" in page.inner_text(".rmfocus") and "RG1" not in page.inner_text(".rmfocus"), "committee: open decisions and only high risks above the milestones")
+    check(page.locator(".rmdetail #rmRisks").count() == 1 and page.locator(".rmdetail #rmDecs").count() == 1, "committee: the full tables should live in the detail section")
+    # In the detail, the schedule comes first; decisions and risks are folded until opened, for instance from the committee block.
+    check(page.evaluate("()=>!document.getElementById('rmDecs').open&&!document.getElementById('rmRisks').open"), "detail: decisions and risks should start folded")
+    check(page.evaluate("()=>!!(document.querySelector('.rmdetail .gantt').compareDocumentPosition(document.getElementById('rmDecs'))&Node.DOCUMENT_POSITION_FOLLOWING)"), "detail: the schedule should come before the decisions")
+    page.locator(".rmfocus [data-gofocus='rmDecs']").first.click()
+    check(page.evaluate("()=>document.getElementById('rmDecs').open"), "detail: a decision in the committee block should open its table")
+    page.evaluate("()=>openAct('verify-entity')")
+    check("RG1" in page.inner_text("#detail"), "risks: the activity sheet should list the risks that affect it")
     with page.expect_download() as dl: page.evaluate("()=>downloadInstance()")
     got = json.load(open(dl.value.path(), encoding="utf-8")); src = json.loads((ROOT / "clients" / "example" / "instance.json").read_text(encoding="utf-8"))
     plan = page.evaluate("()=>planSrc().plan"); last = got.get("plan_log", [{}])[-1]

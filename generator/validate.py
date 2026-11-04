@@ -234,6 +234,20 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         for k in x.get("blocks", []):
             if k not in acts: say(f"{rel}: open decision {xid} blocks unknown activity {k}")
         if x.get("platform") and x["platform"] not in targets: say(f"{rel}: open decision {xid} names platform '{x['platform']}', which is not a target")
+    # Risks: what may still happen, with its severity, owner and mitigation (docs/conventions.md#decisions-areas-and-baseline).
+    taken = {x.get("id") for x in inst.get("open_decisions", [])} | {str(x.get("id")) for x in inst.get("extra_activities", [])}
+    seen = set()
+    for x in inst.get("risks", []):
+        xid = x.get("id", "?")
+        for f in ("id", "name", "owner", "mitigation"):
+            if not (isinstance(x.get(f), str) and x[f]): say(f"{rel}: risk {xid} needs {f}")
+        if x.get("severity") not in ("high", "medium"): say(f"{rel}: risk {xid} severity must be high or medium")
+        if x.get("status", "open") not in ("open", "closed"): say(f"{rel}: risk {xid} status must be open or closed")
+        for k in x.get("affects", []):
+            if k not in acts: say(f"{rel}: risk {xid} affects unknown activity {k}")
+        if x.get("platform") and x["platform"] not in targets: say(f"{rel}: risk {xid} names platform '{x['platform']}', which is not a target")
+        if xid in taken or xid in seen: say(f"{rel}: risk id {xid} is already used by a decision, an activity or another risk")
+        seen.add(xid)
     # The plan log: one entry per update of the plan, oldest first (docs/conventions.md#plan-updates).
     last = ""
     for i, e in enumerate(inst.get("plan_log", [])):

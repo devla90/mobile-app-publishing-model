@@ -132,6 +132,7 @@ def js_data(m, t, instance=None):
         inst["open"] = instance.get("open_decisions", [])
         inst["baseline"] = instance.get("baseline", {})
         inst["log"] = instance.get("plan_log", [])
+        inst["risks"] = instance.get("risks", [])
         s.append(f'const PRESET_CLIENT={d(inst)};')
         # The whole instance as written, so the page can hand back an updated instance.json (docs/conventions.md#plan-updates).
         s.append(f'const PRESET_RAW={d(instance).replace("</", "<\\/")};')
@@ -394,6 +395,13 @@ def diff_md(m, t, inst):
         num = lambda k: str(m["NUM"].get(k, k))
         for x in inst["open_decisions"]:
             out.append(f'| {x["id"]} | {x["name"]} | {x["owner"]} | {x["due"]} | {", ".join(map(num, x.get("blocks", [])))}{" (" + t["plat_" + x["platform"]] + ")" if x.get("platform") else ""} |')
+    risks = [x for x in inst.get("risks", []) if x.get("status", "open") == "open"]
+    if risks:
+        out.append(""); out.append(f'## {t["rm_risk_h"]}')
+        out.append(f'| ID | {t["rm_risk_h_name"]} | {t["rm_risk_h_sev"]} | {t["rm_risk_h_affects"]} | {t["rm_risk_h_owner"]} |'); out.append("| --- | --- | --- | --- | --- |")
+        num = lambda k: str(m["NUM"].get(k, k))
+        for x in sorted(risks, key=lambda x: x["severity"] != "high"):
+            out.append(f'| {x["id"]} | {x["name"]} | {t["risk_" + x["severity"]]} | {", ".join(map(num, x.get("affects", [])))}{" (" + t["plat_" + x["platform"]] + ")" if x.get("platform") else ""} | {x["owner"]} |')
     if inst.get("decisions"):
         out.append(""); out.append(f'## {t["diff_decisions"]}')
         out.append(f'| {t["diff_h_date"]} | {t["diff_h_decision"]} | {t["diff_h_owner"]} | {t["diff_h_rationale"]} |'); out.append("| --- | --- | --- | --- |")

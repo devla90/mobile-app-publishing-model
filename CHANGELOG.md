@@ -6,7 +6,11 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ### Added
 - "Descargar instance.json": the page downloads the whole instance with the plan edited in the browser, ready to replace the file in the client folder. It replaces the copy of fragments.
+- `risks` in instances: what may still move the plan, with severity (high or medium), owner, mitigation, affected activities and status. Each affected activity shows them on its sheet, and `diff.md` lists them.
 - `plan_log` in instances: one dated entry per update of the plan, with a readable line per change, written by the download. The roadmap shows when the plan was last updated and its history; the CSV records the date.
+
+### Changed
+- The roadmap's committee view replaces the table of open decisions with a block "Para decidir y vigilar": one line per open decision and per high risk. The full tables of decisions and risks move to "Detalle para la gestión", folded after the schedule, which now comes right after the progress.
 
 ## [4.0.0] - 2026-11-03
 

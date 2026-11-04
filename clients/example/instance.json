@@ -83,6 +83,18 @@
       ]
     }
   ],
+  "risks": [
+    {
+      "id": "RG1",
+      "name": "La verificación de la entidad tarda más de lo planificado",
+      "severity": "medium",
+      "owner": "Canales Digitales",
+      "mitigation": "Revisar los datos de registro y la autoridad legal de quien enrola antes de enviar",
+      "affects": [
+        "verify-entity"
+      ]
+    }
+  ],
   "plan_log": [
     {
       "date": "2026-10-30",

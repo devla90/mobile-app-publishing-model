@@ -11,7 +11,7 @@ const PLAT_LABEL={ios:T.plat_ios,android:T.plat_android,both:T.plat_both};
 const pageKey=k=>PRESET_CLIENT?`${k}:${PRESET_CLIENT.name}`:k;
 
 // ---------- Page state
-let st={plat:"all",role:"",lane:"",act:"",actPlat:"",tlFilter:"all",tlEdit:"",rmSlack:false,tlStage:{},phases:[],q:"",onlyVar:false,onlyDoubt:false,sel:"S0.1",view:null,tab:"ov",client:"",version:"",track:"all"};
+let st={rmFold:{},plat:"all",role:"",lane:"",act:"",actPlat:"",tlFilter:"all",tlEdit:"",rmSlack:false,tlStage:{},phases:[],q:"",onlyVar:false,onlyDoubt:false,sel:"S0.1",view:null,tab:"ov",client:"",version:"",track:"all"};
 let rev={};try{rev=JSON.parse(localStorage.getItem(pageKey("mapm-rev"))||"{}")}catch(e){rev={}}
 const save=()=>{try{localStorage.setItem(pageKey("mapm-rev"),JSON.stringify(rev))}catch(e){}};
 try{const h=location.hash.slice(1);if(byId[h])st.sel=h}catch(e){}
@@ -76,7 +76,7 @@ function downloadInstance(){const c=cur();if(!c||!PRESET_RAW)return;const change
   if(last&&last.date===day)last.changes=[...last.changes,...changes.filter(x=>!last.changes.includes(x))];else log.push({date:day,changes});raw.plan_log=log;
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(raw,null,2)+"\n"],{type:"application/json"}));a.download="instance.json";
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast(T.local_downloaded)}
-function loadLocal(){if(PRESET_CLIENT)moveShared();clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(!PRESET_CLIENT){delete clients.preset;Object.values(clients).forEach(c=>{if(c.plan&&c.planV!==PLAN_V){delete c.plan;c.planV=PLAN_V}})}if(PRESET_CLIENT){if(!clients.preset)clients.preset={...PRESET_CLIENT,planBase:PRESET_CLIENT.plan||{},planV:PLAN_V,startBase:PRESET_CLIENT.start||""};else{const p=clients.preset;p.extra=PRESET_CLIENT.extra;p.open=PRESET_CLIENT.open;p.baseline=PRESET_CLIENT.baseline;syncPresetPlan(p);p.variants={...(PRESET_CLIENT.variants||{}),...(p.variants||{})};syncPresetStart(p)}LSW("mapm-clients",clients)}if(PRESET_CLIENT&&!st.client)st.client="preset"}
+function loadLocal(){if(PRESET_CLIENT)moveShared();clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(!PRESET_CLIENT){delete clients.preset;Object.values(clients).forEach(c=>{if(c.plan&&c.planV!==PLAN_V){delete c.plan;c.planV=PLAN_V}})}if(PRESET_CLIENT){if(!clients.preset)clients.preset={...PRESET_CLIENT,planBase:PRESET_CLIENT.plan||{},planV:PLAN_V,startBase:PRESET_CLIENT.start||""};else{const p=clients.preset;p.extra=PRESET_CLIENT.extra;p.open=PRESET_CLIENT.open;p.risks=PRESET_CLIENT.risks;p.baseline=PRESET_CLIENT.baseline;syncPresetPlan(p);p.variants={...(PRESET_CLIENT.variants||{}),...(p.variants||{})};syncPresetStart(p)}LSW("mapm-clients",clients)}if(PRESET_CLIENT&&!st.client)st.client="preset"}
 const uid=()=>Math.random().toString(36).slice(2,10);
 async function putClient(id,data){clients[id]=data;if(db&&canWrite){try{await db.doc("clients/"+id).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-clients",clients)}
 async function putVersion(cid,vid,data){versions[cid]=versions[cid]||{};versions[cid][vid]=data;if(db&&canWrite){try{await db.doc("clients/"+cid+"/versions/"+vid).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-versions",versions)}
@@ -336,12 +336,14 @@ async function resetPlan(){const c=cur();const p=st.client==="preset"&&PRESET_CL
   if(c){const n={...c,plan:p&&p.plan?p.plan:{}};if(p&&p.start)n.start=p.start;await putClient(st.client,n)}else{LSW("mapm-plan2",{});}renderTimeline();renderRoadmap();toast(T.tl_reset_done)}
 
 // ---------- Roadmap (executive view of the same plan)
+// A section of the detail that folds; whether it is open survives re-renders.
+const fold=(id,sum,body)=>`<details class="rmsec rmfold" id="${id}"${st.rmFold[id]?" open":""}><summary>${sum}</summary>${body}</details>`;
 // Date of the last update recorded in plan_log, for the preset client.
 const planUpdated=()=>{const l=st.client==="preset"&&PRESET_CLIENT&&PRESET_CLIENT.log||[];return l.length?l[l.length-1].date:null};
 // History of the plan, newest first: the last ten in view, the rest folded.
 function logBox(fd,s0){const l=st.client==="preset"&&PRESET_CLIENT&&PRESET_CLIENT.log||[];if(!PRESET_RAW||st.client!=="preset")return"";
   const item=e=>`<li><b>${fd(dayOf(s0,e.date))}</b><ul>${e.changes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></li>`;const all=[...l].reverse();
-  return`<div class="rmsec rmlog"><h3>${T.rm_log_h}</h3>${all.length?`<ul>${all.slice(0,10).map(item).join("")}</ul>${all.length>10?`<details><summary>${tf("rm_log_more",{n:all.length-10})}</summary><ul>${all.slice(10).map(item).join("")}</ul></details>`:""}`:`<p class="plain">${T.rm_updated_none}</p>`}</div>`}
+  return fold("rmLog",tf("rm_fold_log",{n:all.length}),`<div class="rmlog">${all.length?`<ul>${all.slice(0,10).map(item).join("")}</ul>${all.length>10?`<details><summary>${tf("rm_log_more",{n:all.length-10})}</summary><ul>${all.slice(10).map(item).join("")}</ul></details>`:""}`:`<p class="plain">${T.rm_updated_none}</p>`}</div>`)}
 // Status is computed against today.
 function renderRoadmap(){
   const el=document.getElementById("roadmap");const src=planSrc();const s0=src.start;const c=cur();
@@ -410,8 +412,19 @@ function renderRoadmap(){
   // Open decisions from instance.json, with what they hold back.
   const numOf=k=>{const a=list.find(x=>x.id===k);return a?a.num:k};
   const decs=((c&&c.open)||[]).filter(x=>!x.platform||!view||view==="all"||x.platform===view).sort((x,y)=>x.due.localeCompare(y.due));
-  const decBox=`<div class="rmsec"><h3>${T.rm_dec_h}</h3>${decs.length?`<div class="rmtabw"><table class="rmtab"><thead><tr><th>${T.rm_dec_h_id}</th><th>${T.rm_dec_h_owner}</th><th>${T.rm_dec_h_due}</th><th>${T.rm_dec_h_open}</th><th>${T.rm_dec_h_blocks}</th></tr></thead><tbody>${decs.map(x=>{const due=dayOf(s0,x.due);const op=today-dayOf(s0,x.opened);
-    return`<tr><td><b>${esc(x.id)}</b> ${esc(x.name)}${x.status?`<small>${esc(x.status)}</small>`:""}</td><td>${esc(x.owner)}</td><td class="${due<today?"over":""}">${fd(due)}<small>${due<today?tf("rm_dec_overdue",{n:today-due}):tf("rm_dec_left",{n:due-today})}</small></td><td>${tf("rm_dec_days",{n:Math.max(0,op)})}</td><td>${(x.blocks||[]).map(numOf).map(esc).join(", ")}${x.platform?`<small>${PLAT_LABEL[x.platform]}</small>`:""}</td></tr>`}).join("")}</tbody></table></div>`:`<p class="plain">${T.rm_dec_none}</p>`}</div>`;
+  const overdue=decs.filter(x=>dayOf(s0,x.due)<today).length;
+  const decBox=fold("rmDecs",tf("rm_fold_decs",{n:decs.length})+(overdue?" · "+tf("rm_fold_overdue",{n:overdue}):""),`${decs.length?`<div class="rmtabw"><table class="rmtab"><thead><tr><th>${T.rm_dec_h_id}</th><th>${T.rm_dec_h_owner}</th><th>${T.rm_dec_h_due}</th><th>${T.rm_dec_h_open}</th><th>${T.rm_dec_h_blocks}</th></tr></thead><tbody>${decs.map(x=>{const due=dayOf(s0,x.due);const op=today-dayOf(s0,x.opened);
+    return`<tr><td><b>${esc(x.id)}</b> ${esc(x.name)}${x.status?`<small>${esc(x.status)}</small>`:""}</td><td>${esc(x.owner)}</td><td class="${due<today?"over":""}">${fd(due)}<small>${due<today?tf("rm_dec_overdue",{n:today-due}):tf("rm_dec_left",{n:due-today})}</small></td><td>${tf("rm_dec_days",{n:Math.max(0,op)})}</td><td>${(x.blocks||[]).map(numOf).map(esc).join(", ")}${x.platform?`<small>${PLAT_LABEL[x.platform]}</small>`:""}</td></tr>`}).join("")}</tbody></table></div>`:`<p class="plain">${T.rm_dec_none}</p>`}`);
+  // Open risks from instance.json: high first, with what they affect and how they are mitigated.
+  const risks=((c&&c.risks)||[]).filter(x=>(x.status||"open")==="open"&&(!x.platform||!view||view==="all"||x.platform===view)).sort((x,y)=>(x.severity!=="high")-(y.severity!=="high"));
+  const nHigh=risks.filter(x=>x.severity==="high").length;
+  const riskBox=risks.length?fold("rmRisks",tf("rm_fold_risks",{n:risks.length})+(nHigh?" · "+tf("rm_fold_high",{n:nHigh}):""),`<div class="rmtabw"><table class="rmtab"><thead><tr><th>${T.rm_risk_h_name}</th><th>${T.rm_risk_h_sev}</th><th>${T.rm_risk_h_affects}</th><th>${T.rm_risk_h_mit}</th><th>${T.rm_risk_h_owner}</th></tr></thead><tbody>${risks.map(x=>`<tr><td><b>${esc(x.id)}</b> ${esc(x.name)}</td><td><span class="tst risk-${x.severity}">${T["risk_"+x.severity]}</span></td><td>${(x.affects||[]).map(numOf).map(esc).join(", ")}${x.platform?`<small>${PLAT_LABEL[x.platform]}</small>`:""}</td><td>${esc(x.mitigation)}</td><td>${esc(x.owner)}</td></tr>`).join("")}</tbody></table></div>`):"";
+  // For the committee: one line per open decision and per high risk; the full tables live in the detail section.
+  const highs=risks.filter(x=>x.severity==="high");
+  const fLine=(go,id,body)=>`<li><button class="plink" type="button" data-gofocus="${go}"><b>${esc(id)}</b></button> ${body}</li>`;
+  const fDec=decs.map(x=>{const due=dayOf(s0,x.due);return fLine("rmDecs",x.id,`${esc(x.name)} <small>· ${esc(x.owner)} · <span class="${due<today?"over":""}">${due<today?tf("rm_dec_overdue",{n:today-due}):tf("rm_focus_due",{d:short(due)})}</span></small>`)}).join("");
+  const fRisk=highs.map(x=>fLine("rmRisks",x.id,`${esc(x.name)} <small>· ${esc(x.owner)}</small>`)).join("");
+  const focusBox=fDec||fRisk?`<div class="rmsec rmfocus"><h3>${T.rm_focus_h}</h3>${fDec?`<h4>${T.rm_focus_decide}</h4><ul>${fDec}</ul>`:""}${fRisk?`<h4>${T.rm_focus_watch}</h4><ul>${fRisk}</ul>`:""}</div>`:"";
   // By area: what each lane has open now, in the next two weeks, late and blocked.
   const areas=[...new Set(work.map(a=>a.lane))].map(l=>{const acts=work.filter(a=>a.lane===l&&!a.done);const ids=f=>acts.filter(f).map(a=>esc(a.num)).join(", ");
     return{l,now:ids(a=>r[a.id].s<=today&&r[a.id].e>=today),next:ids(a=>r[a.id].s>today&&r[a.id].s<=today+14),late:ids(a=>status(a)==="late"),blk:ids(a=>blocked.includes(a))}}).filter(x=>x.now||x.next||x.late||x.blk);
@@ -428,14 +441,14 @@ function renderRoadmap(){
       let gap="";if(gate){const[a,b]=targets().map(p=>gate.ready[p]);const n=Math.abs(a-b);const[p,q]=a<b?targets():[...targets()].reverse();gap=n?tf("rm_gap",{a:esc(gname.num+" · "+gname.name),p:PLAT_LABEL[p],q:PLAT_LABEL[q],n}):tf("rm_gap_none",{a:esc(gname.num+" · "+gname.name)})}
       trackBox=`<div class="rmtrack"><h3>${T.rm_track_h}</h3>${trows}${gap?`<p class="plain">${gap}</p>`:""}<p class="plain">${T.rm_joint_note}</p></div>`}}
   const msGantt=mls.length?`<div class="rmsec"><h3>${T.rm_milestones}</h3><div class="gantt msg"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div><div></div></div>${msRows}</div></div><div class="rmleg"><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_leg_ms}</span>${multi&&view==="all"?`<span>${T.rm_leg_ms_pl}</span>`:""}<span>${T.rm_leg_ms_open}</span><span><i style="border-left:2px dotted var(--muted);width:0;height:12px"></i>${T.rm_base_mark}</span></div></div>`:"";
-  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}${PRESET_RAW&&st.client==="preset"?" · "+(planUpdated()?tf("rm_updated",{d:fd(dayOf(s0,planUpdated()))}):T.rm_updated_none):""}</div></div><div><button class="btn" type="button" data-csv="start">${T.csv_export}</button> ${c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${decBox}${msGantt}
+  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}${PRESET_RAW&&st.client==="preset"?" · "+(planUpdated()?tf("rm_updated",{d:fd(dayOf(s0,planUpdated()))}):T.rm_updated_none):""}</div></div><div><button class="btn" type="button" data-csv="start">${T.csv_export}</button> ${c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${focusBox}${msGantt}
   <details class="rmdetail"${st.rmOpen?" open":""}><summary>${T.rm_detail}</summary>${trackBox}
   <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi late"><small>${T.rm_moved}</small><b>${moved.length}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(end)}</b><span>${tf("rm_left",{n:left})}</span></div></div>
   <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
-  ${areaBox}
   <div class="rmgtools"><button class="btn" type="button" id="rmSlack" aria-pressed="${!!st.rmSlack}">${st.rmSlack?T.rm_slack_hide:T.rm_slack_show}</button></div>
   <div class="gantt"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div></div>${rows}</div></div>
   <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span>${Object.keys(base).length?`<span><i class="gbl" style="position:static;display:inline-block;width:14px"></i>${T.rm_base_bar}</span>`:""}${st.rmSlack?`<span><i class="gslack" style="position:static;display:inline-block;width:14px;height:10px"></i>${T.rm_leg_slack}</span>`:""}${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
+  ${decBox}${riskBox}${areaBox}
   <div class="rmcols"><div><h3>${T.rm_list_ms}</h3>${li(nextPts.slice(0,5),({a,p})=>`<li><b>◆</b> ${esc(msLab(a,p))} <small>${fd(p.q.e)} · ${T["rm_ms_"+a.ms.type]}</small></li>`)}</div><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_late}</h3>${li(late,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
@@ -570,6 +583,8 @@ function renderActSheet(key){
   const blk=Object.entries(a.plats||{}).filter(([p,q])=>q.blocked&&!a.done&&(!st.actPlat||p===st.actPlat)).map(([p,q])=>`<span>${PLAT_LABEL[p]}: ${esc(q.blocked)}</span>`).join("");
   const c=cur();const decs=((c&&c.open)||[]).filter(d=>(d.blocks||[]).includes(key)||d.id===key);
   const dec=decs.map(d=>`<span><b>${esc(d.id)}</b> ${esc(d.name)} · ${esc(d.owner)} · ${T.rm_dec_h_due.toLowerCase()} ${fd(dayOf(src.start,d.due))}${d.status?` <small>${esc(d.status)}</small>`:""}</span>`).join("");
+  const rks=((c&&c.risks)||[]).filter(r=>(r.status||"open")==="open"&&(r.affects||[]).includes(key)&&(!st.actPlat||!r.platform||r.platform===st.actPlat));
+  const rk=rks.map(r=>`<span><span class="tst risk-${r.severity}">${T["risk_"+r.severity]}</span> <b>${esc(r.id)}</b> ${esc(r.name)}${r.platform?` · ${PLAT_LABEL[r.platform]}`:""} · ${esc(r.owner)}<small class="amit">${esc(r.mitigation)}</small></span>`).join("");
   const tabs=ps.length>1?`<div class="seg" role="group" aria-label="${T.rm_view}">${[["",T.act_all],...ps.map(p=>[p,PLAT_LABEL[p]])].map(([k,l])=>`<button type="button" data-actplat="${k}" aria-pressed="${st.actPlat===k}">${l}</button>`).join("")}</div>`:"";
   // Previous steps link to their detail; those of another activity say which one.
   const actNum=sid=>{const k=ACT.findIndex(x=>x[9].includes(sid));return k<0?"":String(k+1)};
@@ -579,7 +594,7 @@ function renderActSheet(key){
     <dl class="ameta"><dt>${T.step_who}</dt><dd>${esc(roleIds(s).map(r=>A[r]).join(", "))}</dd><dt>${T.act_needs}</dt><dd class="aneeds">${need}</dd></dl></li>`}).join("");
   const refs=actRefs(key).filter(id=>!st.actPlat||byId[id].plat==="both"||byId[id].plat===st.actPlat);
   const tasks=(x&&x.tasks)||[];
-  const info=`<dl class="ameta asum">${when?`<dt>${T.act_when}</dt><dd>${when}</dd>`:""}${blk?`<dt>${T.rm_blocked}</dt><dd class="aneeds ablk">${blk}</dd>`:""}${dec?`<dt>${T.act_decisions}</dt><dd class="aneeds">${dec}</dd>`:""}</dl>`;
+  const info=`<dl class="ameta asum">${when?`<dt>${T.act_when}</dt><dd>${when}</dd>`:""}${blk?`<dt>${T.rm_blocked}</dt><dd class="aneeds ablk">${blk}</dd>`:""}${dec?`<dt>${T.act_decisions}</dt><dd class="aneeds">${dec}</dd>`:""}${rk?`<dt>${T.act_risks}</dt><dd class="aneeds">${rk}</dd>`:""}</dl>`;
   detail.innerHTML=`<div class="crumbline"><span>${esc(tf("act_filter",{n:a.num}))}</span><span class="sep">·</span><span>${esc(laneLabel(a.lane))}</span>${a.extra?`<span class="sep">·</span><span>${T.tl_extra}</span>`:""}<span class="pos">${ids.length?tf("tl_steps",{n:ids.length}):""}</span></div><h2>${esc(a.name)}</h2>${tabs}${info}
   ${tasks.length?`<h3 class="ah3">${T.act_tasks}</h3><ul class="atasks">${tasks.map(k=>`<li>${esc(k)}</li>`).join("")}</ul>`:""}
   ${ids.length?`<h3 class="ah3">${T.act_steps}</h3><ol class="asteps">${items}</ol>`:""}
@@ -617,10 +632,11 @@ ms.addEventListener("change",async e=>{const n=e.target.closest("[data-note]");i
 instBox.addEventListener("click",e=>{if(e.target.closest("#saveInst"))saveInst();if(e.target.closest("#goNew"))newClient()});
 renlist.addEventListener("change",e=>{const i=e.target.closest("[data-ren]");if(i)setRen(i.dataset.ren,i.value)});
 document.getElementById("timeline").addEventListener("change",onPlanChange);
-document.getElementById("roadmap").addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches(".rmdetail"))st.rmOpen=e.target.open},true);
+document.getElementById("roadmap").addEventListener("toggle",e=>{if(!e.target.matches)return;if(e.target.matches(".rmdetail"))st.rmOpen=e.target.open;if(e.target.matches(".rmfold"))st.rmFold[e.target.id]=e.target.open},true);
 document.getElementById("roadmap").addEventListener("click",e=>{if(onCsv(e))return;onLocal(e);if(e.target.id==="rmSlack"){st.rmSlack=!st.rmSlack;LSW("mapm-rmslack",st.rmSlack);renderRoadmap();return}if(e.target.id==="rmPrint"){setTab("rm");const dt=document.querySelector(".rmdetail");if(dt)dt.open=true;window.print()}
   if(e.target.id==="rmBase"){const txt=e.target.dataset.json;const show=()=>{const ta=document.getElementById("rmBaseTxt");ta.hidden=false;ta.value=txt;ta.select()};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>toast(T.rm_base_copied),show);else show()}const b=e.target.closest("[data-track]");if(b){st.track=b.dataset.track;renderRoadmap()}
   // A milestone leads to its activity in the schedule, on the same tab; the schedule row opens the steps.
+  const gf=e.target.closest("[data-gofocus]");if(gf){st.rmOpen=true;st.rmFold[gf.dataset.gofocus]=true;renderRoadmap();const box=document.getElementById(gf.dataset.gofocus);if(box)box.scrollIntoView({behavior:"smooth",block:"start"});return}
   const gm=e.target.closest("[data-gomsact]");if(gm){st.rmOpen=true;renderRoadmap();const row=document.querySelector(`.rmdetail .grow[data-act="${CSS.escape(gm.dataset.gomsact)}"]`);
     if(row){row.scrollIntoView({block:"center",behavior:"smooth"});row.classList.add("flash");setTimeout(()=>row.classList.remove("flash"),2400)}return}
   const o=e.target.closest("[data-openact]");if(o)openAct(o.dataset.openact)});

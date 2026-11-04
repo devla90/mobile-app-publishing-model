@@ -136,12 +136,13 @@ Same shape as a partial instance plus a list of controls. Name it by the axes th
   "extra_activities": [ { "id": "X1", "name": "<client-only activity>", "lane": "L1", "days": 10, "after": ["<key>"],
                           "tasks": ["<what has to be done>"], "refs": ["<model step it relates to>"] } ],
   "open_decisions": [ { "id": "D1", "name": "<pending decision>", "owner": "<team>", "opened": "<date>", "due": "<date>", "blocks": ["<key>"] } ],
+  "risks": [ { "id": "RG1", "name": "<what may happen>", "severity": "high", "owner": "<team>", "mitigation": "<what is done>", "affects": ["<key>"] } ],
   "plan_log": [ { "date": "<YYYY-MM-DD>", "changes": ["<what changed in the plan>"] } ],
   "baseline": { "<key>": { "start": "<committed YYYY-MM-DD>", "end": "<committed YYYY-MM-DD>" } }
 }
 ```
 
-`plan` overrides days, marks what is done and records postponements (`end`, with the `reason` they moved); `open_decisions` are what holds the plan back; `baseline` is set once, when the plan is approved, with the committed start and end of each activity, and measures the deviation. `plan_log` is the history of the plan, one dated entry per update.
+`plan` overrides days, marks what is done and records postponements (`end`, with the `reason` they moved); `open_decisions` are what holds the plan back; `baseline` is set once, when the plan is approved, with the committed start and end of each activity, and measures the deviation. `plan_log` is the history of the plan, one dated entry per update. `risks` are what may still move the plan, each with an owner and a mitigation.
 
 Lanes with no real owner keep the base's generic name. No personal names: areas or companies only.
 
