@@ -37,6 +37,7 @@ Why the model is the way it is. One row per decision, newest last.
 | 31 | 2026-11-03 | Slack goes into the CSV and, in the schedule, behind a button that shows and hides it, off by default | It matters for analysis, not for the daily status; always visible, it would crowd the view shown to committees |
 | 32 | 2026-11-03 | Each postponement carries a reason: one of six neutral categories and an optional note, next to the end it explains | Without a reason the roadmap could count postponements but not explain them. Categories can be counted across activities and clients; free text alone cannot |
 | 33 | 2026-11-03 | No weekly snapshots of the plan | A publication is a project of a few months with a clear end. Baseline against current dates, postponements with their reason, open decisions and the dated CSV already answer what moved and why. A weekly manual step tends to be abandoned and leaves a misleading chart. Revisit for a long programme or a portfolio of apps |
+| 34 | 2026-11-03 | A client's plan lives only in its `instance.json`. The page edits it and downloads the whole updated file, adding a dated entry to `plan_log` with one line per change; it records what and when, not who | One person updates the plan and presents it, and client data may not leave the client's storage, so a shared database (the Claude artifact) or a hosted repository is not an option. Downloading the whole file removes the manual copy of fragments that lost changes, and the log travels with the file |
 
 ## Decisions still open
 

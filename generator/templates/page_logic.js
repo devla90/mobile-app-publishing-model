@@ -42,12 +42,40 @@ function localDiff(){const c=cur();if(st.client!=="preset"||!c||!PRESET_CLIENT)r
   const acts=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>JSON.stringify(a[k])!==JSON.stringify(b[k]));const start=(c.start||"")!==(PRESET_CLIENT.start||"");
   return acts.length||start?{acts,start}:null}
 function localBanner(){const d=localDiff();if(!d)return"";const parts=[d.start?T.local_start:"",d.acts.length?(d.acts.length===1?T.local_act_one:tf("local_acts",{n:d.acts.length})):""].filter(Boolean).join(" · ");
-  return`<div class="localbar"><span>${tf("local_changes",{what:esc(parts)})}</span><button class="btn" type="button" data-local="copy">${T.local_copy}</button><button class="btn" type="button" data-local="discard">${T.local_discard}</button><textarea class="localjson" readonly hidden></textarea></div>`}
+  return`<div class="localbar"><span>${tf("local_changes",{what:esc(parts)})}</span><button class="btn" type="button" data-local="download">${T.local_download}</button><button class="btn" type="button" data-local="discard">${T.local_discard}</button></div>`}
 async function onLocal(e){const b=e.target.closest("[data-local]");if(!b)return;
   if(b.dataset.local==="discard"){resetPlan();return}
-  const c=cur();const txt=JSON.stringify({start_date:c.start||undefined,plan:c.plan||{}},null,2).replace(/^\{\n|\n\}$/g,"");
-  const show=()=>{const ta=b.parentNode.querySelector(".localjson");ta.hidden=false;ta.value=txt;ta.select()};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>toast(T.local_copied),show);else show()}
+  downloadInstance()}
+// What changed in the plan against instance.json, one readable line per activity (and platform when they differ).
+function planChanges(){const c=cur();if(!c||!PRESET_CLIENT)return[];const d=localDiff();if(!d)return[];const out=[];
+  const fdt=iso=>iso===true||!iso?T.log_at_start:new Date(iso+"T00:00:00").toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"});
+  if(d.start)out.push(tf("log_start",{a:fdt(PRESET_CLIENT.start||""),b:fdt(c.start||"")}));
+  const acts=planActs({start:c.start||"",plan:{},extra:c.extra||[]},true,true);const was=PRESET_CLIENT.plan||{},now=c.plan||{};
+  // The values that apply to one platform: its own entry over the activity's.
+  const eff=(o,p)=>{const q=p?((o.platforms||{})[p]||{}):{};return{done:q.done??o.done??null,end:q.end??o.end??null,reason:(q.end?q.reason:o.reason)||null,days:q.days??o.days??null,blocked:q.blocked||null}};
+  const parts=(o,n,def)=>{const r=[];
+    if(JSON.stringify(o.done)!==JSON.stringify(n.done))r.push(n.done?tf("log_done",{d:fdt(n.done)}):T.log_undone);
+    if(o.end!==n.end)r.push(n.end?(o.end?tf("log_end",{a:fdt(o.end),b:fdt(n.end)}):tf("log_end_new",{b:fdt(n.end)})):T.log_end_off);
+    if(n.end&&JSON.stringify(o.reason)!==JSON.stringify(n.reason)&&n.reason)r.push(tf("log_reason",{r:reasonTxt([n.reason])}));
+    if(o.days!==n.days)r.push(tf("log_days",{a:o.days??def,b:n.days??def}));
+    if(o.blocked!==n.blocked)r.push(n.blocked?tf("log_blocked",{b:n.blocked}):T.log_unblocked);return r};
+  d.acts.forEach(k=>{const a=acts.find(x=>x.id===k);if(!a)return;const o=was[k]||{},n=now[k]||{};const head=a.num===a.id?a.id+" "+a.name:a.num+" "+a.name;const lines=[];
+    if(JSON.stringify(o.after||null)!==JSON.stringify(n.after||null))lines.push(tf("log_after",{l:(n.after||a.after).join(", ")}));
+    const plats=o.platforms||n.platforms?targets().filter(p=>a.plat==="both"||a.plat===p):[null];
+    const per=plats.map(p=>({p,r:parts(eff(o,p),eff(n,p),a.days)})).filter(x=>x.r.length);
+    if(per.length>1&&per.every(x=>JSON.stringify(x.r)===JSON.stringify(per[0].r)))lines.push(per[0].r.join("; "));
+    else per.forEach(x=>lines.push((x.p?PLAT_LABEL[x.p]+": ":"")+x.r.join("; ")));
+    lines.forEach(l=>out.push(head+" · "+l))});
+  return out}
+// The whole instance.json with this browser's plan and a new entry in plan_log: it replaces the file in the client folder.
+function downloadInstance(){const c=cur();if(!c||!PRESET_RAW)return;const changes=planChanges();if(!changes.length){toast(T.local_nothing);return}
+  const raw=JSON.parse(JSON.stringify(PRESET_RAW));if(c.start)raw.start_date=c.start;else delete raw.start_date;
+  if(Object.keys(c.plan||{}).length)raw.plan=c.plan;else delete raw.plan;
+  // Several downloads on one day add to that day's entry.
+  const day=todayISO();const log=raw.plan_log||[];const last=log[log.length-1];
+  if(last&&last.date===day)last.changes=[...last.changes,...changes.filter(x=>!last.changes.includes(x))];else log.push({date:day,changes});raw.plan_log=log;
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(raw,null,2)+"\n"],{type:"application/json"}));a.download="instance.json";
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast(T.local_downloaded)}
 function loadLocal(){if(PRESET_CLIENT)moveShared();clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(!PRESET_CLIENT){delete clients.preset;Object.values(clients).forEach(c=>{if(c.plan&&c.planV!==PLAN_V){delete c.plan;c.planV=PLAN_V}})}if(PRESET_CLIENT){if(!clients.preset)clients.preset={...PRESET_CLIENT,planBase:PRESET_CLIENT.plan||{},planV:PLAN_V,startBase:PRESET_CLIENT.start||""};else{const p=clients.preset;p.extra=PRESET_CLIENT.extra;p.open=PRESET_CLIENT.open;p.baseline=PRESET_CLIENT.baseline;syncPresetPlan(p);p.variants={...(PRESET_CLIENT.variants||{}),...(p.variants||{})};syncPresetStart(p)}LSW("mapm-clients",clients)}if(PRESET_CLIENT&&!st.client)st.client="preset"}
 const uid=()=>Math.random().toString(36).slice(2,10);
 async function putClient(id,data){clients[id]=data;if(db&&canWrite){try{await db.doc("clients/"+id).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-clients",clients)}
@@ -259,7 +287,7 @@ function exportCsv(official){
       a.cont?"":iso(refE),a.cont?"":q.e-refE,bl?T.csv_ref_base:T.csv_ref_plan,a.ms?a.ms.name:"",blk,decs.filter(d=>((d.blocks||[]).includes(a.id)||d.id===a.id)&&(!d.platform||!n.track||d.platform===n.track)).map(d=>d.id).join(" "),
       n.end&&!done?q.e-((v.same&&v.same[n.id])||b).e:0,rs?T["reason_"+rs.type]:"",rs&&rs.note||"",q.crit?T.csv_yes:"",q.slack??"",a.steps.join(" ")])}));
   const head=["csv_h_num","csv_h_act","csv_h_stage","csv_h_owner","csv_h_plat","csv_h_start","csv_h_end","csv_h_status","csv_h_real","csv_h_expected","csv_h_ref_end","csv_h_dev","csv_h_ref","csv_h_ms","csv_h_block","csv_h_dec","csv_h_moved","csv_h_reason","csv_h_reason_note","csv_h_crit","csv_h_slack","csv_h_steps"].map(k=>T[k]);
-  const meta=[[T.csv_client,c?c.name:T.client_base_option],[T.csv_generated,todayIso],[T.csv_start,s0],[T.csv_source,local?T.csv_src_local:T.csv_src_official],[T.csv_baseline,Object.keys(base).length?T.csv_ref_base:T.csv_ref_plan],[]];
+  const meta=[[T.csv_client,c?c.name:T.client_base_option],[T.csv_generated,todayIso],[T.csv_start,s0],[T.csv_source,local?T.csv_src_local:T.csv_src_official],[T.csv_baseline,Object.keys(base).length?T.csv_ref_base:T.csv_ref_plan],[T.csv_updated,planUpdated()||""],[]];
   const cell=x=>{const s=String(x??"");return/[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
   // Semicolons and a BOM so Excel in Spanish opens it in columns with accents intact.
   const csv="\ufeff"+[...meta,head,...rows].map(r=>r.map(cell).join(";")).join("\r\n");
@@ -308,6 +336,12 @@ async function resetPlan(){const c=cur();const p=st.client==="preset"&&PRESET_CL
   if(c){const n={...c,plan:p&&p.plan?p.plan:{}};if(p&&p.start)n.start=p.start;await putClient(st.client,n)}else{LSW("mapm-plan2",{});}renderTimeline();renderRoadmap();toast(T.tl_reset_done)}
 
 // ---------- Roadmap (executive view of the same plan)
+// Date of the last update recorded in plan_log, for the preset client.
+const planUpdated=()=>{const l=st.client==="preset"&&PRESET_CLIENT&&PRESET_CLIENT.log||[];return l.length?l[l.length-1].date:null};
+// History of the plan, newest first: the last ten in view, the rest folded.
+function logBox(fd,s0){const l=st.client==="preset"&&PRESET_CLIENT&&PRESET_CLIENT.log||[];if(!PRESET_RAW||st.client!=="preset")return"";
+  const item=e=>`<li><b>${fd(dayOf(s0,e.date))}</b><ul>${e.changes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></li>`;const all=[...l].reverse();
+  return`<div class="rmsec rmlog"><h3>${T.rm_log_h}</h3>${all.length?`<ul>${all.slice(0,10).map(item).join("")}</ul>${all.length>10?`<details><summary>${tf("rm_log_more",{n:all.length-10})}</summary><ul>${all.slice(10).map(item).join("")}</ul></details>`:""}`:`<p class="plain">${T.rm_updated_none}</p>`}</div>`}
 // Status is computed against today.
 function renderRoadmap(){
   const el=document.getElementById("roadmap");const src=planSrc();const s0=src.start;const c=cur();
@@ -394,7 +428,7 @@ function renderRoadmap(){
       let gap="";if(gate){const[a,b]=targets().map(p=>gate.ready[p]);const n=Math.abs(a-b);const[p,q]=a<b?targets():[...targets()].reverse();gap=n?tf("rm_gap",{a:esc(gname.num+" · "+gname.name),p:PLAT_LABEL[p],q:PLAT_LABEL[q],n}):tf("rm_gap_none",{a:esc(gname.num+" · "+gname.name)})}
       trackBox=`<div class="rmtrack"><h3>${T.rm_track_h}</h3>${trows}${gap?`<p class="plain">${gap}</p>`:""}<p class="plain">${T.rm_joint_note}</p></div>`}}
   const msGantt=mls.length?`<div class="rmsec"><h3>${T.rm_milestones}</h3><div class="gantt msg"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div><div></div></div>${msRows}</div></div><div class="rmleg"><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_leg_ms}</span>${multi&&view==="all"?`<span>${T.rm_leg_ms_pl}</span>`:""}<span>${T.rm_leg_ms_open}</span><span><i style="border-left:2px dotted var(--muted);width:0;height:12px"></i>${T.rm_base_mark}</span></div></div>`:"";
-  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}</div></div><div><button class="btn" type="button" data-csv="start">${T.csv_export}</button> ${c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${decBox}${msGantt}
+  el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}${PRESET_RAW&&st.client==="preset"?" · "+(planUpdated()?tf("rm_updated",{d:fd(dayOf(s0,planUpdated()))}):T.rm_updated_none):""}</div></div><div><button class="btn" type="button" data-csv="start">${T.csv_export}</button> ${c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${decBox}${msGantt}
   <details class="rmdetail"${st.rmOpen?" open":""}><summary>${T.rm_detail}</summary>${trackBox}
   <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi late"><small>${T.rm_moved}</small><b>${moved.length}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(end)}</b><span>${tf("rm_left",{n:left})}</span></div></div>
   <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
@@ -405,7 +439,7 @@ function renderRoadmap(){
   <div class="rmcols"><div><h3>${T.rm_list_ms}</h3>${li(nextPts.slice(0,5),({a,p})=>`<li><b>◆</b> ${esc(msLab(a,p))} <small>${fd(p.q.e)} · ${T["rm_ms_"+a.ms.type]}</small></li>`)}</div><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_late}</h3>${li(late,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
-  <div><h3>${T.rm_list_moved}</h3>${li(moved,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("tl_moved",{n:a.moved})} · ${fd(r[a.id].e)}${a.reasons.length?" · "+esc(reasonTxt(a.reasons)):""}</small></li>`)}</div></div></details>`;
+  <div><h3>${T.rm_list_moved}</h3>${li(moved,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("tl_moved",{n:a.moved})} · ${fd(r[a.id].e)}${a.reasons.length?" · "+esc(reasonTxt(a.reasons)):""}</small></li>`)}</div></div>${logBox(fd,s0)}</details>`;
 }
 
 // ---------- Track a version (milestones)

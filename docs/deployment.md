@@ -67,7 +67,7 @@ ln -s ../../<client>-private/clients/<id> clients/<id>
 python3 generator/validate.py && python3 generator/build.py --no-png
 ```
 
-Edits made through the link land in the private repository; commit them there. The build writes the client's output into the same folder, `clients/<id>/dist/` (`index.html`, `swimlanes.svg`, `swimlanes-<id>.drawio`, `swimlanes.png`, `diff.md`), so it also lands in the private repository: one folder holds everything for the client and can be shared as is.
+Edits made through the link land in the private repository; commit them there. To update a client's plan, edit it on its page, use "Descargar instance.json", replace the file in the client folder and rebuild; the change is recorded in `plan_log` (`docs/conventions.md#plan-updates`). A client folder kept in a corporate cloud instead of a repository works the same way: the cloud keeps the file versions and `plan_log` the readable history. The build writes the client's output into the same folder, `clients/<id>/dist/` (`index.html`, `swimlanes.svg`, `swimlanes-<id>.drawio`, `swimlanes.png`, `diff.md`), so it also lands in the private repository: one folder holds everything for the client and can be shared as is.
 
 `generator/validate.py` fails if any file under `clients/` other than `clients/example/` is in the git index (and if anything is left under the old `dist/clients/` or `dist/diff-*.md`), so a forced `git add -f` is caught before the commit and in CI. Before pushing to a public remote, `git status --ignored` should list each real instance as ignored (`!!`).
 

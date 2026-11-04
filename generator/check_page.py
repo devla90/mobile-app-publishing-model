@@ -14,7 +14,7 @@ the local date. On a machine where downloading Chromium is blocked, CHECK_PAGE_B
 installed; without playwright the browser checks are skipped and only the static ones run.
 Exit code 1 on any problem.
 """
-import csv, datetime as dt, io, json, os, re, sys
+import csv, datetime as dt, io, json, os, re, shutil, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -122,6 +122,21 @@ def plan_tests(browser):
     row = next((r for r in rows if r[1].startswith("Crea la app") and r[4] == "Android"), None)
     check(meta.get("Origen", "").startswith("Plan oficial") and row and row[16] == "0", f"csv: the official export should ignore local changes ({meta}, {row})")
     check(any(r[15] == "D1" for r in rows if r[1].startswith("Custodia")), "csv: an open decision should appear on the activity it holds back")
+    # The page hands back the whole instance.json with this browser's plan and a dated entry in plan_log.
+    check("Plan actualizado el" in page.inner_text("#roadmap .rmhead"), "plan log: the roadmap should say when the plan was updated")
+    with page.expect_download() as dl: page.evaluate("()=>downloadInstance()")
+    got = json.load(open(dl.value.path(), encoding="utf-8")); src = json.loads((ROOT / "clients" / "example" / "instance.json").read_text(encoding="utf-8"))
+    plan = page.evaluate("()=>planSrc().plan"); last = got.get("plan_log", [{}])[-1]
+    check(got.get("plan") == plan and all(got.get(k) == v for k, v in src.items() if k not in ("plan", "plan_log")), "download: only plan and plan_log should change")
+    check(last.get("date") == "2026-11-20" and any("Bloqueo externo" in x for x in last.get("changes", [])) and len(got["plan_log"]) == len(src["plan_log"]) + 1,
+          f"download: plan_log should get today's entry with the reason ({last})")
+    tmp = ROOT / "clients" / "zz-check-download"; tmp.mkdir(exist_ok=True)
+    try:
+        (tmp / "instance.json").write_text(json.dumps(got, ensure_ascii=False, indent=2), encoding="utf-8")
+        out = subprocess.run([sys.executable, str(ROOT / "generator" / "validate.py")], capture_output=True, text=True)
+        check(out.returncode == 0, f"download: the instance should pass validate.py ({out.stdout.strip()[-300:]})")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
     fail += [f"page error: {e}" for e in errors]; ctx.close()
     # Expected progress uses the committed start: changing the duration later must not move it (2–8 Nov, day 3 of 6).
     ctx, page, errors = page_at(dt.datetime(2026, 11, 5, 10, 0, tzinfo=LIMA))
