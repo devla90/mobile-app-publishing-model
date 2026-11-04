@@ -43,15 +43,16 @@ def check_dates(where, o):
     if d is not None and d is not True:
         try: date.fromisoformat(str(d))
         except ValueError: say(f"{where} done must be true or a YYYY-MM-DD date")
-    if "end" in o:
-        try: date.fromisoformat(str(o["end"]))
-        except ValueError: say(f"{where} end must be a YYYY-MM-DD date")
+    for k in ("end", "start"):
+        if k in o:
+            try: date.fromisoformat(str(o[k]))
+            except ValueError: say(f"{where} {k} must be a YYYY-MM-DD date")
     if "days" in o and not (isinstance(o["days"], int) and o["days"] >= 0): say(f"{where} days must be a whole number >= 0")
     if "min" in o or "max" in o: say(f"{where} uses min and max; activities now have one duration, `days` (docs/conventions.md#durations-and-the-timeline)")
     # The reason explains a postponement, so it lives next to the end it explains (docs/conventions.md#postponements).
     if "reason" in o:
         r = o["reason"]
-        if "end" not in o: say(f"{where} reason needs an end date in the same entry")
+        if "end" not in o and "start" not in o: say(f"{where} reason needs a start or an end date in the same entry")
         if not isinstance(r, dict) or r.get("type") not in REASONS:
             say(f"{where} reason must be {{\"type\": one of {', '.join(REASONS)}, \"note\": text}}")
         elif "note" in r and not (isinstance(r["note"], str) and r["note"]): say(f"{where} reason note must be a text")

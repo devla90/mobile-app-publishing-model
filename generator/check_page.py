@@ -92,6 +92,9 @@ def plan_tests(browser):
         weekend:v.nodes.filter(n=>!n.cont&&!n.done&&n.cal!=="calendar").some(n=>{const d=new Date(iso(v.raw[n.id].s)+"T00:00:00").getDay();return d===0||d===6})}}""")
     check(cal["after"] == "2026-12-28" and cal["sat"] is False, f"calendar: holidays and weekends should be skipped ({cal})")
     check(cal["store"] == 13 and cal["weekend"] is False, f"calendar: store activities count every day and working ones never start on a weekend ({cal})")
+    # Durations show in the list without opening the edit row, and the CSV has them with their kind of days.
+    tl = page.text_content("#timeline") or ""
+    check("días lab." in tl and "13 días corridos" in tl, "duration: the list should show working and calendar days")
     page.evaluate("()=>{st.tlEdit='prepare-listing';renderTimeline()}")
     check("Días laborables" in (page.text_content("#timeline .pedit") or ""), "calendar: the edit row should say the days are working days")
     check(all(sl == 0 for c, sl in v["slack"] if c) and any(sl > 0 for c, sl in v["slack"] if not c), f"slack: critical activities should have 0 and some others more ({v['slack']})")
@@ -120,17 +123,17 @@ def plan_tests(browser):
     check(shown > 0 and page.locator(".gslack").count() == 0, f"slack: the toggle should show and hide it ({shown})")
     # CSV: one row per activity and platform; the official export ignores the browser changes.
     meta, head, rows = export(page, official=False)
-    check(len(head) == 22 and len(rows) == v["nodes"], f"csv: expected 22 columns and {v['nodes']} rows, got {len(head)} and {len(rows)}")
+    check(len(head) == 24 and len(rows) == v["nodes"], f"csv: expected 24 columns and {v['nodes']} rows, got {len(head)} and {len(rows)}")
     row = next((r for r in rows if r[1].startswith("Crea la app") and r[4] == "Android"), None)
     # Postponed by hand 10 days, on top of what the overdue first activity already pushed: the deviation counts both.
-    check(row and row[16] == "10" and int(row[11]) > 10, f"csv: the postponed row should show 10 days moved by hand and a larger deviation ({row})")
-    check(row and row[17] == "Bloqueo externo" and row[18] == "Tienda en revisión", f"csv: the postponed row should carry its reason ({row})")
-    check(all(r[20].isdigit() for r in rows if r[7] not in ("Hecha", "Continua")), "csv: every pending row should have its slack")
+    check(row and row[18] == "10" and int(row[13]) > 10, f"csv: the postponed row should show 10 days moved by hand and a larger deviation ({row})")
+    check(row and row[19] == "Bloqueo externo" and row[20] == "Tienda en revisión", f"csv: the postponed row should carry its reason ({row})")
+    check(all(r[22].isdigit() for r in rows if r[9] not in ("Hecha", "Continua")), "csv: every pending row should have its slack")
     check(meta.get("Origen", "").startswith("Con cambios"), f"csv: the source should say it has local changes ({meta})")
     meta, head, rows = export(page, official=True)
     row = next((r for r in rows if r[1].startswith("Crea la app") and r[4] == "Android"), None)
-    check(meta.get("Origen", "").startswith("Plan oficial") and row and row[16] == "0", f"csv: the official export should ignore local changes ({meta}, {row})")
-    check(any(r[15] == "D1" for r in rows if r[1].startswith("Custodia")), "csv: an open decision should appear on the activity it holds back")
+    check(meta.get("Origen", "").startswith("Plan oficial") and row and row[18] == "0", f"csv: the official export should ignore local changes ({meta}, {row})")
+    check(any(r[17] == "D1" for r in rows if r[1].startswith("Custodia")), "csv: an open decision should appear on the activity it holds back")
     # The page hands back the whole instance.json with this browser's plan and a dated entry in plan_log.
     check("Plan actualizado el" in page.inner_text("#roadmap .rmhead"), "plan log: the roadmap should say when the plan was updated")
     # Open risks show in the committee view and on the sheet of the activity they affect.
@@ -147,8 +150,9 @@ def plan_tests(browser):
     check("S1.5" in page.inner_text("#detail") and "movido desde la actividad 3" in page.inner_text("#detail"), "step moves: the step should show in its new activity with a note")
     check(page.locator("#detail .anotes b").count() == 1 and "exactamente como figura" in page.inner_text("#detail .anotes"), "notes: the sheet should show the client's notes with their bold text")
     # Lanes follow instance.json even when the browser kept an older copy of the client.
-    page.evaluate("()=>{const c=JSON.parse(localStorage.getItem(pageKey('mapm-clients')));c.preset.lanes={...c.preset.lanes,L2:'old'};localStorage.setItem(pageKey('mapm-clients'),JSON.stringify(c))}")
+    page.evaluate("()=>{const c=JSON.parse(localStorage.getItem(pageKey('mapm-clients')));c.preset.lanes={...c.preset.lanes,L2:'old'};delete c.preset.calendar;localStorage.setItem(pageKey('mapm-clients'),JSON.stringify(c))}")
     page.reload(); check(page.evaluate("()=>cur().lanes.L2")==page.evaluate("()=>PRESET_CLIENT.lanes.L2"), "lanes: a rebuilt page should take the lanes of instance.json")
+    check(page.evaluate("()=>JSON.stringify(cur().calendar)===JSON.stringify(PRESET_CLIENT.calendar)"), "calendar: a browser copy without calendar should take the one of instance.json")
     # A conditional step the instance skips leaves the steps and is named with its reason.
     page.evaluate("()=>openAct('assign-access')")
     check("S3.5" not in page.inner_text("#detail .asteps") and "No aplican en este cliente" in page.inner_text("#detail"), "step skips: a skipped step should leave the list and be named with its reason")
@@ -177,7 +181,18 @@ def plan_tests(browser):
     ctx, page, errors = page_at(dt.datetime(2026, 11, 5, 10, 0, tzinfo=LIMA))
     page.evaluate("""()=>onPlanChange({target:{dataset:{act:"decide-owner",f:"days"},value:"12"}})""")
     meta, head, rows = export(page, official=False); row = rows[0]
-    check(row[9] == "43" and row[11] == "9", f"baseline: expected 43% and 9 days of deviation against the committed dates ({row})")
+    check(row[11] == "43" and row[13] == "9", f"baseline: expected 43% and 9 days of deviation against the committed dates ({row})")
+    # A start set by hand moves the activity without changing its duration, counts as postponed and is logged.
+    st0 = page.evaluate("""()=>{const s=planSrc();const v=planView(s,s.start);const q=v.raw["define-identifiers@android"];const W=workCal(s.start);
+      let o=q.s;for(let i=0;i<5;)if(W.isWork(++o))i++;const d=new Date(s.start+"T00:00:00");d.setDate(d.getDate()+o);
+      return{s:q.s,e:q.e,next:v.raw["create-store-app@android"].s,want:isoDate(d),early:isoDate(new Date(new Date(s.start+"T00:00:00").getTime()+(q.s-3)*864e5))}}""")
+    page.evaluate(f"""()=>onPlanChange({{target:{{dataset:{{act:"define-identifiers",f:"startPlat",plat:"android"}},value:"{st0['want']}"}}}})""")
+    st1 = page.evaluate("""()=>{const s=planSrc();const v=planView(s,s.start);const q=v.raw["define-identifiers@android"];const a=v.list.find(x=>x.id==="define-identifiers");
+      return{s:q.s,e:q.e,next:v.raw["create-store-app@android"].s,moved:a.moved,stored:((s.plan["define-identifiers"]||{}).platforms||{}).android,log:planChanges().join(" | ")}}""")
+    check(st1["s"] > st0["s"] and st1["next"] > st0["next"] and st1["moved"] > 0 and (st1["stored"] or {}).get("start") == st0["want"] and "inicio fijado" in st1["log"],
+          f"start: a start set by hand should move the activity and what follows, count as postponed and be logged ({st0}, {st1})")
+    page.evaluate(f"""()=>onPlanChange({{target:{{dataset:{{act:"assign-access",f:"startPlat",plat:"android"}},value:"{st0['early']}"}}}})""")
+    check(not ((page.evaluate("()=>planSrc().plan['assign-access']") or {}).get("platforms", {}).get("android", {}).get("start")), "start: a start before the predecessors should be refused")
     # A pending activity of 0 days is a visible marker, not a bar with no width.
     page.evaluate("""()=>onPlanChange({target:{dataset:{act:"assign-access",f:"days"},value:"0"}})""")
     page.click("#tabRm"); page.click(".rmdetail summary")

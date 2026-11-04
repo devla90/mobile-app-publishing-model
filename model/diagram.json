@@ -515,7 +515,7 @@
       "platform": "both",
       "joint": false,
       "milestone": {
-        "name": "App publicada",
+        "name": "Despliegue completo",
         "type": "achievement"
       },
       "lines": [
