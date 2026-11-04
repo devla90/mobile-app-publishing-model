@@ -131,9 +131,13 @@ def js_data(m, t, instance=None):
             inst["extra"] = instance["extra_activities"]
         inst["open"] = instance.get("open_decisions", [])
         inst["baseline"] = instance.get("baseline", {})
+        inst["log"] = instance.get("plan_log", [])
         s.append(f'const PRESET_CLIENT={d(inst)};')
+        # The whole instance as written, so the page can hand back an updated instance.json (docs/conventions.md#plan-updates).
+        s.append(f'const PRESET_RAW={d(instance).replace("</", "<\\/")};')
     else:
         s.append('const PRESET_CLIENT=null;')
+        s.append('const PRESET_RAW=null;')
     return "\n".join(s) + "\n"
 
 

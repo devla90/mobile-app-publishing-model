@@ -83,6 +83,20 @@
       ]
     }
   ],
+  "plan_log": [
+    {
+      "date": "2026-10-30",
+      "changes": [
+        "X1 Piloto interno con colaboradores · se agrega antes del Go / No-Go"
+      ]
+    },
+    {
+      "date": "2026-11-02",
+      "changes": [
+        "Plan aprobado y copiado como línea base"
+      ]
+    }
+  ],
   "baseline": {
     "decide-owner": { "start": "2026-11-02", "end": "2026-11-08" },
     "approve-stores@ios": { "start": "2026-11-08", "end": "2026-11-11" },

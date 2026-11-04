@@ -4,6 +4,10 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- "Descargar instance.json": the page downloads the whole instance with the plan edited in the browser, ready to replace the file in the client folder. It replaces the copy of fragments.
+- `plan_log` in instances: one dated entry per update of the plan, with a readable line per change, written by the download. The roadmap shows when the plan was last updated and its history; the CSV records the date.
+
 ## [4.0.0] - 2026-11-03
 
 ### Added

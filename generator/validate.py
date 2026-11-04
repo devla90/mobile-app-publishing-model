@@ -234,6 +234,18 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         for k in x.get("blocks", []):
             if k not in acts: say(f"{rel}: open decision {xid} blocks unknown activity {k}")
         if x.get("platform") and x["platform"] not in targets: say(f"{rel}: open decision {xid} names platform '{x['platform']}', which is not a target")
+    # The plan log: one entry per update of the plan, oldest first (docs/conventions.md#plan-updates).
+    last = ""
+    for i, e in enumerate(inst.get("plan_log", [])):
+        try:
+            day = date.fromisoformat(str(e["date"])).isoformat()
+            if day < last: say(f"{rel}: plan_log entry {i + 1} is older than the one before it")
+            last = day
+        except (TypeError, KeyError, ValueError):
+            say(f"{rel}: plan_log entry {i + 1} needs a YYYY-MM-DD date")
+        ch = e.get("changes") if isinstance(e, dict) else None
+        if not (isinstance(ch, list) and ch and all(isinstance(x, str) and x for x in ch)):
+            say(f"{rel}: plan_log entry {i + 1} needs changes, a list of texts")
     for k, d in inst.get("baseline", {}).items():
         key, _, plat = k.partition("@")
         if key not in acts: say(f"{rel}: baseline names unknown activity {key}")
