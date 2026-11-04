@@ -132,15 +132,15 @@ Same shape as a partial instance plus a list of controls. Name it by the axes th
   "renewals": { "R01": "2026-11-01" },
   "decisions": [ { "date": "2026-10-14", "decision": "<what>", "owner": "<team>", "rationale": "<why>" } ],
   "start_date": "2026-11-02",
-  "plan": { "<key>": { "done": true, "days": 3, "end": "<YYYY-MM-DD>", "platforms": { "ios": { "blocked": "<why>" } } } },
+  "plan": { "<key>": { "done": true, "days": 3, "end": "<YYYY-MM-DD>", "reason": { "type": "external", "note": "<why it moved>" }, "platforms": { "ios": { "blocked": "<why>" } } } },
   "extra_activities": [ { "id": "X1", "name": "<client-only activity>", "lane": "L1", "days": 10, "after": ["<key>"],
                           "tasks": ["<what has to be done>"], "refs": ["<model step it relates to>"] } ],
   "open_decisions": [ { "id": "D1", "name": "<pending decision>", "owner": "<team>", "opened": "<date>", "due": "<date>", "blocks": ["<key>"] } ],
-  "baseline": { "<key>": "<committed YYYY-MM-DD>" }
+  "baseline": { "<key>": { "start": "<committed YYYY-MM-DD>", "end": "<committed YYYY-MM-DD>" } }
 }
 ```
 
-`plan` overrides days, marks what is done and records postponements (`end`); `open_decisions` are what holds the plan back; `baseline` is set once, when the plan is approved, and measures the deviation.
+`plan` overrides days, marks what is done and records postponements (`end`, with the `reason` they moved); `open_decisions` are what holds the plan back; `baseline` is set once, when the plan is approved, with the committed start and end of each activity, and measures the deviation.
 
 Lanes with no real owner keep the base's generic name. No personal names: areas or companies only.
 

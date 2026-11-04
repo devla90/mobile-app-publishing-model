@@ -34,6 +34,9 @@ def check_plan(where, acts):
     for i in acts: visit(i, [])
 
 
+REASONS = ("external", "dependency", "decision", "team", "scope", "other")
+
+
 def check_dates(where, o):
     """Dates and durations of one plan entry, for an activity or one of its platforms."""
     d = o.get("done")
@@ -45,6 +48,13 @@ def check_dates(where, o):
         except ValueError: say(f"{where} end must be a YYYY-MM-DD date")
     if "days" in o and not (isinstance(o["days"], int) and o["days"] >= 0): say(f"{where} days must be a whole number >= 0")
     if "min" in o or "max" in o: say(f"{where} uses min and max; activities now have one duration, `days` (docs/conventions.md#durations-and-the-timeline)")
+    # The reason explains a postponement, so it lives next to the end it explains (docs/conventions.md#postponements).
+    if "reason" in o:
+        r = o["reason"]
+        if "end" not in o: say(f"{where} reason needs an end date in the same entry")
+        if not isinstance(r, dict) or r.get("type") not in REASONS:
+            say(f"{where} reason must be {{\"type\": one of {', '.join(REASONS)}, \"note\": text}}")
+        elif "note" in r and not (isinstance(r["note"], str) and r["note"]): say(f"{where} reason note must be a text")
 
 
 def check_milestone(where, a):
@@ -228,8 +238,12 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         key, _, plat = k.partition("@")
         if key not in acts: say(f"{rel}: baseline names unknown activity {key}")
         if plat and plat not in targets: say(f"{rel}: baseline names platform '{plat}', which is not a target")
-        try: date.fromisoformat(str(d))
-        except ValueError: say(f"{rel}: baseline {k} must be a YYYY-MM-DD date")
+        # Committed start and end, both written: a start deduced from the current duration would move with it.
+        try:
+            b0, b1 = date.fromisoformat(str(d["start"])), date.fromisoformat(str(d["end"]))
+            if b0 > b1: say(f"{rel}: baseline {k} starts after it ends")
+        except (TypeError, KeyError, ValueError):
+            say(f"{rel}: baseline {k} must be {{\"start\": \"YYYY-MM-DD\", \"end\": \"YYYY-MM-DD\"}} (docs/conventions.md#decisions-areas-and-baseline)")
 
 # Real client instances and their output (clients/<id>/dist/) must never be versioned (docs/deployment.md#private-client-instances).
 # Client output used to live in dist/clients/ and dist/diff-*.md; nothing may remain tracked there.
