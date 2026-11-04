@@ -40,7 +40,7 @@ Protection is configured by the repository owner on GitHub, not by files in the 
 1. Settings → Rules → Rulesets → *New branch ruleset*. Name `main`, enforcement *Active*, target *Default branch*. Enable:
    - *Restrict deletions* and *Block force pushes*.
    - *Require a pull request before merging*, 1 approval, dismiss stale approvals on new commits.
-   - *Require status checks to pass*: `validate` (from `.github/workflows/validate.yml`, which runs `validate.py` and `build.py --no-png` on every pull request).
+   - *Require status checks to pass*: `validate` (from `.github/workflows/validate.yml`, which runs `validate.py`, `build.py --no-png` and `check_page.py --require-browser` on every pull request; the last one installs Chromium on the GitHub machine and runs the plan tests).
    - If you work alone, add *Repository admin* to the bypass list with mode *For pull requests only*: you can merge your own pull requests, but not push to `main` directly.
 2. *New tag ruleset*. Name `releases`, enforcement *Active*, target pattern `v*`. Enable *Restrict updates*, *Restrict deletions* and *Block force pushes*, so a published version cannot be moved.
 

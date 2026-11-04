@@ -91,7 +91,7 @@ python3 generator/build.py --no-png
 
 The plan works on the diagram activities, not on phases. Each activity in `diagram.json` has `duration.days` in calendar days and `after`, the activities that must finish before it starts. The activities of the last stage are `continuous` and have no duration. `validate.py` checks that durations are whole days, that every `after` exists and that there are no cycles.
 
-The page computes one date per activity and marks the critical path. To postpone an activity, change its end date on the page: what follows moves by itself, and the roadmap counts and lists it as postponed against the plan without changes. Phase durations in `phases.json` are reference data for whoever estimates a new activity; the page does not show them, so every date comes from the activities.
+The page computes one date per activity and marks the critical path. It forecasts from today: an open activity whose end has passed is taken to end today, keeps its "late" status, and what follows moves with it, so the end of the plan is never earlier than reality allows. An end date before the activity can start, after its predecessors, is refused. The deviation and the expected progress are measured against the plan as written, without that forecast. "Today" is the local date of the computer. To postpone an activity, change its end date on the page: what follows moves by itself, and the roadmap counts and lists it as postponed against the plan without changes. Phase durations in `phases.json` are reference data for whoever estimates a new activity; the page does not show them, so every date comes from the activities.
 
 An instance may set:
 

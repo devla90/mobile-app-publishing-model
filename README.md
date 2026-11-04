@@ -45,7 +45,7 @@ Open the repository with Claude Code. `CLAUDE.md` tells it what to read for each
 - `/edit-model` — adds or changes a step, role, credential or variant while respecting IDs and dependencies.
 - `/validate-requirements` — checks the data points with deadlines against Apple's and Google's official pages and updates `docs/validation.md`.
 
-`.github/workflows/check-sources.yml` compares the cited official pages with a stored reference every month and opens an issue if any changed. `validate.yml` runs the validation and the build on every pull request to `main`.
+`.github/workflows/check-sources.yml` compares the cited official pages with a stored reference every month and opens an issue if any changed. `validate.yml` runs the validation, the build and the page and plan tests (in a browser on the GitHub machine) on every pull request to `main`.
 
 Store data (deadlines, limits, costs) was last validated against official sources on 2026-10-14; see [docs/validation.md](docs/validation.md).
 

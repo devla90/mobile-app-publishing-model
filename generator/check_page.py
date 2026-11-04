@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Check the generated pages: styles and UI strings the page uses exist, and, with playwright, every page opens without errors.
+"""Check the generated pages and the plan they compute.
 
-Usage: python3 generator/check_page.py    (run after build.py)
+Usage:
+  python3 generator/check_page.py                     # run after build.py
+  python3 generator/check_page.py --require-browser   # fail if playwright is missing (CI)
+  CHECK_PAGE_BROWSER=chrome python3 generator/check_page.py   # use the installed Chrome or Edge (msedge)
 
 Static checks always run: every class written by page_logic.js has a rule in page_head.html, and every UI string
-the page reads exists in the i18n file. If playwright is installed, it also opens dist/index.html and each
-clients/<id>/dist/index.html, walks the tabs and an activity sheet, and fails on any page error.
+the page reads exists in the i18n file. With playwright it also opens dist/index.html and each
+clients/<id>/dist/index.html and fails on any page error, and runs the plan tests on clients/example with a fixed
+clock: forecast from today, platforms and joint activities, postponements, refused end dates, the CSV export and
+the local date. On a machine where downloading Chromium is blocked, CHECK_PAGE_BROWSER uses the browser already
+installed; without playwright the browser checks are skipped and only the static ones run.
 Exit code 1 on any problem.
 """
-import json, re, sys
+import csv, datetime as dt, io, json, os, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,15 +54,77 @@ for c in sorted(used - HOOKS):
 for k in sorted(set(re.findall(r"\bT\.([a-z_0-9]+)", logic)) | set(re.findall(r"\{\{t\.([a-zA-Z0-9_]+)\}\}", head))):
     if k not in strings: problems.append(f"UI string '{k}' is used but missing in generator/i18n/es.json")
 
+LIMA = dt.timezone(dt.timedelta(hours=-5))
+EXAMPLE = ROOT / "clients" / "example" / "dist" / "index.html"
+
+
+def plan_tests(browser):
+    """Reference cases on the example instance (start 2026-11-02, iOS and Android). Returns a list of failures."""
+    fail = []
+    check = lambda ok, msg: ok or fail.append(msg)
+
+    def page_at(when, tz="America/Lima"):
+        ctx = browser.new_context(timezone_id=tz, accept_downloads=True); page = ctx.new_page(); errors = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.clock.set_fixed_time(when); page.goto(EXAMPLE.as_uri()); return ctx, page, errors
+
+    def export(page, official):
+        with page.expect_download() as dl: page.evaluate(f"()=>exportCsv({'true' if official else 'false'})")
+        rows = list(csv.reader(io.StringIO(open(dl.value.path(), encoding="utf-8-sig").read()), delimiter=";"))
+        head = rows.index(next(r for r in rows if r and r[0] == "N°"))
+        return dict(r for r in rows[:head] if len(r) == 2), rows[head], rows[head + 1:]
+
+    # On 20 Nov the first activity (2–8 Nov) is overdue: it ends today and what follows moves.
+    ctx, page, errors = page_at(dt.datetime(2026, 11, 20, 10, 0, tzinfo=LIMA))
+    v = page.evaluate("""()=>{const s=planSrc();const v=planView(s,s.start);const j=v.nodes.find(n=>n.id==="security-approval");
+      return {today:dayOf(s.start,todayISO()),first:v.raw["decide-owner"],firstPlanned:v.before["decide-owner"],next:v.raw["approve-stores@ios"],
+        iosOnly:[!!v.raw["register-app-ids@ios"],!!v.raw["register-app-ids@android"]],joint:[v.raw[j.id].s,Math.max(...j.after.map(x=>v.raw[x].e))],
+        nodes:v.nodes.length}}""")
+    check(v["first"]["late"] and v["first"]["e"] == v["today"], f"forecast: an overdue activity should end today ({v['first']})")
+    check(v["firstPlanned"]["e"] == 6, f"forecast: the plan as written should keep the planned end ({v['firstPlanned']})")
+    check(v["next"]["s"] >= v["today"], f"forecast: what follows an overdue activity should not start before today ({v['next']})")
+    check(v["iosOnly"] == [True, False], f"platforms: an iOS-only activity should have no Android node ({v['iosOnly']})")
+    check(v["joint"][0] == v["joint"][1], f"joint: a joint activity should start when the last platform is ready ({v['joint']})")
+    page.click("#tabRm"); check("Atrasado" in page.inner_text(".rmsum"), "roadmap: an overdue plan should read as late")
+    # An end date before the predecessors is refused; a later one is stored as a postponement.
+    page.evaluate("""()=>onPlanChange({target:{dataset:{act:"define-identifiers",f:"endPlat",plat:"android"},value:"2026-11-03"}})""")
+    check(page.evaluate("()=>!planSrc().plan['define-identifiers']"), "end date: a date before the predecessors should be refused")
+    later = page.evaluate("""()=>{const s=planSrc();const v=planView(s,s.start);const e=v.raw["create-store-app@android"].e+10;
+      const d=new Date(s.start+"T00:00:00");d.setDate(d.getDate()+e);const iso=isoDate(d);
+      onPlanChange({target:{dataset:{act:"create-store-app",f:"endPlat",plat:"android"},value:iso}});return iso}""")
+    p = page.evaluate("""()=>{const s=planSrc();const v=planView(s,s.start);const a=v.list.find(x=>x.id==="create-store-app");
+      return {stored:(s.plan["create-store-app"]||{}).platforms,moved:a.moved,next:v.raw["issue-certificates@android"].s,end:v.raw["create-store-app@android"].e}}""")
+    check(p["stored"] and p["stored"]["android"]["end"] == later, f"postponement: the new end should be stored ({p['stored']})")
+    check(p["moved"] == 10 and p["next"] >= p["end"], f"postponement: it should count 10 days and move what follows ({p})")
+    # CSV: one row per activity and platform; the official export ignores the browser changes.
+    meta, head, rows = export(page, official=False)
+    check(len(head) == 19 and len(rows) == v["nodes"], f"csv: expected 19 columns and {v['nodes']} rows, got {len(head)} and {len(rows)}")
+    row = next((r for r in rows if r[1].startswith("Crea la app") and r[4] == "Android"), None)
+    # Postponed by hand 10 days, on top of what the overdue first activity already pushed: the deviation counts both.
+    check(row and row[16] == "10" and int(row[11]) > 10, f"csv: the postponed row should show 10 days moved by hand and a larger deviation ({row})")
+    check(meta.get("Origen", "").startswith("Con cambios"), f"csv: the source should say it has local changes ({meta})")
+    meta, head, rows = export(page, official=True)
+    row = next((r for r in rows if r[1].startswith("Crea la app") and r[4] == "Android"), None)
+    check(meta.get("Origen", "").startswith("Plan oficial") and row and row[16] == "0", f"csv: the official export should ignore local changes ({meta}, {row})")
+    check(any(r[15] == "D1" for r in rows if r[1].startswith("Custodia")), "csv: an open decision should appear on the activity it holds back")
+    fail += [f"page error: {e}" for e in errors]; ctx.close()
+    # At 21:30 in Lima it is already the next day in UTC: "today" must stay local.
+    ctx, page, _ = page_at(dt.datetime(2026, 11, 4, 2, 30, tzinfo=dt.timezone.utc))
+    today = page.evaluate("()=>todayISO()"); check(today == "2026-11-03", f"local date: expected 2026-11-03, got {today}"); ctx.close()
+    return fail
+
+
 try:
     from playwright.sync_api import sync_playwright
 except ImportError:
     sync_playwright = None
-    print("notice: playwright not installed; pages not opened")
+    if "--require-browser" in sys.argv: problems.append("playwright is required (--require-browser) but not installed")
+    else: print("notice: playwright not installed; pages not opened and plan tests skipped")
 if sync_playwright:
     pages = [ROOT / "dist" / "index.html"] + sorted((ROOT / "clients").glob("*/dist/index.html"))
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        # CHECK_PAGE_BROWSER=chrome or msedge uses the browser already installed instead of a downloaded Chromium.
+        browser = p.chromium.launch(channel=os.environ.get("CHECK_PAGE_BROWSER") or None)
         for page_path in pages:
             if not page_path.exists(): continue
             ctx = browser.new_context(); page = ctx.new_page(); errors = []
@@ -74,8 +142,12 @@ if sync_playwright:
             problems += [f"{rel}: {e}" for e in errors]
             print(f"{rel}: {'ok' if not errors else str(len(errors)) + ' problem(s)'}")
             ctx.close()
+        if EXAMPLE.exists():
+            failed = plan_tests(browser)
+            problems += [f"plan tests: {f}" for f in failed]
+            print(f"plan tests: {'ok' if not failed else str(len(failed)) + ' problem(s)'}")
         browser.close()
 
 if problems:
     print("\n".join(problems)); print(f"\n{len(problems)} problem(s)."); sys.exit(1)
-print("OK: styles and UI strings in place.")
+print("OK: styles and UI strings in place" + (", pages open and plan tests pass." if sync_playwright else "."))
