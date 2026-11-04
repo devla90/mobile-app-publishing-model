@@ -99,6 +99,14 @@ An instance may set:
 - `plan`: per activity key, `days`, `end` (the date it now ends), `after` (replaces the base list) and `done` (`true`, meaning finished at `start_date`, or the real date). A finished activity ends on that date and its dependants start from there.
 - `extra_activities`: the client's own activities, with `id` (not a key used by the model), `name`, `lane`, `days` and `after`. They chain with the model's activities, and a base activity can wait for them through `plan.<n>.after`.
 
+### Postponements
+
+Every postponement says why. Next to an `end` set by hand, at the activity level or per platform, `reason` holds `{ "type": "external" | "dependency" | "decision" | "team" | "scope" | "other", "note": "<text>" }`: an external blocker (a store, a provider), another activity, a pending decision, team availability, a change of scope, or something else. The note is optional. When an end date is changed, the page asks for both; a note without a category counts as `other`, and removing the end removes its reason. `validate.py` rejects a `reason` without an `end` in the same entry or with an unknown type. The roadmap shows the reason in the bar's tooltip and in the list of postponed activities, its summary names the most frequent one, and the CSV has a column for each.
+
+### Slack
+
+Slack is how many days a pending activity can slip before the end of the plan moves; critical activities have none. The CSV has it as a column. In the roadmap schedule the button "Mostrar holgura" draws it as a hatched stretch after each bar, and hides it again; it is off by default, and the choice is kept in that browser.
+
 ### Activity keys and numbers
 
 Each activity has a `key`, a stable English slug such as `create-store-app`. `after`, `arrows` and instances use the key. The number people see is computed from the position in `diagram.json`, so the diagram always reads in flow order.
@@ -135,9 +143,9 @@ Roadmap milestones are not the version checkpoints of `milestones.json` (m1–m1
 
 An instance may list `open_decisions`: `{ "id", "name", "owner", "opened", "due", "status", "platform", "blocks": [activity keys] }`, the decisions that hold the plan back. The roadmap shows them first, with the days they have been open and whether they are overdue. `decisions` stays as the log of what was decided.
 
-`baseline` holds the committed end of each activity: `{ "<key>": "YYYY-MM-DD" }`, or `"<key>@ios"` per platform. The roadmap marks it next to each milestone and shows the largest deviation in its summary. The button "Copiar plan como línea base" copies the current end of every activity in that format; paste it when the plan is approved and do not change it afterwards.
+`baseline` holds the committed start and end of each activity: `{ "<key>": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" } }`, or `"<key>@ios"` per platform. Both dates are written: a start deduced from the current duration would move whenever someone changed it. `validate.py` rejects any other form and a start after the end; an activity added after the approval may have no entry. The roadmap draws it as a thin bar under each activity of the schedule, marks it next to each milestone and shows the largest deviation in its summary. The button "Copiar plan como línea base" copies the current start and end of every activity in that format; paste it when the plan is approved and do not change it afterwards.
 
-"Exportar CSV", on the plan and on the roadmap, writes one row per activity and platform: area, platform, start and end, status, real and expected progress, the reference end and the deviation in days, milestone, blocker, decisions and steps. Real progress is what is done (0 or 100); expected progress is the share of the committed period already gone, so a gap between both shows a risk before the due date. Without a baseline the reference is the plan without page edits, and the file says so. The first rows record the client, the date, the start date and whether the data includes changes held only in that browser; with such changes the page asks whether to export the official plan or those changes. The file uses semicolons and UTF-8 so Excel in Spanish opens it in columns.
+"Exportar CSV", on the plan and on the roadmap, writes one row per activity and platform: area, platform, start and end, status, real and expected progress, the reference end and the deviation in days, milestone, blocker, decisions, days postponed by hand and their reason, critical path, slack and steps. Real progress is what is done (0 or 100); expected progress is the share of the committed period already gone, so a gap between both shows a risk before the due date. Without a baseline the reference is the plan without page edits, and the file says so. The first rows record the client, the date, the start date and whether the data includes changes held only in that browser; with such changes the page asks whether to export the official plan or those changes. The file uses semicolons and UTF-8 so Excel in Spanish opens it in columns.
 
 The roadmap opens with what a committee needs (summary, decisions and blockers, milestones) and keeps the rest under "Detalle para la gestión": progress per platform, open work by area, the full schedule and the lists.
 
@@ -147,7 +155,7 @@ Each activity in `diagram.json` has `platform` (`ios`, `android`, `both`) and `j
 
 V15 chooses the targets. With `b` or `c`, the page leaves out what belongs to the other platform: steps, activities, milestone checks, renewals and variants; the diagrams keep the box dimmed. Without V15 and without `platforms` in the plan, the page shows one plan, as it did before.
 
-An instance follows each platform with `plan.<key>.platforms.<ios|android>`, which accepts `done`, `days`, `end` and `blocked` (a text for the roadmap). `done` at the activity level means finished on every platform. `extra_activities` accept `platform` (default `both`) and `joint` (default `true`).
+An instance follows each platform with `plan.<key>.platforms.<ios|android>`, which accepts `done`, `days`, `end`, `reason` and `blocked` (a text for the roadmap). `done` at the activity level means finished on every platform. `extra_activities` accept `platform` (default `both`) and `joint` (default `true`).
 
 The roadmap then has three views: Conjunto, iOS and Android. In Conjunto an activity counts as done only when every platform it applies to has finished it, so that percentage is not the average of the other two.
 

@@ -1,7 +1,8 @@
 
 // Page logic. Model data (A, C, F, V, LANES, PH, S, ...) and UI strings (T) are injected by build.py before this file.
 // tf(key, vars) fills {placeholders} in a UI string.
-const tf=(k,vars)=>Object.entries(vars||{}).reduce((s,[a,b])=>s.split("{"+a+"}").join(b),T[k]);
+// A string may have a "<key>_one" variant, used when n is 1 ("1 día" instead of "1 días").
+const tf=(k,vars)=>Object.entries(vars||{}).reduce((s,[a,b])=>s.split("{"+a+"}").join(b),vars&&vars.n===1&&T[k+"_one"]!==undefined?T[k+"_one"]:T[k]);
 const LC={L1:"--l1",L2:"--l2",L3:"--l3",L4:"--l4",L5:"--l5",L6:"--l6",L7:"--l7"};
 const MSTAT=T.ms_status;
 const PLAT_LABEL={ios:T.plat_ios,android:T.plat_android,both:T.plat_both};
@@ -10,7 +11,7 @@ const PLAT_LABEL={ios:T.plat_ios,android:T.plat_android,both:T.plat_both};
 const pageKey=k=>PRESET_CLIENT?`${k}:${PRESET_CLIENT.name}`:k;
 
 // ---------- Page state
-let st={plat:"all",role:"",lane:"",act:"",actPlat:"",tlFilter:"all",tlEdit:"",tlStage:{},phases:[],q:"",onlyVar:false,onlyDoubt:false,sel:"S0.1",view:null,tab:"ov",client:"",version:"",track:"all"};
+let st={plat:"all",role:"",lane:"",act:"",actPlat:"",tlFilter:"all",tlEdit:"",rmSlack:false,tlStage:{},phases:[],q:"",onlyVar:false,onlyDoubt:false,sel:"S0.1",view:null,tab:"ov",client:"",version:"",track:"all"};
 let rev={};try{rev=JSON.parse(localStorage.getItem(pageKey("mapm-rev"))||"{}")}catch(e){rev={}}
 const save=()=>{try{localStorage.setItem(pageKey("mapm-rev"),JSON.stringify(rev))}catch(e){}};
 try{const h=location.hash.slice(1);if(byId[h])st.sel=h}catch(e){}
@@ -22,6 +23,8 @@ let db=null,dbUser=null,canWrite=true;
 let clients={},versions={};
 const LS=k=>{try{return JSON.parse(localStorage.getItem(pageKey(k))||"null")}catch(e){return null}};
 const LSW=(k,v)=>{try{localStorage.setItem(pageKey(k),JSON.stringify(v))}catch(e){}};
+// The slack in the roadmap is a reader's preference: shown or hidden, remembered in this browser.
+st.rmSlack=!!LS("mapm-rmslack");
 // Bumped when stored plans change format. Plans are keyed by activity key, so a change in the flow does not need it.
 const PLAN_V=5;
 // Earlier builds kept every client page under the shared keys: move this page's data out, leave the rest there.
@@ -128,8 +131,13 @@ async function savePlan(start,plan){const c=cur();if(c){const n={...c,plan};if(s
 function planActs(src,ignoreDone,ignoreEnd){
   const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],steps:r[9],ms:r[10],extra:false,i}));
   const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,steps:[],ms:x.milestone||null,extra:true,i:ACT.length+j}));
-  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),end:ignoreEnd?null:(o.end??null),plats:o.platforms||{}}});
+  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),end:ignoreEnd?null:(o.end??null),reason:ignoreEnd?null:(o.reason??null),plats:o.platforms||{}}});
 }
+// Why an end date was moved: one category and an optional note, stored next to that end.
+const REASONS=["external","dependency","decision","team","scope","other"];
+const reasonTxt=rs=>rs.filter(Boolean).map(x=>T["reason_"+x.type]+(x.note?": "+x.note:"")).join(" · ");
+// Committed start and end of a node in days, from the baseline: per platform (key@ios) or per activity.
+const baseOf=(base,n,s0)=>{const b=(base||{})[n.id]??(base||{})[n.act];return b&&b.start&&b.end?{s:dayOf(s0,b.start),e:dayOf(s0,b.end)}:null};
 // Dates in local time: toISOString() is UTC, so west of Greenwich it returns tomorrow in the evening.
 const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const todayISO=()=>isoDate(new Date());
@@ -150,7 +158,8 @@ function planCalc(list,start,noForecast){
   // Critical path: no slack between an activity and the latest finish it can have.
   const work=list.filter(a=>!a.cont&&!a.done);const end=Math.max(0,...work.map(a=>r[a.id].e));const lf={};
   [...work].sort((x,y)=>r[y.id].e-r[x.id].e).forEach(a=>{const succ=work.filter(b=>b.after.includes(a.id));lf[a.id]=succ.length?Math.min(...succ.map(b=>lf[b.id]-(r[b.id].e-r[b.id].s))):end});
-  work.forEach(a=>r[a.id].crit=lf[a.id]-r[a.id].e===0);
+  // Slack: days an activity can slip before the end of the plan moves.
+  work.forEach(a=>{const sl=lf[a.id]-r[a.id].e;r[a.id].crit=sl===0;r[a.id].slack=Math.max(0,sl)});
   return{r,end};
 }
 // One node per activity and platform; a joint activity is a single node that waits for every platform.
@@ -160,7 +169,7 @@ function planNodes(acts,ignoreEnd){
   const depOn=(id,p)=>{const d=by[id];if(!d)return[];if(d.joint)return[id];return on(d,p)?[`${id}@${p}`]:d.after.flatMap(x=>depOn(x,p))};
   return acts.flatMap(a=>{
     if(a.joint)return[{...a,act:a.id,track:null,after:[...new Set(ts.flatMap(p=>a.after.flatMap(x=>depOn(x,p))))]}];
-    return ts.filter(p=>on(a,p)).map(p=>{const q=a.plats[p]||{};return{...a,id:`${a.id}@${p}`,act:a.id,track:p,after:[...new Set(a.after.flatMap(x=>depOn(x,p)))],days:q.days??a.days,end:ignoreEnd?null:(q.end??a.end),done:a.done??q.done??null}})})}
+    return ts.filter(p=>on(a,p)).map(p=>{const q=a.plats[p]||{};return{...a,id:`${a.id}@${p}`,act:a.id,track:p,after:[...new Set(a.after.flatMap(x=>depOn(x,p)))],days:q.days??a.days,end:ignoreEnd?null:(q.end??a.end),reason:ignoreEnd?null:((q.end?q.reason:a.reason)??null),done:a.done??q.done??null}})})}
 // The plan as one view: "all" or empty gives every activity, "ios" or "android" only that platform's.
 // list and r are keyed by activity; nodes and raw keep the detail per platform. moved compares each activity
 // with the plan before any date was changed, for the ones whose end date was set by hand.
@@ -172,8 +181,9 @@ function planView(src,start,view){
   const{acts,nodes,r:raw}=build(false,false);const same=build(true,false).r;const before=build(true,true).r;const r={};
   const list=acts.map(a=>{const ns=nodes.filter(n=>n.act===a.id&&(!view||view==="all"||!n.track||n.track===view));if(!ns.length)return null;
     const qs=ns.map(n=>raw[n.id]);const all=ns.every(n=>n.done);r[a.id]={s:Math.min(...qs.map(q=>q.s)),e:Math.max(...qs.map(q=>q.e)),done:all,crit:qs.some(q=>q.crit),late:qs.some(q=>q.late)};
-    const hand=ns.filter(n=>n.end&&!n.done).map(n=>raw[n.id].e-same[n.id].e);
-    return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns,moved:hand.length?hand.reduce((x,y)=>Math.abs(y)>Math.abs(x)?y:x):0}}).filter(Boolean);
+    const sl=qs.map(q=>q.slack).filter(x=>x!==undefined);if(sl.length)r[a.id].slack=Math.min(...sl);
+    const hn=ns.filter(n=>n.end&&!n.done);const hand=hn.map(n=>raw[n.id].e-same[n.id].e);
+    return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns,moved:hand.length?hand.reduce((x,y)=>Math.abs(y)>Math.abs(x)?y:x):0,reasons:hn.map(n=>n.reason).filter(Boolean)}}).filter(Boolean);
   const work=list.filter(a=>!a.cont&&!a.done);
   return{list,r,raw,nodes,before,same,end:Math.max(0,...work.map(a=>r[a.id].e))}}
 // First pending activity where the platforms meet, and when each one is ready for it.
@@ -197,15 +207,18 @@ function renderTimeline(){
   const f=F[st.tlFilter]?st.tlFilter:"all";
   const partsOf=a=>!a.joint&&a.nodes&&a.nodes.length>1?a.nodes:null;
   const when=(a,x,q)=>a.cont?tf("tl_continuous",{d:fd(q.s)}):x.done?fd(q.e):q.s===q.e?fd(q.e):`${fd(q.s)} → ${fd(q.e)}`;
-  const chip=(code,lab)=>`<span class="tst ${code}">${esc(lab)}</span>`;
+  const chip=(code,lab,tip)=>`<span class="tst ${code}"${tip?` title="${esc(tip)}"`:""}>${esc(lab)}</span>`;
   const row=a=>{const q=r[a.id];const parts=partsOf(a);const open=st.tlEdit===a.id;
     const one=(x,qq,lab)=>{const c=stat(x,qq);return chip(c,(lab?lab+": ":"")+T["tl_st_"+c])};
-    const chips=a.cont?chip("todo",T.tl_st_cont):(parts?parts.map(n=>one(n,raw[n.id],PLAT_LABEL[n.track])).join(""):one(a,q,""))+(blocks(a).length?chip("blocked",T.tl_st_blocked):"")+(a.moved>0?chip("moved",tf("tl_moved",{n:a.moved})):"");
+    const chips=a.cont?chip("todo",T.tl_st_cont):(parts?parts.map(n=>one(n,raw[n.id],PLAT_LABEL[n.track])).join(""):one(a,q,""))+(blocks(a).length?chip("blocked",T.tl_st_blocked):"")+(a.moved>0?chip("moved",tf("tl_moved",{n:a.moved}),reasonTxt(a.reasons)):"");
     const dates=parts?parts.map(n=>`<span><em>${PLAT_LABEL[n.track]}</em>${when(a,n,raw[n.id])}</span>`).join(""):`<span>${when(a,a,q)}</span>`;
     const meta=[laneLabel(a.lane),a.plat!=="both"?tf("tl_only",{p:PLAT_LABEL[a.plat]}):"",a.extra?T.tl_extra:"",a.joint&&a.nodes&&!a.cont&&tracked(src)?T.tl_shared:""].filter(Boolean).map(esc).join(" · ");
     // Each platform holds one done box and one date: the day it was done, or the day it ends while it is open.
+    // A postponed end (one set by hand) asks why: a category and an optional note.
+    const why=(x,pa,name)=>{if(!x.end||x.done)return"";const rs=x.reason||{};
+      return`<label>${T.tl_reason} <select data-act="${esc(a.id)}" data-f="reason${name}"${pa}>${["",...REASONS].map(k=>`<option value="${k}"${(rs.type||"")===k?" selected":""}>${k?T["reason_"+k]:T.tl_reason_pick}</option>`).join("")}</select></label><label>${T.tl_reason_note} <input type="text" class="pnote" data-act="${esc(a.id)}" data-f="reasonNote${name}"${pa} value="${esc(rs.note||"")}"></label>`};
     const cell=(x,lab,qq,plat)=>{const pa=plat?` data-plat="${plat}"`:"";const name=plat?"Plat":"";
-      return`<div class="pcell"><label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<label>${T.tl_done_on} <input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}"></label>`:`<label>${T.tl_end_on} <input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}"></label>`}</div>`};
+      return`<div class="pcell"><label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<label>${T.tl_done_on} <input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}"></label>`:`<label>${T.tl_end_on} <input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}"></label>${why(x,pa,name)}`}</div>`};
     const n=a.steps.filter(id=>byId[id]&&inScope(byId[id].plat)).length;
     const edit=open&&!a.cont?`<div class="pedit">${a.done?"":`<label class="pdays">${T.tl_h_days} <input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days"></label>`}${parts?parts.map(x=>cell(x,PLAT_LABEL[x.track],raw[x.id],x.track)).join(""):cell(a,T.tl_h_done,q,"")}${blocks(a).map(b=>`<small class="pblk">${esc(b)}</small>`).join("")}</div>`:"";
     return`<div class="prow${q.crit?" crit":""}${a.done?" done":""}${open?" open":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}<small>${meta} · <button class="plink" type="button" data-openact="${esc(a.id)}">${n?tf("act_open",{n}):T.act_view}</button></small></span></div><div class="pst">${chips}</div><div class="pwhen">${dates}</div><div class="pact">${a.cont?"":`<button class="btn" type="button" data-tledit="${esc(a.id)}" aria-expanded="${open}">${open?T.tl_close:T.tl_edit}</button>`}</div>${edit}</div>`};
@@ -226,7 +239,8 @@ function renderTimeline(){
 // ---------- Export the plan as CSV (opens in Excel; imports in project tools)
 // One row per activity and platform. Real progress is what is done; expected progress is the share of the committed
 // period already gone (baseline in instance.json, or the plan without page edits when there is none); the deviation
-// is the current end minus that reference. The header says where the data came from.
+// is the current end minus that reference. The header says where the data came from. Slack is how many days a
+// pending activity can slip before the end of the plan moves.
 function exportCsv(official){
   const c=cur();const live=planSrc();const preset=st.client==="preset"&&PRESET_CLIENT;
   const src=official&&preset?{start:PRESET_CLIENT.start||"",plan:PRESET_CLIENT.plan||{},extra:PRESET_CLIENT.extra||[]}:live;
@@ -236,15 +250,15 @@ function exportCsv(official){
   const base=(c&&c.baseline)||{};const decs=(c&&c.open)||[];const local=!official&&!!localDiff();
   const rows=[];
   v.list.forEach(a=>(a.nodes||[a]).forEach(n=>{const q=v.raw[n.id]||v.r[a.id];const b=(v.before&&v.before[n.id])||q;const done=!!n.done;
-    const cm=base[n.id]??base[n.act];const refE=cm?dayOf(s0,cm):b.e;const refS=cm?refE-(q.e-q.s):b.s;
+    const bl=baseOf(base,n,s0);const refE=bl?bl.e:b.e;const refS=bl?bl.s:b.s;const rs=n.end&&!done?n.reason:null;
     const blk=n.track?((a.plats[n.track]||{}).blocked||""):Object.values(a.plats).map(x=>x.blocked).filter(Boolean).join(" | ");
     const code=done?"done":a.cont?"cont":blk?"blocked":q.late?"late":q.s<=today?"now":"todo";
     const exp=a.cont?"":refE<=refS?(today>=refE?100:0):Math.max(0,Math.min(100,Math.round((today-refS)/(refE-refS)*100)));
     const plat=n.track?PLAT_LABEL[n.track]:a.joint&&tracked(src)?T.csv_joint:PLAT_LABEL[a.plat];
     rows.push([a.num,a.name,(STAGES[stageOf[a.id]]||[""])[0],laneLabel(a.lane),plat,iso(q.s),a.cont?"":iso(q.e),T["tl_st_"+code],a.cont?"":done?100:0,exp,
-      a.cont?"":iso(refE),a.cont?"":q.e-refE,cm?T.csv_ref_base:T.csv_ref_plan,a.ms?a.ms.name:"",blk,decs.filter(d=>((d.blocks||[]).includes(a.id)||d.id===a.id)&&(!d.platform||!n.track||d.platform===n.track)).map(d=>d.id).join(" "),
-      n.end&&!done?q.e-((v.same&&v.same[n.id])||b).e:0,q.crit?T.csv_yes:"",a.steps.join(" ")])}));
-  const head=["csv_h_num","csv_h_act","csv_h_stage","csv_h_owner","csv_h_plat","csv_h_start","csv_h_end","csv_h_status","csv_h_real","csv_h_expected","csv_h_ref_end","csv_h_dev","csv_h_ref","csv_h_ms","csv_h_block","csv_h_dec","csv_h_moved","csv_h_crit","csv_h_steps"].map(k=>T[k]);
+      a.cont?"":iso(refE),a.cont?"":q.e-refE,bl?T.csv_ref_base:T.csv_ref_plan,a.ms?a.ms.name:"",blk,decs.filter(d=>((d.blocks||[]).includes(a.id)||d.id===a.id)&&(!d.platform||!n.track||d.platform===n.track)).map(d=>d.id).join(" "),
+      n.end&&!done?q.e-((v.same&&v.same[n.id])||b).e:0,rs?T["reason_"+rs.type]:"",rs&&rs.note||"",q.crit?T.csv_yes:"",q.slack??"",a.steps.join(" ")])}));
+  const head=["csv_h_num","csv_h_act","csv_h_stage","csv_h_owner","csv_h_plat","csv_h_start","csv_h_end","csv_h_status","csv_h_real","csv_h_expected","csv_h_ref_end","csv_h_dev","csv_h_ref","csv_h_ms","csv_h_block","csv_h_dec","csv_h_moved","csv_h_reason","csv_h_reason_note","csv_h_crit","csv_h_slack","csv_h_steps"].map(k=>T[k]);
   const meta=[[T.csv_client,c?c.name:T.client_base_option],[T.csv_generated,todayIso],[T.csv_start,s0],[T.csv_source,local?T.csv_src_local:T.csv_src_official],[T.csv_baseline,Object.keys(base).length?T.csv_ref_base:T.csv_ref_plan],[]];
   const cell=x=>{const s=String(x??"");return/[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
   // Semicolons and a BOM so Excel in Spanish opens it in columns with accents intact.
@@ -270,15 +284,23 @@ function onPlanChange(e){
       toast(tf("tl_end_before",{d:d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})}));renderTimeline();return}
     // The date the plan already shows is not a postponement: nothing to store.
     const own=t.dataset.plat?((o.platforms||{})[t.dataset.plat]||{}).end:o.end;if(q&&!own&&dayOf(src.start,t.value)===q.e)return}
-  if(f==="end"){if(t.value)o.end=t.value;else delete o.end}
-  if(f==="done"){if(t.checked){o.done=src.start||todayISO();delete o.end}else delete o.done}
+  // The reason belongs to the end it explains: it goes when the end goes. A note alone counts as "other".
+  const setWhy=(x,k,v)=>{const w={...(x.reason||{})};if(k==="type"){if(v)w.type=v;else delete w.type}else{if(v.trim())w.note=v.trim();else delete w.note}
+    if(w.note&&!w.type)w.type="other";if(w.type)x.reason=w;else delete x.reason};
+  if(f==="end"){if(t.value)o.end=t.value;else{delete o.end;delete o.reason}}
+  if(f==="reason")setWhy(o,"type",t.value);
+  if(f==="reasonNote")setWhy(o,"note",t.value);
+  if(f==="done"){if(t.checked){o.done=src.start||todayISO();delete o.end;delete o.reason}else delete o.done}
   if(f==="doneDate"&&t.value)o.done=t.value;
-  if(["donePlat","donePlatDate","endPlat"].includes(f)){const p=t.dataset.plat,pl={...(o.platforms||{})};
+  if(["donePlat","donePlatDate","endPlat","reasonPlat","reasonNotePlat"].includes(f)){const p=t.dataset.plat,pl={...(o.platforms||{})};
     if(o.done){targets().forEach(x=>{pl[x]={...(pl[x]||{}),done:o.done}});delete o.done}
     const q={...(pl[p]||{})};
     if(f==="donePlatDate"){if(t.value)q.done=t.value}
-    else if(f==="endPlat"){if(t.value)q.end=t.value;else delete q.end}
-    else if(t.checked){q.done=src.start||todayISO();delete q.end}else delete q.done;
+    else if(f==="endPlat"){if(t.value)q.end=t.value;else{delete q.end;delete q.reason}}
+    // An end written for the whole activity keeps its reason there too.
+    else if(f==="reasonPlat")setWhy(q.end?q:o,"type",t.value);
+    else if(f==="reasonNotePlat")setWhy(q.end?q:o,"note",t.value);
+    else if(t.checked){q.done=src.start||todayISO();delete q.end;delete q.reason}else delete q.done;
     if(Object.keys(q).length)pl[p]=q;else delete pl[p];if(Object.keys(pl).length)o.platforms=pl;else delete o.platforms}
   if(Object.keys(o).length)plan[id]=o;else delete plan[id];savePlan(src.start,plan);
 }
@@ -305,7 +327,7 @@ function renderRoadmap(){
   const mls=list.filter(a=>a.ms).map(a=>({a,pts:a.nodes.map(n=>({n,q:raw[n.id],done:!!n.done}))})).sort((x,y)=>Math.max(...x.pts.map(p=>p.q.e))-Math.max(...y.pts.map(p=>p.q.e)));
   const msLab=(a,p)=>a.ms.name+(p.n.track&&a.nodes.length>1?" · "+PLAT_LABEL[p.n.track]:"");
   // Committed dates come from the baseline of instance.json, per platform (key@ios) or per activity.
-  const base=(c&&c.baseline)||{};const committed=p=>{const k=base[p.n.id]??base[p.n.act];return k?dayOf(s0,k):null};
+  const base=(c&&c.baseline)||{};const committed=p=>{const b=baseOf(base,p.n,s0);return b?b.e:null};
   let msRows="";
   // A milestone is the end of its activity: the row names the activity, opens it, and lists the dates.
   // With two platforms on different dates, iOS sits in the upper half of the row and Android in the lower one.
@@ -320,8 +342,14 @@ function renderRoadmap(){
   STAGES.forEach((g,i)=>{const acts=list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i);if(!acts.length)return;
     rows+=`<div class="grow stg"><div class="gl">${esc(g[0])}</div><div class="gt">${ticks}${todayLine}</div></div>`;
     acts.forEach(a=>{const tipOf=(x,q)=>x.done?tf("rm_done_on",{d:fd(q.e)}):a.cont?tf("tl_continuous",{d:fd(q.s)}):tf("rm_until",{a:fd(q.s),b:fd(q.e)});
-      const bar=(x,q,cls,lab)=>{const left=pct(q.s),w=a.cont?100-left:Math.max(pct(q.e)-left,.5);return`<span class="gbar ${a.cont?"cont":statOf(x,q)}${q.crit?" crit":""}${(x.nodes?x.moved>0:x.end&&!x.done)?" moved":""}${cls}" style="left:${left}%;width:${w}%" title="${esc(a.num+" · "+a.name+" · "+lab+tipOf(x,q))}"></span>`};
-      const two=multi&&view==="all"&&!a.joint&&a.nodes.length>1;const marks=two?a.nodes.map((n,k)=>bar(n,raw[n.id]," t"+k,PLAT_LABEL[n.track]+" · ")).join(""):bar(a,r[a.id],"","");
+      const why=x=>{const t=reasonTxt(x.nodes?x.reasons:x.end&&!x.done?[x.reason]:[]);return t?` · ${T.tl_reason}: ${t}`:""};
+      // Slack, when shown, runs from the end of the bar to the latest end that keeps the plan's end in place.
+      const slack=(x,q,cls)=>!st.rmSlack||x.done||a.cont||!q.slack?"":`<span class="gslack${cls}" style="left:${pct(q.e)}%;width:${Math.max(pct(q.e+q.slack)-pct(q.e),.5)}%" title="${esc(tf("rm_slack_tip",{n:q.slack,d:fd(q.e+q.slack)}))}"></span>`;
+      // A pending activity of 0 days has no width: it is drawn as a marker on its date.
+      const bar=(x,q,cls,lab)=>{const left=pct(q.s),w=a.cont?100-left:Math.max(pct(q.e)-left,.5);const zero=!a.cont&&!x.done&&q.s===q.e;return`<span class="gbar ${a.cont?"cont":statOf(x,q)}${zero?" zero":""}${q.crit?" crit":""}${(x.nodes?x.moved>0:x.end&&!x.done)?" moved":""}${cls}" style="left:${left}%;width:${w}%" title="${esc(a.num+" · "+a.name+" · "+lab+tipOf(x,q)+why(x))}"></span>${slack(x,q,cls)}`};
+      // The baseline sits as a thin bar under the current one, so the gap shows without reading dates.
+      const bline=(n,cls)=>{const b=baseOf(base,n,s0);return b?`<span class="gbl${cls}" style="left:${pct(b.s)}%;width:${Math.max(pct(b.e)-pct(b.s),.5)}%" title="${esc(T.rm_base_bar+": "+short(b.s)+" → "+short(b.e))}"></span>`:""};
+      const two=multi&&view==="all"&&!a.joint&&a.nodes.length>1;const marks=two?a.nodes.map((n,k)=>bline(n," t"+k)+bar(n,raw[n.id]," t"+k,PLAT_LABEL[n.track]+" · ")).join(""):(a.nodes.length===1?bline(a.nodes[0],""):"")+bar(a,r[a.id],"","");
       // The milestone of this activity, at the end of its bar.
       const msMark=!a.ms?"":two?a.nodes.map((n,k)=>dia(a,{n,q:raw[n.id],done:!!n.done},k?" down":" up",msLab(a,{n}))).join(""):dia(a,{n:a,q:r[a.id],done:!!a.done},"",a.ms.name);
       rows+=`<div class="grow" data-act="${esc(a.id)}"><div class="gl" data-openact="${esc(a.id)}" role="button" tabindex="0" title="${esc(a.name+(a.steps.length?" · "+a.steps.filter(id=>byId[id]&&inScope(byId[id].plat)&&(view!=="ios"&&view!=="android"||byId[id].plat==="both"||byId[id].plat===view)).join(", "):""))}"><b>${esc(a.num)}</b>${esc(a.name)}${a.ms?`<small class="msn">◆ ${esc(a.ms.name)}</small>`:""}</div><div class="gt">${ticks}${marks}${msMark}${todayLine}</div></div>`})});
@@ -335,7 +363,9 @@ function renderRoadmap(){
   // Deviation: the largest gap between the current and the committed date among pending milestones.
   const devs=nextPts.map(x=>({...x,cm:committed(x.p)})).filter(x=>x.cm!==null).map(x=>({...x,dv:x.p.q.e-x.cm}));const dev=devs.sort((x,y)=>y.dv-x.dv)[0];
   const stCode=late.length?"late":moved.length||blocked.length||(dev&&dev.dv>0)?"risk":"ok";
-  const why=stCode==="late"?tf("rm_status_why_late",{n:late.length}):moved.length||blocked.length?tf("rm_status_why_risk",{m:moved.length,b:blocked.length}):dev&&dev.dv>0?tf("rm_status_why_dev",{n:dev.dv}):T.rm_status_why_ok;
+  // The most frequent reason among postponed activities, so the summary says why they moved.
+  const rc={};moved.forEach(a=>[...new Set(a.reasons.map(x=>x.type))].forEach(k=>{rc[k]=(rc[k]||0)+1}));const topWhy=Object.keys(rc).sort((x,y)=>rc[y]-rc[x])[0];
+  const why=stCode==="late"?tf("rm_status_why_late",{n:late.length}):moved.length||blocked.length?tf("rm_status_why_risk",{m:moved.length,b:blocked.length})+(topWhy?" "+tf("rm_status_cause",{c:T["reason_"+topWhy]}):""):dev&&dev.dv>0?tf("rm_status_why_dev",{n:dev.dv}):T.rm_status_why_ok;
   const pub=list.find(a=>a.id==="release");
   const summary=`<div class="rmsum"><div class="st-${stCode}"><small>${T.rm_status}</small><b>${T["rm_status_"+stCode]}</b><span>${why}</span></div>
     <div><small>${T.rm_next_ms}</small><b>${nx?esc(msLab(nx.a,nx.p)):T.rm_next_ms_none}</b>${nx?`<span>${tf("rm_next_ms_in",{d:fd(nx.p.q.e),n:Math.max(0,nx.p.q.e-today)})}</span>`:""}</div>
@@ -353,8 +383,8 @@ function renderRoadmap(){
     return{l,now:ids(a=>r[a.id].s<=today&&r[a.id].e>=today),next:ids(a=>r[a.id].s>today&&r[a.id].s<=today+14),late:ids(a=>status(a)==="late"),blk:ids(a=>blocked.includes(a))}}).filter(x=>x.now||x.next||x.late||x.blk);
   const areaBox=`<div class="rmsec"><h3>${T.rm_area_h}</h3>${areas.length?`<div class="rmtabw"><table class="rmtab"><thead><tr><th></th><th>${T.rm_area_h_now}</th><th>${T.rm_area_h_next}</th><th>${T.rm_late}</th><th>${T.rm_blocked}</th></tr></thead><tbody>${areas.map(x=>`<tr><td><b>${esc(laneLabel(x.l))}</b></td><td>${x.now||"—"}</td><td>${x.next||"—"}</td><td class="${x.late?"over":""}">${x.late||"—"}</td><td>${x.blk||"—"}</td></tr>`).join("")}</tbody></table></div>`:`<p class="plain">${T.rm_area_none}</p>`}</div>`;
   const isoOf=n=>{const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+n);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
-  // The baseline holds the committed end of every activity (per platform), so the export can measure each deviation.
-  const baseJson=JSON.stringify({baseline:Object.fromEntries(pv.nodes.filter(n=>!n.cont).map(n=>[n.id,isoOf(raw[n.id].e)]))},null,2).replace(/^\{\n|\n\}$/g,"");
+  // The baseline holds the committed start and end of every activity (per platform), so the export can measure each deviation.
+  const baseJson=JSON.stringify({baseline:Object.fromEntries(pv.nodes.filter(n=>!n.cont).map(n=>[n.id,{start:isoOf(raw[n.id].s),end:isoOf(raw[n.id].e)}]))},null,2).replace(/^\{\n|\n\}$/g,"");
   let trackBox="",seg="";
   if(multi){const gate=planGate(pv);const gname=gate?list.find(a=>a.id===gate.id):null;
     seg=`<div class="seg" id="rmSeg" role="group" aria-label="${T.rm_view}">${[["all",T.rm_joint],["ios",T.plat_ios],["android",T.plat_android]].map(([k,l])=>`<button type="button" data-track="${k}" aria-pressed="${st.track===k}">${l}</button>`).join("")}</div>`;
@@ -369,12 +399,13 @@ function renderRoadmap(){
   <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi late"><small>${T.rm_moved}</small><b>${moved.length}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(end)}</b><span>${tf("rm_left",{n:left})}</span></div></div>
   <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
   ${areaBox}
+  <div class="rmgtools"><button class="btn" type="button" id="rmSlack" aria-pressed="${!!st.rmSlack}">${st.rmSlack?T.rm_slack_hide:T.rm_slack_show}</button></div>
   <div class="gantt"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div></div>${rows}</div></div>
-  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span>${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
+  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span>${Object.keys(base).length?`<span><i class="gbl" style="position:static;display:inline-block;width:14px"></i>${T.rm_base_bar}</span>`:""}${st.rmSlack?`<span><i class="gslack" style="position:static;display:inline-block;width:14px;height:10px"></i>${T.rm_leg_slack}</span>`:""}${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
   <div class="rmcols"><div><h3>${T.rm_list_ms}</h3>${li(nextPts.slice(0,5),({a,p})=>`<li><b>◆</b> ${esc(msLab(a,p))} <small>${fd(p.q.e)} · ${T["rm_ms_"+a.ms.type]}</small></li>`)}</div><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_late}</h3>${li(late,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
-  <div><h3>${T.rm_list_moved}</h3>${li(moved,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("tl_moved",{n:a.moved})} · ${fd(r[a.id].e)}</small></li>`)}</div></div></details>`;
+  <div><h3>${T.rm_list_moved}</h3>${li(moved,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("tl_moved",{n:a.moved})} · ${fd(r[a.id].e)}${a.reasons.length?" · "+esc(reasonTxt(a.reasons)):""}</small></li>`)}</div></div></details>`;
 }
 
 // ---------- Track a version (milestones)
@@ -553,7 +584,7 @@ instBox.addEventListener("click",e=>{if(e.target.closest("#saveInst"))saveInst()
 renlist.addEventListener("change",e=>{const i=e.target.closest("[data-ren]");if(i)setRen(i.dataset.ren,i.value)});
 document.getElementById("timeline").addEventListener("change",onPlanChange);
 document.getElementById("roadmap").addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches(".rmdetail"))st.rmOpen=e.target.open},true);
-document.getElementById("roadmap").addEventListener("click",e=>{if(onCsv(e))return;onLocal(e);if(e.target.id==="rmPrint"){setTab("rm");const dt=document.querySelector(".rmdetail");if(dt)dt.open=true;window.print()}
+document.getElementById("roadmap").addEventListener("click",e=>{if(onCsv(e))return;onLocal(e);if(e.target.id==="rmSlack"){st.rmSlack=!st.rmSlack;LSW("mapm-rmslack",st.rmSlack);renderRoadmap();return}if(e.target.id==="rmPrint"){setTab("rm");const dt=document.querySelector(".rmdetail");if(dt)dt.open=true;window.print()}
   if(e.target.id==="rmBase"){const txt=e.target.dataset.json;const show=()=>{const ta=document.getElementById("rmBaseTxt");ta.hidden=false;ta.value=txt;ta.select()};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>toast(T.rm_base_copied),show);else show()}const b=e.target.closest("[data-track]");if(b){st.track=b.dataset.track;renderRoadmap()}
   // A milestone leads to its activity in the schedule, on the same tab; the schedule row opens the steps.
   const gm=e.target.closest("[data-gomsact]");if(gm){st.rmOpen=true;renderRoadmap();const row=document.querySelector(`.rmdetail .grow[data-act="${CSS.escape(gm.dataset.gomsact)}"]`);

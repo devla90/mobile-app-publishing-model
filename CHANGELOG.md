@@ -5,19 +5,24 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 ## [Unreleased]
 
 ### Added
-- Plan tests in `check_page.py`, on `clients/example` with a fixed clock: forecast from today, platforms and joint activities, postponements, refused end dates, the CSV export and the local date. Every pull request runs them in a browser (`--require-browser`); locally they are optional, and `CHECK_PAGE_BROWSER=chrome` or `msedge` uses the browser already installed instead of downloading one.
+- "Exportar CSV" on the plan and the roadmap: one row per activity and platform with area, dates, status, real and expected progress, deviation against the baseline (or the plan without edits), milestone, blocker, decisions, slack and steps. A header records the source; with local changes the page asks whether to export the official plan or those changes.
+- Reason for each postponement: next to an end set by hand, `reason` holds a category (external blocker, another activity, pending decision, team, scope, other) and an optional note. The plan asks for it, the roadmap shows it and names the most frequent one, and the CSV exports it.
+- Slack: the CSV has it per activity and platform, and the roadmap schedule shows it behind the button "Mostrar holgura".
+- The roadmap schedule draws the baseline as a thin bar under each activity.
+- Plan tests in `check_page.py`, on `clients/example` with a fixed clock: forecast from today, platforms and joint activities, postponements and their reasons, refused end dates, slack, the baseline, the CSV export and the local date. Every pull request runs them in a browser (`--require-browser`); locally they are optional, and `CHECK_PAGE_BROWSER=chrome` or `msedge` uses the browser already installed instead of downloading one.
+- `clients/example` has a baseline.
+
+### Changed
+- **Breaking:** `baseline` entries are `{ "start", "end" }` instead of an end date. Expected progress uses the committed start instead of deducing it from the current duration. To migrate, open the roadmap with the plan as approved, use "Copiar plan como línea base" and replace the old entries.
+- The baseline covers every activity: "Copiar plan como línea base" copies the start and end of each one, per platform.
+- `validate.py` rejects a client activity with the id of an open decision; client activities use a prefix per theme.
 
 ### Fixed
 - The plan forecasts from today: an open activity whose end has passed is taken to end today and what follows moves with it, so the end date of the plan no longer looks better than it is. It still shows as late.
 - An end date before the activity can start, after its predecessors, is refused with a notice instead of shortening the activity.
 - "Today" is the local date: in the evening, west of Greenwich, the page took it as the next day.
-
-### Added
-- "Exportar CSV" on the plan and the roadmap: one row per activity and platform with area, dates, status, real and expected progress, deviation against the baseline (or the plan without edits), milestone, blocker, decisions and steps. A header records the source; with local changes the page asks whether to export the official plan or those changes.
-
-### Changed
-- `validate.py` rejects a client activity with the id of an open decision; client activities use a prefix per theme.
-- The baseline covers every activity: "Copiar plan como línea base" copies the end date of each one, per platform.
+- A pending activity of 0 days is drawn as a marker in the schedule instead of a bar with no width.
+- Counts of one read "1 día" instead of "1 días".
 
 ## [3.1.0] - 2026-11-03
 

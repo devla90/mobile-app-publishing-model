@@ -79,12 +79,13 @@ def plan_tests(browser):
     v = page.evaluate("""()=>{const s=planSrc();const v=planView(s,s.start);const j=v.nodes.find(n=>n.id==="security-approval");
       return {today:dayOf(s.start,todayISO()),first:v.raw["decide-owner"],firstPlanned:v.before["decide-owner"],next:v.raw["approve-stores@ios"],
         iosOnly:[!!v.raw["register-app-ids@ios"],!!v.raw["register-app-ids@android"]],joint:[v.raw[j.id].s,Math.max(...j.after.map(x=>v.raw[x].e))],
-        nodes:v.nodes.length}}""")
+        nodes:v.nodes.length,slack:v.nodes.filter(n=>!n.cont&&!n.done).map(n=>[v.raw[n.id].crit,v.raw[n.id].slack])}}""")
     check(v["first"]["late"] and v["first"]["e"] == v["today"], f"forecast: an overdue activity should end today ({v['first']})")
     check(v["firstPlanned"]["e"] == 6, f"forecast: the plan as written should keep the planned end ({v['firstPlanned']})")
     check(v["next"]["s"] >= v["today"], f"forecast: what follows an overdue activity should not start before today ({v['next']})")
     check(v["iosOnly"] == [True, False], f"platforms: an iOS-only activity should have no Android node ({v['iosOnly']})")
     check(v["joint"][0] == v["joint"][1], f"joint: a joint activity should start when the last platform is ready ({v['joint']})")
+    check(all(sl == 0 for c, sl in v["slack"] if c) and any(sl > 0 for c, sl in v["slack"] if not c), f"slack: critical activities should have 0 and some others more ({v['slack']})")
     page.click("#tabRm"); check("Atrasado" in page.inner_text(".rmsum"), "roadmap: an overdue plan should read as late")
     # An end date before the predecessors is refused; a later one is stored as a postponement.
     page.evaluate("""()=>onPlanChange({target:{dataset:{act:"define-identifiers",f:"endPlat",plat:"android"},value:"2026-11-03"}})""")
@@ -96,17 +97,42 @@ def plan_tests(browser):
       return {stored:(s.plan["create-store-app"]||{}).platforms,moved:a.moved,next:v.raw["issue-certificates@android"].s,end:v.raw["create-store-app@android"].e}}""")
     check(p["stored"] and p["stored"]["android"]["end"] == later, f"postponement: the new end should be stored ({p['stored']})")
     check(p["moved"] == 10 and p["next"] >= p["end"], f"postponement: it should count 10 days and move what follows ({p})")
+    # The reason sits next to the end it explains; a note alone counts as "other" until a category is chosen.
+    page.evaluate("""()=>{const t={dataset:{act:"create-store-app",plat:"android"}};onPlanChange({target:{...t,dataset:{...t.dataset,f:"reasonNotePlat"},value:"Tienda en revisión"}});
+      onPlanChange({target:{...t,dataset:{...t.dataset,f:"reasonPlat"},value:"external"}})}""")
+    why = page.evaluate("()=>planSrc().plan['create-store-app'].platforms.android.reason")
+    check(why == {"type": "external", "note": "Tienda en revisión"}, f"reason: it should be stored with the end ({why})")
+    page.click("#tabRm"); page.click(".rmdetail summary")
+    check("Bloqueo externo" in page.inner_text(".rmdetail"), "reason: the roadmap should list the postponement with its reason")
+    # Baseline bars are always drawn; the slack only while the toggle is on.
+    check(page.locator(".rmdetail .gbl").count() > 0, "baseline: the gantt should draw the committed bars")
+    check(page.locator(".gslack").count() == 0, "slack: it should be hidden by default")
+    page.click("#rmSlack"); shown = page.locator(".gslack").count(); page.click("#rmSlack")
+    check(shown > 0 and page.locator(".gslack").count() == 0, f"slack: the toggle should show and hide it ({shown})")
     # CSV: one row per activity and platform; the official export ignores the browser changes.
     meta, head, rows = export(page, official=False)
-    check(len(head) == 19 and len(rows) == v["nodes"], f"csv: expected 19 columns and {v['nodes']} rows, got {len(head)} and {len(rows)}")
+    check(len(head) == 22 and len(rows) == v["nodes"], f"csv: expected 22 columns and {v['nodes']} rows, got {len(head)} and {len(rows)}")
     row = next((r for r in rows if r[1].startswith("Crea la app") and r[4] == "Android"), None)
     # Postponed by hand 10 days, on top of what the overdue first activity already pushed: the deviation counts both.
     check(row and row[16] == "10" and int(row[11]) > 10, f"csv: the postponed row should show 10 days moved by hand and a larger deviation ({row})")
+    check(row and row[17] == "Bloqueo externo" and row[18] == "Tienda en revisión", f"csv: the postponed row should carry its reason ({row})")
+    check(all(r[20].isdigit() for r in rows if r[7] not in ("Hecha", "Continua")), "csv: every pending row should have its slack")
     check(meta.get("Origen", "").startswith("Con cambios"), f"csv: the source should say it has local changes ({meta})")
     meta, head, rows = export(page, official=True)
     row = next((r for r in rows if r[1].startswith("Crea la app") and r[4] == "Android"), None)
     check(meta.get("Origen", "").startswith("Plan oficial") and row and row[16] == "0", f"csv: the official export should ignore local changes ({meta}, {row})")
     check(any(r[15] == "D1" for r in rows if r[1].startswith("Custodia")), "csv: an open decision should appear on the activity it holds back")
+    fail += [f"page error: {e}" for e in errors]; ctx.close()
+    # Expected progress uses the committed start: changing the duration later must not move it (2–8 Nov, day 3 of 6).
+    ctx, page, errors = page_at(dt.datetime(2026, 11, 5, 10, 0, tzinfo=LIMA))
+    page.evaluate("""()=>onPlanChange({target:{dataset:{act:"decide-owner",f:"days"},value:"12"}})""")
+    meta, head, rows = export(page, official=False); row = rows[0]
+    check(row[9] == "50" and row[11] == "6", f"baseline: expected 50% and 6 days of deviation against the committed dates ({row})")
+    # A pending activity of 0 days is a visible marker, not a bar with no width.
+    page.evaluate("""()=>onPlanChange({target:{dataset:{act:"assign-access",f:"days"},value:"0"}})""")
+    page.click("#tabRm"); page.click(".rmdetail summary")
+    check(page.locator(".rmdetail .gbar.zero").count() > 0, "gantt: a pending activity of 0 days should be drawn as a marker")
+    check("1 día," in page.evaluate("()=>tf('rm_slack_tip',{n:1,d:'x'})"), "strings: n=1 should use the singular variant")
     fail += [f"page error: {e}" for e in errors]; ctx.close()
     # At 21:30 in Lima it is already the next day in UTC: "today" must stay local.
     ctx, page, _ = page_at(dt.datetime(2026, 11, 4, 2, 30, tzinfo=dt.timezone.utc))
