@@ -42,6 +42,7 @@ def load_model():
     m["PAIRS"] = [[*p["roles"], p["risk"], p["severity"]] for p in act["incompatible_pairs"]]
     m["C"] = {k: [v["name"], v["validity"]] for k, v in cred["items"].items()}
     m["F"] = {k: [v["name"], v["format"]] for k, v in art["items"].items()}
+    m["APPLIES"] = {s["id"]: s["applies_if"] for s in stp["steps"] if s.get("applies_if")}
     m["V"] = {k: [v["name"], [f'{o["key"]}) {o["text"]}' for o in v["options"]], v.get("platform", "both")] for k, v in var["items"].items()}
     m["FREQ"] = pha["frequencies"]
     m["PH"] = [[f["id"], f["name"], f["frequency"]] for f in pha["phases"]]
@@ -94,6 +95,21 @@ def tf(t, key, **vars):
     return s
 
 
+def variant_skips(m, t, instance):
+    """Steps that do not apply to this client: the conditional ones it skips, and those that exist only with
+    another option of a variant it chose (applies_if). Each with its reason."""
+    if not instance: return {}
+    chosen = instance.get("variants", {})
+    out = {}
+    for sid, cond in m["APPLIES"].items():
+        for vid, key in cond.items():
+            if chosen.get(vid) and chosen[vid] != key:
+                opt = next(o for o in m["V"][vid][1] if o.startswith(chosen[vid] + ")"))
+                out[sid] = tf(t, "skip_variant", v=vid, o=opt)
+    out.update(instance.get("step_skips", {}))
+    return out
+
+
 def js_data(m, t, instance=None):
     d = lambda v: json.dumps(v, ensure_ascii=False)
     s = [f"const T={d(t)};"]
@@ -115,7 +131,10 @@ def js_data(m, t, instance=None):
     s.append(f'const VER_PH={d(m["VER_PH"])};')
     s.append(f'const REN={d(m["REN"])};')
     s.append(f'const PAIRS={d(m["PAIRS"])};')
-    s.append(f'const ACT={d(m["ACT"])};')
+    # A client may do a step in another activity of the model (step_moves): the page shows it there.
+    moves, skips = (instance or {}).get("step_moves", {}), variant_skips(m, t, instance)
+    acts = [[*a[:9], [x for x in moves if moves[x] == a[0]] + [x for x in a[9] if x not in moves and x not in skips], *a[10:]] for a in m["ACT"]]
+    s.append(f'const ACT={d(acts)};')
     s.append(f'const ARROWS={d(m["ARROWS"])};')
     s.append(f'const MS={d(m["MS"])};')
     # Static site: no shared db. The Claude artifact build removes the next line (see docs/deployment.md).
@@ -133,6 +152,9 @@ def js_data(m, t, instance=None):
         inst["baseline"] = instance.get("baseline", {})
         inst["log"] = instance.get("plan_log", [])
         inst["risks"] = instance.get("risks", [])
+        inst["moves"] = {sid: next(a[0] for a in m["ACT"] if sid in a[9]) for sid in instance.get("step_moves", {})}
+        inst["notes"] = instance.get("notes", {})
+        inst["skips"] = {sid: {"from": next(a[0] for a in m["ACT"] if sid in a[9]), "reason": why} for sid, why in variant_skips(m, t, instance).items()}
         s.append(f'const PRESET_CLIENT={d(inst)};')
         # The whole instance as written, so the page can hand back an updated instance.json (docs/conventions.md#plan-updates).
         s.append(f'const PRESET_RAW={d(instance).replace("</", "<\\/")};')
@@ -395,6 +417,22 @@ def diff_md(m, t, inst):
         num = lambda k: str(m["NUM"].get(k, k))
         for x in inst["open_decisions"]:
             out.append(f'| {x["id"]} | {x["name"]} | {x["owner"]} | {x["due"]} | {", ".join(map(num, x.get("blocks", [])))}{" (" + t["plat_" + x["platform"]] + ")" if x.get("platform") else ""} |')
+    if inst.get("step_moves"):
+        num = lambda k: str(m["NUM"].get(k, k))
+        frm = {sid: next(a[0] for a in m["ACT"] if sid in a[9]) for sid in inst["step_moves"]}
+        out.append(""); out.append(f'## {t["diff_moves"]}')
+        out.append(f'| {t["diff_h_step"]} | {t["diff_h_from"]} | {t["diff_h_to"]} |'); out.append("| --- | --- | --- |")
+        for sid, to in inst["step_moves"].items(): out.append(f'| {sid} | {num(frm[sid])} | {num(to)} |')
+    if inst.get("notes"):
+        num = lambda k: str(m["NUM"].get(k, k))
+        out.append(""); out.append(f'## {t["diff_notes"]}')
+        for k, ns in inst["notes"].items():
+            out.append(""); out.append(f'**{num(k)}**'); out += [f"- {x}" for x in ns]
+    if variant_skips(m, t, inst):
+        num = lambda k: str(m["NUM"].get(k, k))
+        out.append(""); out.append(f'## {t["diff_skips"]}')
+        out.append(f'| {t["diff_h_step"]} | {t["diff_h_from"]} | {t["diff_h_reason"]} |'); out.append("| --- | --- | --- |")
+        for sid, why in variant_skips(m, t, inst).items(): out.append(f'| {sid} | {num(next(a[0] for a in m["ACT"] if sid in a[9]))} | {why} |')
     risks = [x for x in inst.get("risks", []) if x.get("status", "open") == "open"]
     if risks:
         out.append(""); out.append(f'## {t["rm_risk_h"]}')

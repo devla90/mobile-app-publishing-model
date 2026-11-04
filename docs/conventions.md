@@ -41,6 +41,7 @@ Every file in `model/` has `description`, `lang` and then the data. Every elemen
 - `inputs` and `outputs`: free text with `C` and `F` IDs inside, or a short description if there is no formal artifact.
 - `depends_on`: list of existing step IDs. "Cannot start without the output of". Empty if it can start whenever decided.
 - `variants`: `V` IDs that change how the step is executed.
+- `applies_if`: optional, `{ "<V id>": "<option key>" }` for a step that exists only with that option, such as S5.5 (transfer an app from another account) with V11 b. A client that chose another option does not see the step: its sheet names it under "No aplican en este cliente". Without a choice, the step shows. The variant must also be in `variants`.
 - `note`: optional. What an operator must know that does not fit in the name.
 
 ### Adding a step
@@ -132,6 +133,12 @@ Where something belongs:
 | One sector or country | The regulatory profile (`PR-<SECTOR>-<COUNTRY>`) |
 
 When the same client activity shows up in a second or third client, move it up instead of copying it.
+
+When a client does a step of the model in another activity of the model, for example because a policy delays it, `step_moves` says where: `{ "<step id>": "<activity key>" }`. The page shows the step in that activity, first, with the note "movido desde la actividad N", and no longer in its own; `diff.md` lists the moves. The step keeps its dependencies; move the activity's `after` in `plan` too if the order changes. `validate.py` rejects an unknown step or activity, a move to where the step already is and a step whose platform does not fit the activity. Only activities of the model are targets; a client activity relates to steps through `refs`.
+
+A conditional step (its `note` starts with "Condicional", such as the ones that apply only if the app charges or is distributed in the EU) that does not apply to a client goes in `step_skips`: `{ "<step id>": "<reason>" }`. The sheet of its activity drops it from the steps and names it, with the reason, under "No aplican en este cliente"; `diff.md` lists them. `validate.py` accepts only conditional steps, requires a reason and rejects a step that is also moved. Steps that depend on a variant option need no entry here: `applies_if` in the model drops them once the client chooses another option.
+
+`notes` keeps what a client needs to know about an activity, shown on its sheet under "Notas del cliente": `{ "<activity key or client id>": ["<paragraph>", ...] }`. Text is escaped; `**text**` is shown in bold. Notes are short and practical (a name that must match a registry, an app that coexists with the new one); long working documents stay outside the instance. `diff.md` lists them. Notes live outside `plan`, so a page edit of the activity never keeps an old copy.
 
 IDs of client activities use a prefix per theme and a number (`PI1` for a pilot run, `ST1` for waiting on a store access), never the prefix of the client's decisions (`D`) or open points (`O`): an activity that waits for decision D1 is not decision D1. `validate.py` rejects an activity with the id of an open decision.
 

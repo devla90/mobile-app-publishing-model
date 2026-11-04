@@ -16,7 +16,7 @@ Status: `OK` confirmed at the source · `CORRECTED` the model said otherwise and
 | 4 | Tiempo de D-U-N-S: Apple indica hasta 5 días hábiles para asignar y hasta 2 adicionales para que Apple lo reciba | S0 | OK | https://developer.apple.com/support/D-U-N-S/ |
 | 5 | Roles: Account Holder (uno), Admin, App Manager, Developer, Marketing, Finance, Customer Support | A03, A05 | OK | https://developer.apple.com/help/account/manage-your-team/roles/ |
 | 6 | Certificado Apple Distribution: vigencia 1 año; **uno por tipo de distribución por equipo**; solo Account Holder o Admin lo crean | C06, S6.2, R02 | CORRECTED (previously "máximo 3 por equipo") | https://developer.apple.com/help/account/certificates/certificates-overview/ |
-| 7 | Perfiles de aprovisionamiento: vigencia 1 año, uno por target y tipo | C08, T01–T07, R03 | OK | https://developer.apple.com/help/account/provisioning-profiles/ |
+| 7 | Perfiles de aprovisionamiento: vigencia 1 año, uno por target (app y extensiones) y tipo | C08, R03 | OK | https://developer.apple.com/help/account/provisioning-profiles/ |
 | 8 | Clave APNs (.p8): no vence; se descarga una sola vez; máximo 2 activas por equipo | C10, S7.1 | OK | https://developer.apple.com/help/account/keys/create-a-private-key/ |
 | 9 | Claves de App Store Connect API: de equipo (Admin, App Manager, Developer, Marketing, Finance, Customer Support) o individuales; se descargan una sola vez | C12 | OK | https://developer.apple.com/help/app-store-connect/get-started/app-store-connect-api/ |
 | 10 | TestFlight: 100 testers internos, 10 000 externos, builds válidos 90 días | S10, S11, R20 | OK | https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/ |

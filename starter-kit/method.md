@@ -136,6 +136,9 @@ Same shape as a partial instance plus a list of controls. Name it by the axes th
   "extra_activities": [ { "id": "X1", "name": "<client-only activity>", "lane": "L1", "days": 10, "after": ["<key>"],
                           "tasks": ["<what has to be done>"], "refs": ["<model step it relates to>"] } ],
   "open_decisions": [ { "id": "D1", "name": "<pending decision>", "owner": "<team>", "opened": "<date>", "due": "<date>", "blocks": ["<key>"] } ],
+  "notes": { "<key>": ["<what the team must know for this activity>"] },
+  "step_skips": { "<conditional step id>": "<why it does not apply>" },
+  "step_moves": { "<step id>": "<activity key where this client does it>" },
   "risks": [ { "id": "RG1", "name": "<what may happen>", "severity": "high", "owner": "<team>", "mitigation": "<what is done>", "affects": ["<key>"] } ],
   "plan_log": [ { "date": "<YYYY-MM-DD>", "changes": ["<what changed in the plan>"] } ],
   "baseline": { "<key>": { "start": "<committed YYYY-MM-DD>", "end": "<committed YYYY-MM-DD>" } }

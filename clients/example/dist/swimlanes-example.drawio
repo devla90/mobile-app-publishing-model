@@ -88,7 +88,7 @@
         <mxCell id="act-3-n" value="3" style="ellipse;html=1;fillColor=#0E9384;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-3" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-5" label="Crea las cuentas&lt;br&gt;de desarrollador" n="5" lane="L2" stage="Cuentas y acuerdos" phases="S2, S3">
+        <object id="act-5" label="Crea las cuentas&lt;br&gt;de desarrollador" n="5" lane="L2" stage="Cuentas y acuerdos" phases="S1, S2, S3">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E6F6F4;strokeColor=#0E9384;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L2" vertex="1">
             <mxGeometry x="3" y="176" width="158" height="56" as="geometry" />
           </mxCell>

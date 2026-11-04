@@ -4,6 +4,16 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- `notes` in instances: short notes per activity, shown on the activity sheet under "Notas del cliente" (with `**bold**`) and listed in `diff.md`.
+- `applies_if` on steps: a step that exists only with one option of a variant. S5.5 (transfer an app from another account) now applies only with V11 b; a client that chose V11 a no longer sees it.
+- `step_skips` in instances: conditional steps that do not apply to a client, each with its reason. The activity sheet drops them and names them under "No aplican en este cliente", and `diff.md` lists them.
+- `step_moves` in instances: a client may do a step of the model in another activity. The activity sheet shows it there with a note, and `diff.md` lists the moves.
+
+### Changed
+- S5.2 names the targets (the main app and each extension, such as a notification service extension) instead of the undefined codes T01–T06.
+- S1.4 (Apple Account of the holder) moves from activity 3 to activity 5, where the enrolment happens. Activity 5 now lists phase S1.
+
 ## [4.1.0] - 2026-11-03
 
 ### Added
