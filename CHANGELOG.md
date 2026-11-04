@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-11-04
+
 ### Added
 - The start of an activity can be set on the page (`plan.<key>.start`, also per platform): the real start, or the earliest date it may start. It moves the activity and what follows without changing its duration, counts as postponed with its reason, and goes to `plan_log`. A start before the predecessors end is refused.
 - "Plan y fechas" shows the duration of every pending activity under its dates, in working or calendar days.
