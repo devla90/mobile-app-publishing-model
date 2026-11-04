@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-11-03
+
 ### Added
 - "Descargar instance.json": the page downloads the whole instance with the plan edited in the browser, ready to replace the file in the client folder. It replaces the copy of fragments.
 - `risks` in instances: what may still move the plan, with severity (high or medium), owner, mitigation, affected activities and status. Each affected activity shows them on its sheet, and `diff.md` lists them.
