@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-03
+
 ### Added
 - "Exportar CSV" on the plan and the roadmap: one row per activity and platform with area, dates, status, real and expected progress, deviation against the baseline (or the plan without edits), milestone, blocker, decisions, slack and steps. A header records the source; with local changes the page asks whether to export the official plan or those changes.
 - Reason for each postponement: next to an end set by hand, `reason` holds a category (external blocker, another activity, pending decision, team, scope, other) and an optional note. The plan asks for it, the roadmap shows it and names the most frequent one, and the CSV exports it.
