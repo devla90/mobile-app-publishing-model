@@ -4,6 +4,19 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- The start of an activity can be set on the page (`plan.<key>.start`, also per platform): the real start, or the earliest date it may start. It moves the activity and what follows without changing its duration, counts as postponed with its reason, and goes to `plan_log`. A start before the predecessors end is refused.
+- "Plan y fechas" shows the duration of every pending activity under its dates, in working or calendar days.
+- The CSV has "Duración (días)" and "Tipo de días" after "Fin" (24 columns).
+
+### Changed
+- The milestone of activity 23 is "Despliegue completo" (end of the staged rollout). The day the app becomes visible is the store approval milestone and the publication date of the summary.
+
+### Fixed
+- A client page kept in the browser from an older build takes every field of `instance.json` except the plan, its start and the variants. A copy saved before the working calendar ignored the holidays and could end an activity on one.
+- The schedule axis shows the full year ("dic 2026"); "dic 26" read like a day. The legends explain the holiday bands.
+- "Aplazada N días" counts only what an activity's own start or end moved it; it no longer adds delays inherited from activities before it.
+
 ## [5.0.0] - 2026-11-04
 
 ### Added

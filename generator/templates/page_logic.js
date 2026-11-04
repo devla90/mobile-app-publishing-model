@@ -52,11 +52,12 @@ function planChanges(){const c=cur();if(!c||!PRESET_CLIENT)return[];const d=loca
   if(d.start)out.push(tf("log_start",{a:fdt(PRESET_CLIENT.start||""),b:fdt(c.start||"")}));
   const acts=planActs({start:c.start||"",plan:{},extra:c.extra||[]},true,true);const was=PRESET_CLIENT.plan||{},now=c.plan||{};
   // The values that apply to one platform: its own entry over the activity's.
-  const eff=(o,p)=>{const q=p?((o.platforms||{})[p]||{}):{};return{done:q.done??o.done??null,end:q.end??o.end??null,reason:(q.end?q.reason:o.reason)||null,days:q.days??o.days??null,blocked:q.blocked||null}};
+  const eff=(o,p)=>{const q=p?((o.platforms||{})[p]||{}):{};return{done:q.done??o.done??null,start:q.start??o.start??null,end:q.end??o.end??null,reason:((q.end||q.start)?q.reason:o.reason)||null,days:q.days??o.days??null,blocked:q.blocked||null}};
   const parts=(o,n,def)=>{const r=[];
     if(JSON.stringify(o.done)!==JSON.stringify(n.done))r.push(n.done?tf("log_done",{d:fdt(n.done)}):T.log_undone);
+    if(o.start!==n.start)r.push(n.start?(o.start?tf("log_start_act",{a:fdt(o.start),b:fdt(n.start)}):tf("log_start_new",{b:fdt(n.start)})):T.log_start_off);
     if(o.end!==n.end)r.push(n.end?(o.end?tf("log_end",{a:fdt(o.end),b:fdt(n.end)}):tf("log_end_new",{b:fdt(n.end)})):T.log_end_off);
-    if(n.end&&JSON.stringify(o.reason)!==JSON.stringify(n.reason)&&n.reason)r.push(tf("log_reason",{r:reasonTxt([n.reason])}));
+    if((n.end||n.start)&&JSON.stringify(o.reason)!==JSON.stringify(n.reason)&&n.reason)r.push(tf("log_reason",{r:reasonTxt([n.reason])}));
     if(o.days!==n.days)r.push(tf("log_days",{a:o.days??def,b:n.days??def}));
     if(o.blocked!==n.blocked)r.push(n.blocked?tf("log_blocked",{b:n.blocked}):T.log_unblocked);return r};
   d.acts.forEach(k=>{const a=acts.find(x=>x.id===k);if(!a)return;const o=was[k]||{},n=now[k]||{};const head=a.num===a.id?a.id+" "+a.name:a.num+" "+a.name;const lines=[];
@@ -76,7 +77,7 @@ function downloadInstance(){const c=cur();if(!c||!PRESET_RAW)return;const change
   if(last&&last.date===day)last.changes=[...last.changes,...changes.filter(x=>!last.changes.includes(x))];else log.push({date:day,changes});raw.plan_log=log;
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(raw,null,2)+"\n"],{type:"application/json"}));a.download="instance.json";
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast(T.local_downloaded)}
-function loadLocal(){if(PRESET_CLIENT)moveShared();clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(!PRESET_CLIENT){delete clients.preset;Object.values(clients).forEach(c=>{if(c.plan&&c.planV!==PLAN_V){delete c.plan;c.planV=PLAN_V}})}if(PRESET_CLIENT){if(!clients.preset)clients.preset={...PRESET_CLIENT,planBase:PRESET_CLIENT.plan||{},planV:PLAN_V,startBase:PRESET_CLIENT.start||""};else{const p=clients.preset;p.extra=PRESET_CLIENT.extra;p.lanes=PRESET_CLIENT.lanes;p.open=PRESET_CLIENT.open;p.risks=PRESET_CLIENT.risks;p.moves=PRESET_CLIENT.moves;p.skips=PRESET_CLIENT.skips;p.notes=PRESET_CLIENT.notes;p.baseline=PRESET_CLIENT.baseline;syncPresetPlan(p);p.variants={...(PRESET_CLIENT.variants||{}),...(p.variants||{})};syncPresetStart(p)}LSW("mapm-clients",clients)}if(PRESET_CLIENT&&!st.client)st.client="preset"}
+function loadLocal(){if(PRESET_CLIENT)moveShared();clients=LS("mapm-clients")||{};versions=LS("mapm-versions")||{};if(!PRESET_CLIENT){delete clients.preset;Object.values(clients).forEach(c=>{if(c.plan&&c.planV!==PLAN_V){delete c.plan;c.planV=PLAN_V}})}if(PRESET_CLIENT){if(!clients.preset)clients.preset={...PRESET_CLIENT,planBase:PRESET_CLIENT.plan||{},planV:PLAN_V,startBase:PRESET_CLIENT.start||""};else{const p=clients.preset;/* Everything but the plan, its start and the variants comes from instance.json as built: a browser copy of an older build must not hide new fields (calendar, risks, notes). */Object.keys(PRESET_CLIENT).filter(k=>!["plan","start","variants"].includes(k)).forEach(k=>{p[k]=PRESET_CLIENT[k]});syncPresetPlan(p);p.variants={...(PRESET_CLIENT.variants||{}),...(p.variants||{})};syncPresetStart(p)}LSW("mapm-clients",clients)}if(PRESET_CLIENT&&!st.client)st.client="preset"}
 const uid=()=>Math.random().toString(36).slice(2,10);
 async function putClient(id,data){clients[id]=data;if(db&&canWrite){try{await db.doc("clients/"+id).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-clients",clients)}
 async function putVersion(cid,vid,data){versions[cid]=versions[cid]||{};versions[cid][vid]=data;if(db&&canWrite){try{await db.doc("clients/"+cid+"/versions/"+vid).set(data);return}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setStore()}}}LSW("mapm-versions",versions)}
@@ -159,7 +160,7 @@ async function savePlan(start,plan){const c=cur();if(c){const n={...c,plan};if(s
 function planActs(src,ignoreDone,ignoreEnd){
   const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],steps:r[9],ms:r[10],cal:r[11],extra:false,i}));
   const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,steps:[],ms:x.milestone||null,cal:x.calendar||"work",extra:true,i:ACT.length+j}));
-  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),end:ignoreEnd?null:(o.end??null),reason:ignoreEnd?null:(o.reason??null),plats:o.platforms||{}}});
+  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),start:ignoreEnd?null:(o.start??null),end:ignoreEnd?null:(o.end??null),reason:ignoreEnd?null:(o.reason??null),plats:o.platforms||{}}});
 }
 // Why an end date was moved: one category and an optional note, stored next to that end.
 const REASONS=["external","dependency","decision","team","scope","other"];
@@ -180,18 +181,27 @@ function workCal(start){if(!start)return null;const k=calOf();const base=new Dat
   // n working days from s: the end is the next working day after the last one used, where what follows starts.
   const add=(s,n)=>{if(!n)return s;let o=s,c=0;for(let i=0;c<n&&i<3660;i++){if(isWork(o))c++;o++}return next(o)};
   return{isWork,next,add}}
+// Days an activity moved by its own start or end set by hand: its end against where its predecessors let it end.
+// What it inherits from other activities is not counted.
+const ownShift=(n,q,W)=>{const wk=W&&n.cal!=="calendar";return q.e1-(wk?W.add(W.next(q.s0),n.days):q.s0+n.days)};
+// Duration an activity takes as planned now: working days between its start and end, or every day for one that
+// runs on calendar days. None for what is done or continuous; without a start date, the days as written.
+function durOf(a,x,q,W){if(a.cont||x.done||!q)return null;if(!W)return x.days??a.days;
+  if((x.cal||a.cal)==="calendar")return q.e-q.s;let c=0;for(let o=q.s;o<q.e;o++)if(W.isWork(o))c++;return c}
 // Forecast from today: an open activity whose end has passed is taken to end today, so what follows moves with it
 // and the end date of the plan stays real. It keeps late=true. Without a start date, or with noForecast, it plans
 // as written: that is the reference the deviation is measured against. s0 is the earliest start its predecessors allow.
 function planCalc(list,start,noForecast){
   const by=Object.fromEntries(list.map(a=>[a.id,a]));const r={};const today=start&&!noForecast?dayOf(start,todayISO()):null;const W=workCal(start);
-  const fin=(s,e,s0)=>{const late=today!==null&&e<today;return{s,e:late?today:e,late,s0}};
+  const fin=(s,e,s0)=>{const late=today!==null&&e<today;return{s,e:late?today:e,late,s0,e1:e}};
   const go=(id,seen)=>{if(r[id])return r[id];const a=by[id];if(!a||seen.has(id))return null;seen.add(id);
     const prev=a.after.map(x=>go(x,seen)).filter(Boolean);const s0=Math.max(0,...prev.map(p=>p.e));
     if(a.done){const d=dayOf(start,a.done);return r[id]={s:d,e:d,done:true}}
     if(a.cont)return r[id]={s:s0,e:s0};
-    if(a.end&&start){const e=dayOf(start,a.end);return r[id]=fin(Math.min(s0,e),e,s0)}
-    const wk=W&&a.cal!=="calendar";const s=wk?W.next(s0):s0;return r[id]=fin(s,wk?W.add(s,a.days):s+a.days,s0)};
+    // A start set by hand (the real start, or the earliest one allowed) moves the activity without changing its duration.
+    const fs=a.start&&start?Math.max(s0,dayOf(start,a.start)):s0;
+    if(a.end&&start){const e=dayOf(start,a.end);return r[id]=fin(Math.min(fs,e),e,s0)}
+    const wk=W&&a.cal!=="calendar";const s=wk?W.next(fs):fs;return r[id]=fin(s,wk?W.add(s,a.days):s+a.days,s0)};
   list.forEach(a=>go(a.id,new Set()));
   // Critical path: no slack between an activity and the latest finish it can have.
   const work=list.filter(a=>!a.cont&&!a.done);const end=Math.max(0,...work.map(a=>r[a.id].e));const lf={};
@@ -207,7 +217,7 @@ function planNodes(acts,ignoreEnd){
   const depOn=(id,p)=>{const d=by[id];if(!d)return[];if(d.joint)return[id];return on(d,p)?[`${id}@${p}`]:d.after.flatMap(x=>depOn(x,p))};
   return acts.flatMap(a=>{
     if(a.joint)return[{...a,act:a.id,track:null,after:[...new Set(ts.flatMap(p=>a.after.flatMap(x=>depOn(x,p))))]}];
-    return ts.filter(p=>on(a,p)).map(p=>{const q=a.plats[p]||{};return{...a,id:`${a.id}@${p}`,act:a.id,track:p,after:[...new Set(a.after.flatMap(x=>depOn(x,p)))],days:q.days??a.days,end:ignoreEnd?null:(q.end??a.end),reason:ignoreEnd?null:((q.end?q.reason:a.reason)??null),done:a.done??q.done??null}})})}
+    return ts.filter(p=>on(a,p)).map(p=>{const q=a.plats[p]||{};return{...a,id:`${a.id}@${p}`,act:a.id,track:p,after:[...new Set(a.after.flatMap(x=>depOn(x,p)))],days:q.days??a.days,start:ignoreEnd?null:(q.start??a.start),end:ignoreEnd?null:(q.end??a.end),reason:ignoreEnd?null:(((q.end||q.start)?q.reason:a.reason)??null),done:a.done??q.done??null}})})}
 // The plan as one view: "all" or empty gives every activity, "ios" or "android" only that platform's.
 // list and r are keyed by activity; nodes and raw keep the detail per platform. moved compares each activity
 // with the plan before any date was changed, for the ones whose end date was set by hand.
@@ -216,11 +226,13 @@ function planView(src,start,view){
   // Three readings of the plan: current (forecast and page edits), same (forecast, no edits: what moved by hand) and
   // before (as written: no forecast, no edits: the reference for the deviation when there is no baseline).
   const build=(noEnd,noForecast)=>{const acts=planActs(src,false,noEnd);const nodes=plain?acts.map(a=>({...a,act:a.id,track:null})):planNodes(acts,noEnd);return{acts,nodes,...planCalc(nodes,start,noForecast)}};
-  const{acts,nodes,r:raw}=build(false,false);const same=build(true,false).r;const before=build(true,true).r;const r={};
+  const{acts,nodes,r:raw}=build(false,false);const same=build(true,false).r;const before=build(true,true).r;const r={};const W=workCal(start);
   const list=acts.map(a=>{const ns=nodes.filter(n=>n.act===a.id&&(!view||view==="all"||!n.track||n.track===view));if(!ns.length)return null;
     const qs=ns.map(n=>raw[n.id]);const all=ns.every(n=>n.done);r[a.id]={s:Math.min(...qs.map(q=>q.s)),e:Math.max(...qs.map(q=>q.e)),done:all,crit:qs.some(q=>q.crit),late:qs.some(q=>q.late)};
     const sl=qs.map(q=>q.slack).filter(x=>x!==undefined);if(sl.length)r[a.id].slack=Math.min(...sl);
-    const hn=ns.filter(n=>n.end&&!n.done);const hand=hn.map(n=>raw[n.id].e-same[n.id].e);
+    // Postponed by hand: how much its own start or end moved it, against where its predecessors let it end.
+    // What it inherits from other activities is not counted here.
+    const hn=ns.filter(n=>(n.end||n.start)&&!n.done);const hand=hn.map(n=>ownShift(n,raw[n.id],W));
     return{...a,done:all?(ns.map(n=>n.done).filter(x=>typeof x==="string").sort().at(-1)||true):null,nodes:ns,moved:hand.length?hand.reduce((x,y)=>Math.abs(y)>Math.abs(x)?y:x):0,reasons:hn.map(n=>n.reason).filter(Boolean)}}).filter(Boolean);
   const work=list.filter(a=>!a.cont&&!a.done);
   return{list,r,raw,nodes,before,same,end:Math.max(0,...work.map(a=>r[a.id].e))}}
@@ -244,19 +256,22 @@ function renderTimeline(){
   const F={all:a=>true,open:a=>!a.done&&!a.cont,week:a=>!a.done&&!a.cont&&today!==null&&r[a.id].s<=today+7&&r[a.id].e>=today,late:a=>!a.cont&&stat(a,r[a.id])==="late",blocked:a=>blocks(a).length>0};
   const f=F[st.tlFilter]?st.tlFilter:"all";
   const partsOf=a=>!a.joint&&a.nodes&&a.nodes.length>1?a.nodes:null;
+  const W=workCal(s0);
+  const dur=(a,x,q)=>{const n=durOf(a,x,q,W);return !n?"":`<small class="pdur">${tf(x.cal==="calendar"||a.cal==="calendar"?"tl_dur_cal":"tl_dur_work",{n})}</small>`};
   const when=(a,x,q)=>a.cont?tf("tl_continuous",{d:fd(q.s)}):x.done?fd(q.e):q.s===q.e?fd(q.e):`${fd(q.s)} → ${fd(q.e)}`;
   const chip=(code,lab,tip)=>`<span class="tst ${code}"${tip?` title="${esc(tip)}"`:""}>${esc(lab)}</span>`;
   const row=a=>{const q=r[a.id];const parts=partsOf(a);const open=st.tlEdit===a.id;
     const one=(x,qq,lab)=>{const c=stat(x,qq);return chip(c,(lab?lab+": ":"")+T["tl_st_"+c])};
     const chips=a.cont?chip("todo",T.tl_st_cont):(parts?parts.map(n=>one(n,raw[n.id],PLAT_LABEL[n.track])).join(""):one(a,q,""))+(blocks(a).length?chip("blocked",T.tl_st_blocked):"")+(a.moved>0?chip("moved",tf("tl_moved",{n:a.moved}),reasonTxt(a.reasons)):"");
-    const dates=parts?parts.map(n=>`<span><em>${PLAT_LABEL[n.track]}</em>${when(a,n,raw[n.id])}</span>`).join(""):`<span>${when(a,a,q)}</span>`;
-    const meta=[laneLabel(a.lane),a.plat!=="both"?tf("tl_only",{p:PLAT_LABEL[a.plat]}):"",a.extra?T.tl_extra:"",a.joint&&a.nodes&&!a.cont&&tracked(src)?T.tl_shared:""].filter(Boolean).map(esc).join(" · ");
+    const dates=parts?parts.map(n=>`<span><em>${PLAT_LABEL[n.track]}</em>${when(a,n,raw[n.id])}${dur(a,n,raw[n.id])}</span>`).join(""):`<span>${when(a,a,q)}${dur(a,a,q)}</span>`;
+    const fixed=(a.nodes||[a]).filter(n=>n.start&&!n.done).map(n=>fd(raw[n.id]?raw[n.id].s:q.s));
+    const meta=[laneLabel(a.lane),a.plat!=="both"?tf("tl_only",{p:PLAT_LABEL[a.plat]}):"",a.extra?T.tl_extra:"",a.joint&&a.nodes&&!a.cont&&tracked(src)?T.tl_shared:"",fixed.length?tf("tl_start_meta",{d:[...new Set(fixed)].join(" / ")}):""].filter(Boolean).map(esc).join(" · ");
     // Each platform holds one done box and one date: the day it was done, or the day it ends while it is open.
     // A postponed end (one set by hand) asks why: a category and an optional note.
-    const why=(x,pa,name)=>{if(!x.end||x.done)return"";const rs=x.reason||{};
+    const why=(x,pa,name)=>{if(!(x.end||x.start)||x.done)return"";const rs=x.reason||{};
       return`<label>${T.tl_reason} <select data-act="${esc(a.id)}" data-f="reason${name}"${pa}>${["",...REASONS].map(k=>`<option value="${k}"${(rs.type||"")===k?" selected":""}>${k?T["reason_"+k]:T.tl_reason_pick}</option>`).join("")}</select></label><label>${T.tl_reason_note} <input type="text" class="pnote" data-act="${esc(a.id)}" data-f="reasonNote${name}"${pa} value="${esc(rs.note||"")}"></label>`};
     const cell=(x,lab,qq,plat)=>{const pa=plat?` data-plat="${plat}"`:"";const name=plat?"Plat":"";
-      return`<div class="pcell"><label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<label>${T.tl_done_on} <input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}"></label>`:`<label>${T.tl_end_on} <input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}"></label>${why(x,pa,name)}`}</div>`};
+      return`<div class="pcell"><label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<label>${T.tl_done_on} <input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}"></label>`:`<label>${T.tl_start_on} <input type="date" data-act="${esc(a.id)}" data-f="start${name}"${pa} value="${iso(qq.s)}"></label><label>${T.tl_end_on} <input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}"></label>${why(x,pa,name)}`}</div>`};
     const n=a.steps.filter(id=>byId[id]&&inScope(byId[id].plat)).length;
     const edit=open&&!a.cont?`<div class="pedit">${a.done?"":`<label class="pdays">${a.cal==="calendar"?T.tl_h_days_cal:T.tl_h_days_work} <input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days"></label>`}${parts?parts.map(x=>cell(x,PLAT_LABEL[x.track],raw[x.id],x.track)).join(""):cell(a,T.tl_h_done,q,"")}${blocks(a).map(b=>`<small class="pblk">${esc(b)}</small>`).join("")}</div>`:"";
     return`<div class="prow${q.crit?" crit":""}${a.done?" done":""}${open?" open":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}<small>${meta} · <button class="plink" type="button" data-openact="${esc(a.id)}">${n?tf("act_open",{n}):T.act_view}</button></small></span></div><div class="pst">${chips}</div><div class="pwhen">${dates}</div><div class="pact">${a.cont?"":`<button class="btn" type="button" data-tledit="${esc(a.id)}" aria-expanded="${open}">${open?T.tl_close:T.tl_edit}</button>`}</div>${edit}</div>`};
@@ -288,15 +303,15 @@ function exportCsv(official){
   const base=(c&&c.baseline)||{};const decs=(c&&c.open)||[];const local=!official&&!!localDiff();
   const rows=[];
   v.list.forEach(a=>(a.nodes||[a]).forEach(n=>{const q=v.raw[n.id]||v.r[a.id];const b=(v.before&&v.before[n.id])||q;const done=!!n.done;
-    const bl=baseOf(base,n,s0);const refE=bl?bl.e:b.e;const refS=bl?bl.s:b.s;const rs=n.end&&!done?n.reason:null;
+    const bl=baseOf(base,n,s0);const refE=bl?bl.e:b.e;const refS=bl?bl.s:b.s;const rs=(n.end||n.start)&&!done?n.reason:null;const W=workCal(s0);const du=durOf(a,n,q,W);
     const blk=n.track?((a.plats[n.track]||{}).blocked||""):Object.values(a.plats).map(x=>x.blocked).filter(Boolean).join(" | ");
     const code=done?"done":a.cont?"cont":blk?"blocked":q.late?"late":q.s<=today?"now":"todo";
     const exp=a.cont?"":refE<=refS?(today>=refE?100:0):Math.max(0,Math.min(100,Math.round((today-refS)/(refE-refS)*100)));
     const plat=n.track?PLAT_LABEL[n.track]:a.joint&&tracked(src)?T.csv_joint:PLAT_LABEL[a.plat];
-    rows.push([a.num,a.name,(STAGES[stageOf[a.id]]||[""])[0],laneLabel(a.lane),plat,iso(q.s),a.cont?"":iso(q.e),T["tl_st_"+code],a.cont?"":done?100:0,exp,
+    rows.push([a.num,a.name,(STAGES[stageOf[a.id]]||[""])[0],laneLabel(a.lane),plat,iso(q.s),a.cont?"":iso(q.e),du??"",du===null?"":(n.cal||a.cal)==="calendar"?T.csv_dur_cal:T.csv_dur_work,T["tl_st_"+code],a.cont?"":done?100:0,exp,
       a.cont?"":iso(refE),a.cont?"":q.e-refE,bl?T.csv_ref_base:T.csv_ref_plan,a.ms?a.ms.name:"",blk,decs.filter(d=>((d.blocks||[]).includes(a.id)||d.id===a.id)&&(!d.platform||!n.track||d.platform===n.track)).map(d=>d.id).join(" "),
-      n.end&&!done?q.e-((v.same&&v.same[n.id])||b).e:0,rs?T["reason_"+rs.type]:"",rs&&rs.note||"",q.crit?T.csv_yes:"",q.slack??"",a.steps.join(" ")])}));
-  const head=["csv_h_num","csv_h_act","csv_h_stage","csv_h_owner","csv_h_plat","csv_h_start","csv_h_end","csv_h_status","csv_h_real","csv_h_expected","csv_h_ref_end","csv_h_dev","csv_h_ref","csv_h_ms","csv_h_block","csv_h_dec","csv_h_moved","csv_h_reason","csv_h_reason_note","csv_h_crit","csv_h_slack","csv_h_steps"].map(k=>T[k]);
+      (n.end||n.start)&&!done&&q.e1!==undefined?ownShift(n,q,W):0,rs?T["reason_"+rs.type]:"",rs&&rs.note||"",q.crit?T.csv_yes:"",q.slack??"",a.steps.join(" ")])}));
+  const head=["csv_h_num","csv_h_act","csv_h_stage","csv_h_owner","csv_h_plat","csv_h_start","csv_h_end","csv_h_dur","csv_h_dur_type","csv_h_status","csv_h_real","csv_h_expected","csv_h_ref_end","csv_h_dev","csv_h_ref","csv_h_ms","csv_h_block","csv_h_dec","csv_h_moved","csv_h_reason","csv_h_reason_note","csv_h_crit","csv_h_slack","csv_h_steps"].map(k=>T[k]);
   const meta=[[T.csv_client,c?c.name:T.client_base_option],[T.csv_generated,todayIso],[T.csv_start,s0],[T.csv_source,local?T.csv_src_local:T.csv_src_official],[T.csv_baseline,Object.keys(base).length?T.csv_ref_base:T.csv_ref_plan],[T.csv_updated,planUpdated()||""],[]];
   const cell=x=>{const s=String(x??"");return/[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
   // Semicolons and a BOM so Excel in Spanish opens it in columns with accents intact.
@@ -316,6 +331,12 @@ function onPlanChange(e){
   const id=t.dataset.act,f=t.dataset.f;if(!id)return;const plan={...src.plan};const o={...(plan[id]||{})};
   const base=ACT.find(x=>x[0]===id);const ext=src.extra.find(x=>String(x.id)===id);const def=base?base[3]:ext.days;
   if(f==="days"){const v=Math.max(0,parseInt(t.value,10)||0);if(v===def)delete o.days;else o.days=v;delete o.end}
+  // A start before the predecessors end would break the order of the plan: refuse it. The start the plan already
+  // shows is not a change.
+  if((f==="start"||f==="startPlat")&&t.value&&src.start){const v=planView(src,src.start);const q=v.raw[t.dataset.plat?`${id}@${t.dataset.plat}`:id]||v.r[id];
+    const s0=q&&(q.s0??q.s);if(s0!==undefined&&dayOf(src.start,t.value)<s0){const d=new Date(src.start+"T00:00:00");d.setDate(d.getDate()+s0);
+      toast(tf("tl_start_before",{d:d.toLocaleDateString(T.lang,{day:"numeric",month:"short",year:"numeric"})}));renderTimeline();return}
+    const own=t.dataset.plat?((o.platforms||{})[t.dataset.plat]||{}).start:o.start;if(q&&!own&&dayOf(src.start,t.value)===q.s)return}
   // An end date before the activity can start (after its predecessors) would shorten it silently: refuse it.
   if((f==="end"||f==="endPlat")&&t.value&&src.start){const v=planView(src,src.start);const q=v.raw[t.dataset.plat?`${id}@${t.dataset.plat}`:id]||v.r[id];
     const s0=q&&(q.s0??q.s);if(s0!==undefined&&dayOf(src.start,t.value)<s0){const d=new Date(src.start+"T00:00:00");d.setDate(d.getDate()+s0);
@@ -325,20 +346,22 @@ function onPlanChange(e){
   // The reason belongs to the end it explains: it goes when the end goes. A note alone counts as "other".
   const setWhy=(x,k,v)=>{const w={...(x.reason||{})};if(k==="type"){if(v)w.type=v;else delete w.type}else{if(v.trim())w.note=v.trim();else delete w.note}
     if(w.note&&!w.type)w.type="other";if(w.type)x.reason=w;else delete x.reason};
-  if(f==="end"){if(t.value)o.end=t.value;else{delete o.end;delete o.reason}}
+  if(f==="end"){if(t.value)o.end=t.value;else{delete o.end;if(!o.start)delete o.reason}}
+  if(f==="start"){if(t.value)o.start=t.value;else{delete o.start;if(!o.end)delete o.reason}}
   if(f==="reason")setWhy(o,"type",t.value);
   if(f==="reasonNote")setWhy(o,"note",t.value);
-  if(f==="done"){if(t.checked){o.done=src.start||todayISO();delete o.end;delete o.reason}else delete o.done}
+  if(f==="done"){if(t.checked){o.done=src.start||todayISO();delete o.end;delete o.start;delete o.reason}else delete o.done}
   if(f==="doneDate"&&t.value)o.done=t.value;
-  if(["donePlat","donePlatDate","endPlat","reasonPlat","reasonNotePlat"].includes(f)){const p=t.dataset.plat,pl={...(o.platforms||{})};
+  if(["donePlat","donePlatDate","endPlat","startPlat","reasonPlat","reasonNotePlat"].includes(f)){const p=t.dataset.plat,pl={...(o.platforms||{})};
     if(o.done){targets().forEach(x=>{pl[x]={...(pl[x]||{}),done:o.done}});delete o.done}
     const q={...(pl[p]||{})};
     if(f==="donePlatDate"){if(t.value)q.done=t.value}
-    else if(f==="endPlat"){if(t.value)q.end=t.value;else{delete q.end;delete q.reason}}
+    else if(f==="endPlat"){if(t.value)q.end=t.value;else{delete q.end;if(!q.start)delete q.reason}}
+    else if(f==="startPlat"){if(t.value)q.start=t.value;else{delete q.start;if(!q.end)delete q.reason}}
     // An end written for the whole activity keeps its reason there too.
-    else if(f==="reasonPlat")setWhy(q.end?q:o,"type",t.value);
-    else if(f==="reasonNotePlat")setWhy(q.end?q:o,"note",t.value);
-    else if(t.checked){q.done=src.start||todayISO();delete q.end;delete q.reason}else delete q.done;
+    else if(f==="reasonPlat")setWhy(q.end||q.start?q:o,"type",t.value);
+    else if(f==="reasonNotePlat")setWhy(q.end||q.start?q:o,"note",t.value);
+    else if(t.checked){q.done=src.start||todayISO();delete q.end;delete q.start;delete q.reason}else delete q.done;
     if(Object.keys(q).length)pl[p]=q;else delete pl[p];if(Object.keys(pl).length)o.platforms=pl;else delete o.platforms}
   if(Object.keys(o).length)plan[id]=o;else delete plan[id];savePlan(src.start,plan);
 }
@@ -368,7 +391,7 @@ function renderRoadmap(){
   // Month ticks
   // Holidays of the client: a faint line in every row, named in its tooltip.
   let ticks=((cur()||{}).calendar||{holidays:[]}).holidays?.map(h=>{const n=dayOf(s0,h.date);return n>=lo&&n<=hi?`<span class="ghol" style="left:${pct(n)}%" title="${esc(tf("rm_holiday",{n:h.name}))}"></span>`:""}).join("")||"",labels="";const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+lo);d.setDate(1);d.setMonth(d.getMonth()+1);
-  for(let k=0;k<24;k++){const n=dayOf(s0,isoDate(d));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"2-digit"})}</span>`;d.setMonth(d.getMonth()+1)}
+  for(let k=0;k<24;k++){const n=dayOf(s0,isoDate(d));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"numeric"})}</span>`;d.setMonth(d.getMonth()+1)}
   const inRange=today>=lo&&today<=hi;const todayLine=inRange?`<span class="gtoday" style="left:${pct(today)}%"></span>`:"";const todayMark=inRange?`<span class="gtoday" style="left:${pct(today)}%"><i>${T.rm_today}</i></span>`:"";
   // Milestones: activities marked in the model or by the client, one diamond per platform at the date the activity ends.
   const mls=list.filter(a=>a.ms).map(a=>({a,pts:a.nodes.map(n=>({n,q:raw[n.id],done:!!n.done}))})).sort((x,y)=>Math.max(...x.pts.map(p=>p.q.e))-Math.max(...y.pts.map(p=>p.q.e)));
@@ -452,14 +475,14 @@ function renderRoadmap(){
         return`<div class="trow"><b>${PLAT_LABEL[p]}</b><div class="rmprog"><span style="width:${pc}%"></span></div><span>${pc}% · ${tf("rm_of",{a:dn,b:w.length})}</span><span class="${blk?"tblk":""}">${blk?`${T.rm_blocked}: ${esc(blk.num)} · ${esc(blk.plats[p].blocked)}`:T.rm_no_block}</span><span>${open[0]?`${T.rm_next}: ${esc(open[0].num)} · ${esc(open[0].name)}`:""}</span>${gate?`<span>${tf("rm_ready",{a:esc(gname.num),d:fd(gate.ready[p])})}</span>`:""}</div>`}).join("");
       let gap="";if(gate){const[a,b]=targets().map(p=>gate.ready[p]);const n=Math.abs(a-b);const[p,q]=a<b?targets():[...targets()].reverse();gap=n?tf("rm_gap",{a:esc(gname.num+" · "+gname.name),p:PLAT_LABEL[p],q:PLAT_LABEL[q],n}):tf("rm_gap_none",{a:esc(gname.num+" · "+gname.name)})}
       trackBox=`<div class="rmtrack"><h3>${T.rm_track_h}</h3>${trows}${gap?`<p class="plain">${gap}</p>`:""}<p class="plain">${T.rm_joint_note}</p></div>`}}
-  const msGantt=mls.length?`<div class="rmsec"><h3>${T.rm_milestones}</h3><div class="gantt msg"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div><div></div></div>${msRows}</div></div><div class="rmleg"><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_leg_ms}</span>${multi&&view==="all"?`<span>${T.rm_leg_ms_pl}</span>`:""}<span>${T.rm_leg_ms_open}</span><span><i style="border-left:2px dotted var(--muted);width:0;height:12px"></i>${T.rm_base_mark}</span></div></div>`:"";
+  const msGantt=mls.length?`<div class="rmsec"><h3>${T.rm_milestones}</h3><div class="gantt msg"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div><div></div></div>${msRows}</div></div><div class="rmleg"><span><i style="background:var(--warn);transform:rotate(45deg);width:9px;height:9px"></i>${T.rm_leg_ms}</span>${multi&&view==="all"?`<span>${T.rm_leg_ms_pl}</span>`:""}<span>${T.rm_leg_ms_open}</span><span><i style="border-left:2px dotted var(--muted);width:0;height:12px"></i>${T.rm_base_mark}</span>${((cur()||{}).calendar||{}).holidays?.length?`<span><i class="ghol" style="position:static;display:inline-block;height:12px;margin:0"></i>${T.rm_leg_holiday}</span>`:""}</div></div>`:"";
   el.innerHTML=`<div class="rmhead"><div><h2>${T.rm_title}${c?" · "+esc(c.name):""}</h2><div class="plain">${tf("rm_sub",{s:fd(0),t:fd(today)})}${PRESET_RAW&&st.client==="preset"?" · "+(planUpdated()?tf("rm_updated",{d:fd(dayOf(s0,planUpdated()))}):T.rm_updated_none):""}</div></div><div><button class="btn" type="button" data-csv="start">${T.csv_export}</button> ${c?`<button class="btn" type="button" id="rmBase" data-json="${esc(baseJson)}">${T.rm_base_copy}</button> `:""}<button class="btn" type="button" id="rmPrint">${T.rm_print}</button></div></div><textarea id="rmBaseTxt" class="rmbase" readonly hidden></textarea>${localBanner()}${seg}${summary}${focusBox}${msGantt}
   <details class="rmdetail"${st.rmOpen?" open":""}><summary>${T.rm_detail}</summary>${trackBox}
   <div class="kpis"><div class="kpi done"><small>${T.rm_done}</small><b>${cnt.done}</b></div><div class="kpi now"><small>${T.rm_now}</small><b>${cnt.now}</b></div><div class="kpi"><small>${T.rm_todo}</small><b>${cnt.todo}</b></div><div class="kpi late"><small>${T.rm_late}</small><b>${cnt.late}</b></div><div class="kpi late"><small>${T.rm_moved}</small><b>${moved.length}</b></div><div class="kpi"><small>${T.rm_end}</small><b>${fd(end)}</b><span>${tf("rm_left",{n:left})}</span></div></div>
   <div class="plain" style="font-size:.82rem">${T.rm_progress}: ${pctDone}% · ${tf("rm_of",{a:cnt.done,b:work.length})}</div><div class="rmprog"><span style="width:${pctDone}%"></span></div>
   <div class="rmgtools"><button class="btn" type="button" id="rmSlack" aria-pressed="${!!st.rmSlack}">${st.rmSlack?T.rm_slack_hide:T.rm_slack_show}</button></div>
   <div class="gantt"><div class="gin"><div class="gaxis"><div></div><div class="gt">${labels}${todayMark}</div></div>${rows}</div></div>
-  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span>${Object.keys(base).length?`<span><i class="gbl" style="position:static;display:inline-block;width:14px"></i>${T.rm_base_bar}</span>`:""}${st.rmSlack?`<span><i class="gslack" style="position:static;display:inline-block;width:14px;height:10px"></i>${T.rm_leg_slack}</span>`:""}${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
+  <div class="rmleg"><span><i style="background:var(--ok)"></i>${T.rm_leg_done}</span><span><i style="background:var(--accent)"></i>${T.rm_leg_now}</span><span><i style="background:var(--line2)"></i>${T.rm_leg_todo}</span><span><i style="background:var(--bad)"></i>${T.rm_leg_late}</span><span><i style="box-shadow:0 0 0 2px var(--warn);background:var(--line2)"></i>${T.rm_leg_crit}</span><span><i style="outline:2px dashed var(--bad);background:var(--line2)"></i>${T.rm_leg_moved}</span>${Object.keys(base).length?`<span><i class="gbl" style="position:static;display:inline-block;width:14px"></i>${T.rm_base_bar}</span>`:""}${st.rmSlack?`<span><i class="gslack" style="position:static;display:inline-block;width:14px;height:10px"></i>${T.rm_leg_slack}</span>`:""}${((cur()||{}).calendar||{}).holidays?.length?`<span><i class="ghol" style="position:static;display:inline-block;height:12px;margin:0"></i>${T.rm_leg_holiday}</span>`:""}${multi&&view==="all"?`<span>${T.rm_leg_two}</span>`:""}</div>
   ${decBox}${riskBox}${areaBox}
   <div class="rmcols"><div><h3>${T.rm_list_ms}</h3>${li(nextPts.slice(0,5),({a,p})=>`<li><b>◆</b> ${esc(msLab(a,p))} <small>${fd(p.q.e)} · ${T["rm_ms_"+a.ms.type]}</small></li>`)}</div><div><h3>${T.rm_list_done}</h3>${li(done,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_done_on",{d:fd(r[a.id].e)})}</small></li>`)}</div>
   <div><h3>${T.rm_list_now}</h3>${li(soon,a=>`<li><b>${esc(a.num)}</b> ${esc(a.name)} <small>${tf("rm_until",{a:fd(r[a.id].s),b:fd(r[a.id].e)})}</small></li>`)}</div>
