@@ -154,6 +154,7 @@ for a in files["diagram"]["activities"]:
     if not isinstance(a.get("joint"), bool): say(f"diagram: activity {a['key']} needs joint true or false")
     if a.get("joint") and a.get("platform") != "both": say(f"diagram: activity {a['key']} is joint, so its platform must be both")
     check_milestone(f"diagram: activity {a['key']}", a)
+    if a.get("calendar", "work") not in ("work", "calendar"): say(f"diagram: activity {a['key']} calendar must be work or calendar")
     for ph in a["phases"]:
         if ph not in phase_ids: say(f"diagram: activity {a['key']} lists unknown phase {ph}")
 
@@ -250,6 +251,20 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         if to not in plat_of: say(f"{rel}: step_moves sends {sid} to {to}, which is not an activity of the model"); continue
         if owner_of.get(sid) == to: say(f"{rel}: step_moves sends {sid} to {to}, where it already is")
         if plat_of[to] != "both" and s["platform"] not in (plat_of[to], "both"): say(f"{rel}: step {sid} is {s['platform']}, but activity {to} is {plat_of[to]}")
+    # Working calendar: which weekdays count and which dates are holidays (docs/conventions.md#working-calendar).
+    cal = inst.get("calendar", {})
+    if cal:
+        wd = cal.get("workdays", [1, 2, 3, 4, 5])
+        if not (isinstance(wd, list) and wd and all(d in range(1, 8) for d in wd) and len(set(wd)) == len(wd)): say(f"{rel}: calendar workdays must be distinct numbers from 1 (Monday) to 7 (Sunday)")
+        seen_h = set()
+        for h in cal.get("holidays", []):
+            try: day = date.fromisoformat(str(h.get("date")))
+            except (ValueError, AttributeError): say(f"{rel}: calendar holiday {h} needs a YYYY-MM-DD date"); continue
+            if not (isinstance(h.get("name"), str) and h["name"]): say(f"{rel}: calendar holiday {day} needs a name")
+            if day in seen_h: say(f"{rel}: calendar holiday {day} is repeated")
+            seen_h.add(day)
+    for x in inst.get("extra_activities", []):
+        if x.get("calendar", "work") not in ("work", "calendar"): say(f"{rel}: activity {x.get('id')} calendar must be work or calendar")
     # Notes the client keeps on an activity, shown on its sheet.
     for k, ns in inst.get("notes", {}).items():
         if k not in acts: say(f"{rel}: notes name unknown activity {k}")

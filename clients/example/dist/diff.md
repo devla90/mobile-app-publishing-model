@@ -40,6 +40,14 @@ Ninguna.
 | --- | --- | --- |
 | S1.5 | 3 | 5 |
 
+## Calendario
+Días laborables: lunes, martes, miércoles, jueves, viernes
+
+| Fecha | Feriado |
+| --- | --- |
+| 2026-12-25 | Navidad |
+| 2027-01-01 | Año Nuevo |
+
 ## Notas por actividad
 
 **5**

@@ -81,10 +81,19 @@ def plan_tests(browser):
         iosOnly:[!!v.raw["register-app-ids@ios"],!!v.raw["register-app-ids@android"]],joint:[v.raw[j.id].s,Math.max(...j.after.map(x=>v.raw[x].e))],
         nodes:v.nodes.length,slack:v.nodes.filter(n=>!n.cont&&!n.done).map(n=>[v.raw[n.id].crit,v.raw[n.id].slack])}}""")
     check(v["first"]["late"] and v["first"]["e"] == v["today"], f"forecast: an overdue activity should end today ({v['first']})")
-    check(v["firstPlanned"]["e"] == 6, f"forecast: the plan as written should keep the planned end ({v['firstPlanned']})")
+    check(v["firstPlanned"]["e"] == 7, f"forecast: the plan as written should keep the planned end ({v['firstPlanned']})")
     check(v["next"]["s"] >= v["today"], f"forecast: what follows an overdue activity should not start before today ({v['next']})")
     check(v["iosOnly"] == [True, False], f"platforms: an iOS-only activity should have no Android node ({v['iosOnly']})")
     check(v["joint"][0] == v["joint"][1], f"joint: a joint activity should start when the last platform is ready ({v['joint']})")
+    # Working calendar: 5 working days from Monday 2 Nov end on Monday 9; a working day before a holiday and a weekend
+    # hands over on the next working day; a store activity counts every day.
+    cal = page.evaluate("""()=>{const s=planSrc();const W=workCal(s.start);const v=planView(s,s.start);const iso=n=>{const d=new Date(s.start+"T00:00:00");d.setDate(d.getDate()+n);return isoDate(d)};
+      const q=v.raw["verify-entity@ios"];return{after:iso(W.add(dayOf(s.start,"2026-12-24"),1)),sat:W.isWork(dayOf(s.start,"2026-11-07")),store:q.e-q.s,
+        weekend:v.nodes.filter(n=>!n.cont&&!n.done&&n.cal!=="calendar").some(n=>{const d=new Date(iso(v.raw[n.id].s)+"T00:00:00").getDay();return d===0||d===6})}}""")
+    check(cal["after"] == "2026-12-28" and cal["sat"] is False, f"calendar: holidays and weekends should be skipped ({cal})")
+    check(cal["store"] == 13 and cal["weekend"] is False, f"calendar: store activities count every day and working ones never start on a weekend ({cal})")
+    page.evaluate("()=>{st.tlEdit='prepare-listing';renderTimeline()}")
+    check("Días laborables" in (page.text_content("#timeline .pedit") or ""), "calendar: the edit row should say the days are working days")
     check(all(sl == 0 for c, sl in v["slack"] if c) and any(sl > 0 for c, sl in v["slack"] if not c), f"slack: critical activities should have 0 and some others more ({v['slack']})")
     page.click("#tabRm"); check("Atrasado" in page.inner_text(".rmsum"), "roadmap: an overdue plan should read as late")
     # An end date before the predecessors is refused; a later one is stored as a postponement.
@@ -168,7 +177,7 @@ def plan_tests(browser):
     ctx, page, errors = page_at(dt.datetime(2026, 11, 5, 10, 0, tzinfo=LIMA))
     page.evaluate("""()=>onPlanChange({target:{dataset:{act:"decide-owner",f:"days"},value:"12"}})""")
     meta, head, rows = export(page, official=False); row = rows[0]
-    check(row[9] == "50" and row[11] == "6", f"baseline: expected 50% and 6 days of deviation against the committed dates ({row})")
+    check(row[9] == "43" and row[11] == "9", f"baseline: expected 43% and 9 days of deviation against the committed dates ({row})")
     # A pending activity of 0 days is a visible marker, not a bar with no width.
     page.evaluate("""()=>onPlanChange({target:{dataset:{act:"assign-access",f:"days"},value:"0"}})""")
     page.click("#tabRm"); page.click(".rmdetail summary")
