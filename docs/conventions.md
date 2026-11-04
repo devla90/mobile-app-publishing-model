@@ -76,7 +76,7 @@ Every file in `model/` has `description`, `lang` and then the data. Every elemen
 
 - Step names in infinitive or third person, short: "Emitir certificado", "Verifican la entidad".
 - No unexplained acronyms in `docs/` the first time. In `model/` they are fine (CSR, IPA, AAB, APNs).
-- Dates in ISO (`2026-10-14`). Durations in calendar days.
+- Dates in ISO (`2026-10-14`). Durations in working days, except activities marked `"calendar": "calendar"`, which run every day.
 - Business-facing text (diagram, milestones) in plain language; technical text in the steps.
 
 ## Minimum validation before commit
@@ -90,7 +90,7 @@ python3 generator/build.py --no-png
 
 ## Durations and the timeline
 
-The plan works on the diagram activities, not on phases. Each activity in `diagram.json` has `duration.days` in calendar days and `after`, the activities that must finish before it starts. The activities of the last stage are `continuous` and have no duration. `validate.py` checks that durations are whole days, that every `after` exists and that there are no cycles.
+The plan works on the diagram activities, not on phases. Each activity in `diagram.json` has `duration.days` in working days and `after`, the activities that must finish before it starts. The activities of the last stage are `continuous` and have no duration. `validate.py` checks that durations are whole days, that every `after` exists and that there are no cycles.
 
 The page computes one date per activity and marks the critical path. It forecasts from today: an open activity whose end has passed is taken to end today, keeps its "late" status, and what follows moves with it, so the end of the plan is never earlier than reality allows. An end date before the activity can start, after its predecessors, is refused. The deviation and the expected progress are measured against the plan as written, without that forecast. "Today" is the local date of the computer. To postpone an activity, change its end date on the page: what follows moves by itself, and the roadmap counts and lists it as postponed against the plan without changes. Phase durations in `phases.json` are reference data for whoever estimates a new activity; the page does not show them, so every date comes from the activities.
 
@@ -107,6 +107,12 @@ Every postponement says why. Next to an `end` set by hand, at the activity level
 ### Slack
 
 Slack is how many days a pending activity can slip before the end of the plan moves; critical activities have none. The CSV has it as a column. In the roadmap schedule the button "Mostrar holgura" draws it as a hatched stretch after each bar, and hides it again; it is off by default, and the choice is kept in that browser.
+
+### Working calendar
+
+Durations are **working days**: by default Monday to Friday, with no holidays. An activity that does not depend on the team's working days, such as the store verifying the entity or reviewing a version, carries `"calendar": "calendar"` and counts every day; client activities accept the same field (for example, a pilot window). A working activity starts on the first working day its predecessors allow and hands over on the next working day after the last one it uses, so it never starts or ends on a weekend or a holiday.
+
+An instance declares its calendar in `calendar`: `{ "workdays": [1, 2, 3, 4, 5], "holidays": [{ "date": "YYYY-MM-DD", "name": "<text>" }], "source": "<official URL>" }`, with 1 for Monday and 7 for Sunday. Holidays belong to the client's country and come with their source; the base model names none. The roadmap draws each holiday as a faint line in the schedule, and `diff.md` lists them. Slack, deviation and postponements are still measured in calendar days between real dates. Without a start date there are no weekdays to look at, so every day counts. `validate.py` checks the weekdays, the dates and names of the holidays and the `calendar` of every activity.
 
 ### Activity keys and numbers
 
@@ -156,7 +162,7 @@ An instance may list `open_decisions`: `{ "id", "name", "owner", "opened", "due"
 
 "Exportar CSV", on the plan and on the roadmap, writes one row per activity and platform: area, platform, start and end, status, real and expected progress, the reference end and the deviation in days, milestone, blocker, decisions, days postponed by hand and their reason, critical path, slack and steps. Real progress is what is done (0 or 100); expected progress is the share of the committed period already gone, so a gap between both shows a risk before the due date. Without a baseline the reference is the plan without page edits, and the file says so. The first rows record the client, the date, the start date and whether the data includes changes held only in that browser; with such changes the page asks whether to export the official plan or those changes. The file uses semicolons and UTF-8 so Excel in Spanish opens it in columns.
 
-The roadmap opens with what a committee needs: the summary, a block "Para decidir y vigilar" with one line per open decision (owner and due date) and per high risk (owner), and the milestones. The rest is under "Detalle para la gestión", schedule first: progress per platform, the schedule, the full tables of open decisions and risks (folded, with their counts in the title), open work by area, the lists and the history of the plan (folded). A line of the block opens the detail at its table.
+The roadmap opens with what a committee needs: the summary (its publication date is the day the app becomes visible in the stores, the start of the release, with the end of the staged rollout below it), a block "Para decidir y vigilar" with one line per open decision (owner and due date) and per high risk (owner), and the milestones. The rest is under "Detalle para la gestión", schedule first: progress per platform, the schedule, the full tables of open decisions and risks (folded, with their counts in the title), open work by area, the lists and the history of the plan (folded). A line of the block opens the detail at its table.
 
 ### Platforms
 

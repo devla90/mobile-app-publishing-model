@@ -157,8 +157,8 @@ function renderPairs(){
 const planSrc=()=>{const c=cur();return c?{start:c.start||"",plan:c.plan||{},extra:c.extra||[]}:{start:LS("mapm-start")||"",plan:LS("mapm-plan2")||{},extra:[]}};
 async function savePlan(start,plan){const c=cur();if(c){const n={...c,plan};if(start)n.start=start;else delete n.start;await putClient(st.client,n)}else{LSW("mapm-start",start||null);LSW("mapm-plan2",plan)}renderTimeline();renderRoadmap()}
 function planActs(src,ignoreDone,ignoreEnd){
-  const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],steps:r[9],ms:r[10],extra:false,i}));
-  const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,steps:[],ms:x.milestone||null,extra:true,i:ACT.length+j}));
+  const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],steps:r[9],ms:r[10],cal:r[11],extra:false,i}));
+  const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,steps:[],ms:x.milestone||null,cal:x.calendar||"work",extra:true,i:ACT.length+j}));
   return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),end:ignoreEnd?null:(o.end??null),reason:ignoreEnd?null:(o.reason??null),plats:o.platforms||{}}});
 }
 // Why an end date was moved: one category and an optional note, stored next to that end.
@@ -170,18 +170,28 @@ const baseOf=(base,n,s0)=>{const b=(base||{})[n.id]??(base||{})[n.act];return b&
 const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const todayISO=()=>isoDate(new Date());
 const dayOf=(start,iso)=>start&&typeof iso==="string"?Math.round((new Date(iso+"T00:00:00")-new Date(start+"T00:00:00"))/DAY):0;
+// Working calendar: durations are working days (Monday to Friday unless the client says otherwise, minus its
+// holidays); activities marked "calendar" (a store review, a pilot window) run every day. Without a start date
+// there are no weekdays to look at, so every day counts.
+const calOf=()=>{const c=cur();const k=(c&&c.calendar)||{};return{wd:new Set(k.workdays||[1,2,3,4,5]),hol:new Set((k.holidays||[]).map(h=>h.date))}};
+function workCal(start){if(!start)return null;const k=calOf();const base=new Date(start+"T00:00:00");
+  const isWork=o=>{const d=new Date(base);d.setDate(d.getDate()+o);return k.wd.has(d.getDay()||7)&&!k.hol.has(isoDate(d))};
+  const next=o=>{for(let i=0;i<3660&&!isWork(o);i++)o++;return o};
+  // n working days from s: the end is the next working day after the last one used, where what follows starts.
+  const add=(s,n)=>{if(!n)return s;let o=s,c=0;for(let i=0;c<n&&i<3660;i++){if(isWork(o))c++;o++}return next(o)};
+  return{isWork,next,add}}
 // Forecast from today: an open activity whose end has passed is taken to end today, so what follows moves with it
 // and the end date of the plan stays real. It keeps late=true. Without a start date, or with noForecast, it plans
 // as written: that is the reference the deviation is measured against. s0 is the earliest start its predecessors allow.
 function planCalc(list,start,noForecast){
-  const by=Object.fromEntries(list.map(a=>[a.id,a]));const r={};const today=start&&!noForecast?dayOf(start,todayISO()):null;
+  const by=Object.fromEntries(list.map(a=>[a.id,a]));const r={};const today=start&&!noForecast?dayOf(start,todayISO()):null;const W=workCal(start);
   const fin=(s,e,s0)=>{const late=today!==null&&e<today;return{s,e:late?today:e,late,s0}};
   const go=(id,seen)=>{if(r[id])return r[id];const a=by[id];if(!a||seen.has(id))return null;seen.add(id);
     const prev=a.after.map(x=>go(x,seen)).filter(Boolean);const s0=Math.max(0,...prev.map(p=>p.e));
     if(a.done){const d=dayOf(start,a.done);return r[id]={s:d,e:d,done:true}}
     if(a.cont)return r[id]={s:s0,e:s0};
     if(a.end&&start){const e=dayOf(start,a.end);return r[id]=fin(Math.min(s0,e),e,s0)}
-    return r[id]=fin(s0,s0+a.days,s0)};
+    const wk=W&&a.cal!=="calendar";const s=wk?W.next(s0):s0;return r[id]=fin(s,wk?W.add(s,a.days):s+a.days,s0)};
   list.forEach(a=>go(a.id,new Set()));
   // Critical path: no slack between an activity and the latest finish it can have.
   const work=list.filter(a=>!a.cont&&!a.done);const end=Math.max(0,...work.map(a=>r[a.id].e));const lf={};
@@ -248,7 +258,7 @@ function renderTimeline(){
     const cell=(x,lab,qq,plat)=>{const pa=plat?` data-plat="${plat}"`:"";const name=plat?"Plat":"";
       return`<div class="pcell"><label class="pdone"><input type="checkbox" data-act="${esc(a.id)}" data-f="done${name}"${pa} ${x.done?"checked":""}> ${lab}</label>${!s0?"":x.done?`<label>${T.tl_done_on} <input type="date" data-act="${esc(a.id)}" data-f="done${name}Date"${pa} value="${typeof x.done==="string"?esc(x.done):esc(s0)}"></label>`:`<label>${T.tl_end_on} <input type="date" data-act="${esc(a.id)}" data-f="end${name}"${pa} value="${iso(qq.e)}"></label>${why(x,pa,name)}`}</div>`};
     const n=a.steps.filter(id=>byId[id]&&inScope(byId[id].plat)).length;
-    const edit=open&&!a.cont?`<div class="pedit">${a.done?"":`<label class="pdays">${T.tl_h_days} <input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days"></label>`}${parts?parts.map(x=>cell(x,PLAT_LABEL[x.track],raw[x.id],x.track)).join(""):cell(a,T.tl_h_done,q,"")}${blocks(a).map(b=>`<small class="pblk">${esc(b)}</small>`).join("")}</div>`:"";
+    const edit=open&&!a.cont?`<div class="pedit">${a.done?"":`<label class="pdays">${a.cal==="calendar"?T.tl_h_days_cal:T.tl_h_days_work} <input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days"></label>`}${parts?parts.map(x=>cell(x,PLAT_LABEL[x.track],raw[x.id],x.track)).join(""):cell(a,T.tl_h_done,q,"")}${blocks(a).map(b=>`<small class="pblk">${esc(b)}</small>`).join("")}</div>`:"";
     return`<div class="prow${q.crit?" crit":""}${a.done?" done":""}${open?" open":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}<small>${meta} · <button class="plink" type="button" data-openact="${esc(a.id)}">${n?tf("act_open",{n}):T.act_view}</button></small></span></div><div class="pst">${chips}</div><div class="pwhen">${dates}</div><div class="pact">${a.cont?"":`<button class="btn" type="button" data-tledit="${esc(a.id)}" aria-expanded="${open}">${open?T.tl_close:T.tl_edit}</button>`}</div>${edit}</div>`};
   const groups=STAGES.map((g,i)=>({i,name:g[0],acts:list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i)})).filter(g=>g.acts.length);
   // On load only the first stage with open work is unfolded; the reader's own choice wins after that.
@@ -356,7 +366,8 @@ function renderRoadmap(){
   // Finished activities do not stretch the axis: one done months ago sits at its left edge.
   const lo=Math.min(0,today,...pv.nodes.filter(n=>!n.done).map(n=>raw[n.id].s)),hi=Math.max(end,today)+14,span=hi-lo;const pct=n=>Math.max(0,Math.min(100,(n-lo)/span*100));
   // Month ticks
-  let ticks="",labels="";const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+lo);d.setDate(1);d.setMonth(d.getMonth()+1);
+  // Holidays of the client: a faint line in every row, named in its tooltip.
+  let ticks=((cur()||{}).calendar||{holidays:[]}).holidays?.map(h=>{const n=dayOf(s0,h.date);return n>=lo&&n<=hi?`<span class="ghol" style="left:${pct(n)}%" title="${esc(tf("rm_holiday",{n:h.name}))}"></span>`:""}).join("")||"",labels="";const d=new Date(s0+"T00:00:00");d.setDate(d.getDate()+lo);d.setDate(1);d.setMonth(d.getMonth()+1);
   for(let k=0;k<24;k++){const n=dayOf(s0,isoDate(d));if(n>hi)break;ticks+=`<span class="gtick" style="left:${pct(n)}%"></span>`;labels+=`<span style="left:${pct(n)}%">${d.toLocaleDateString(T.lang,{month:"short",year:"2-digit"})}</span>`;d.setMonth(d.getMonth()+1)}
   const inRange=today>=lo&&today<=hi;const todayLine=inRange?`<span class="gtoday" style="left:${pct(today)}%"></span>`:"";const todayMark=inRange?`<span class="gtoday" style="left:${pct(today)}%"><i>${T.rm_today}</i></span>`:"";
   // Milestones: activities marked in the model or by the client, one diamond per platform at the date the activity ends.
@@ -402,10 +413,11 @@ function renderRoadmap(){
   // The most frequent reason among postponed activities, so the summary says why they moved.
   const rc={};moved.forEach(a=>[...new Set(a.reasons.map(x=>x.type))].forEach(k=>{rc[k]=(rc[k]||0)+1}));const topWhy=Object.keys(rc).sort((x,y)=>rc[y]-rc[x])[0];
   const why=stCode==="late"?tf("rm_status_why_late",{n:late.length}):moved.length||blocked.length?tf("rm_status_why_risk",{m:moved.length,b:blocked.length})+(topWhy?" "+tf("rm_status_cause",{c:T["reason_"+topWhy]}):""):dev&&dev.dv>0?tf("rm_status_why_dev",{n:dev.dv}):T.rm_status_why_ok;
+  // Publication is the day the app becomes visible in the stores: the start of the release; the staged rollout follows.
   const pub=list.find(a=>a.id==="release");
   const summary=`<div class="rmsum"><div class="st-${stCode}"><small>${T.rm_status}</small><b>${T["rm_status_"+stCode]}</b><span>${why}</span></div>
     <div><small>${T.rm_next_ms}</small><b>${nx?esc(msLab(nx.a,nx.p)):T.rm_next_ms_none}</b>${nx?`<span>${tf("rm_next_ms_in",{d:fd(nx.p.q.e),n:Math.max(0,nx.p.q.e-today)})}</span>`:""}</div>
-    <div><small>${T.rm_publish}</small><b>${pub?fd(r[pub.id].e):fd(end)}</b><span>${tf("rm_left",{n:Math.max(0,(pub?r[pub.id].e:end)-today)})}</span></div>
+    <div><small>${T.rm_publish}</small><b>${pub?fd(r[pub.id].s):fd(end)}</b><span>${tf("rm_left",{n:Math.max(0,(pub?r[pub.id].s:end)-today)})}${pub&&r[pub.id].e>r[pub.id].s?"<br>"+tf("rm_rollout",{d:fd(r[pub.id].e)}):""}</span></div>
     <div><small>${T.rm_dev}</small>${dev?`<b>${dev.dv>0?tf("rm_dev_late",{n:dev.dv}):dev.dv<0?tf("rm_dev_ahead",{n:-dev.dv}):T.rm_dev_ok}</b><span>${dev.dv?tf("rm_dev_of",{a:esc(msLab(dev.a,dev.p))}):""}</span>`:`<b>${T.rm_dev_none}</b><span>${T.rm_dev_none_hint}</span>`}</div>
     <div><small>${T.rm_blocks}</small><b>${blocked.length}</b><span>${[...new Set(blocked.flatMap(a=>Object.values(a.plats).map(q=>q.blocked).filter(Boolean)).map(x=>x.split(/[:(]/)[0].trim()))].slice(0,3).map(esc).join("<br>")}</span></div></div>`;
   const pctDone=work.length?Math.round(cnt.done/work.length*100):0;const left=Math.max(0,end-today);

@@ -132,6 +132,7 @@ Same shape as a partial instance plus a list of controls. Name it by the axes th
   "renewals": { "R01": "2026-11-01" },
   "decisions": [ { "date": "2026-10-14", "decision": "<what>", "owner": "<team>", "rationale": "<why>" } ],
   "start_date": "2026-11-02",
+  "calendar": { "workdays": [1, 2, 3, 4, 5], "holidays": [{ "date": "<YYYY-MM-DD>", "name": "<holiday>" }], "source": "<official URL>" },
   "plan": { "<key>": { "done": true, "days": 3, "end": "<YYYY-MM-DD>", "reason": { "type": "external", "note": "<why it moved>" }, "platforms": { "ios": { "blocked": "<why>" } } } },
   "extra_activities": [ { "id": "X1", "name": "<client-only activity>", "lane": "L1", "days": 10, "after": ["<key>"],
                           "tasks": ["<what has to be done>"], "refs": ["<model step it relates to>"] } ],

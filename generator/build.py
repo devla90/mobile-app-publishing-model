@@ -49,11 +49,12 @@ def load_model():
     m["TIME"] = {f["id"]: [f["duration"]["min"], f["duration"]["max"], f["duration"]["depends_on"]] for f in pha["phases"]}
     m["STAGES"] = [[e["name"], e["phases"]] for e in pha["stages"]]
     m["VER_PH"] = pha["per_version_phases"]
-    # Plan by activity: [key, name, lane, days, after, continuous, per_version, platform, joint, steps, milestone].
+    # Plan by activity: [key, name, lane, days, after, continuous, per_version, platform, joint, steps, milestone, calendar].
+    # days are working days unless calendar is "calendar" (days that run every day, such as a store review).
     # The number people see is the position in the list.
     m["ACT"] = [[a["key"], " ".join(a["lines"]), a["lane"], a.get("duration", {}).get("days", 0),
                  a.get("after", []), a.get("continuous", False), all(p in pha["per_version_phases"] for p in a["phases"]),
-                 a["platform"], a["joint"], a.get("steps", []), a.get("milestone")]
+                 a["platform"], a["joint"], a.get("steps", []), a.get("milestone"), a.get("calendar", "work")]
                 for a in dia["activities"]]
     num = {a["key"]: i + 1 for i, a in enumerate(dia["activities"])}
     m["NUM"] = num
@@ -154,6 +155,7 @@ def js_data(m, t, instance=None):
         inst["risks"] = instance.get("risks", [])
         inst["moves"] = {sid: next(a[0] for a in m["ACT"] if sid in a[9]) for sid in instance.get("step_moves", {})}
         inst["notes"] = instance.get("notes", {})
+        inst["calendar"] = instance.get("calendar", {})
         inst["skips"] = {sid: {"from": next(a[0] for a in m["ACT"] if sid in a[9]), "reason": why} for sid, why in variant_skips(m, t, instance).items()}
         s.append(f'const PRESET_CLIENT={d(inst)};')
         # The whole instance as written, so the page can hand back an updated instance.json (docs/conventions.md#plan-updates).
@@ -423,6 +425,14 @@ def diff_md(m, t, inst):
         out.append(""); out.append(f'## {t["diff_moves"]}')
         out.append(f'| {t["diff_h_step"]} | {t["diff_h_from"]} | {t["diff_h_to"]} |'); out.append("| --- | --- | --- |")
         for sid, to in inst["step_moves"].items(): out.append(f'| {sid} | {num(frm[sid])} | {num(to)} |')
+    if inst.get("calendar"):
+        cal = inst["calendar"]; names = t["weekdays"]
+        out.append(""); out.append(f'## {t["diff_calendar"]}')
+        out.append(f'{t["diff_workdays"]}{", ".join(names[d - 1] for d in cal.get("workdays", [1, 2, 3, 4, 5]))}')
+        if cal.get("source"): out.append(f'{t["diff_cal_source"]}{cal["source"]}')
+        if cal.get("holidays"):
+            out.append(""); out.append(f'| {t["diff_h_date"]} | {t["diff_h_holiday"]} |'); out.append("| --- | --- |")
+            out += [f'| {h["date"]} | {h["name"]} |' for h in cal["holidays"]]
     if inst.get("notes"):
         num = lambda k: str(m["NUM"].get(k, k))
         out.append(""); out.append(f'## {t["diff_notes"]}')
