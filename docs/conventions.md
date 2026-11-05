@@ -106,7 +106,7 @@ Every postponement says why. Next to a `start` or an `end` set by hand (`plan.<k
 
 ### Slack
 
-Slack is how many days a pending activity can slip before the end of the plan moves; critical activities have none. The CSV has it as a column. In the roadmap schedule the button "Mostrar holgura" draws it as a hatched stretch after each bar, and hides it again; it is off by default, and the choice is kept in that browser.
+Slack is how many days a pending activity can slip before the end of the plan moves; critical activities have none. It is counted from the successors, so activities of 0 days and activities that end the same day keep the chain; the days a successor waits only because the next day is not a working day are not slack. The CSV has it as a column. In the roadmap schedule the button "Mostrar holgura" draws it as a hatched stretch after each bar, and hides it again; it is off by default, and the choice is kept in that browser.
 
 ### Working calendar
 
