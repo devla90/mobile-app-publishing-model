@@ -1253,7 +1253,7 @@
     {
       "id": "S15.1",
       "phase": "S15",
-      "name": "Liberar en App Store: manual, automática o programada; con o sin liberación por fases",
+      "name": "Liberar en App Store: manual, automática o programada",
       "platform": "ios",
       "owner": "A14",
       "inputs": "Aprobación, F22",
@@ -1263,12 +1263,13 @@
       ],
       "variants": [
         "V10"
-      ]
+      ],
+      "note": "Manual: se libera con un clic después de la aprobación. Automática: sale apenas Apple aprueba. Programada: no antes de la fecha elegida. Aplica también a la primera versión. La liberación por fases (7 días) solo existe en actualizaciones y se decide en cada versión (control c24); la primera versión sale para todos los usuarios."
     },
     {
       "id": "S15.2",
       "phase": "S15",
-      "name": "Liberar en Play: publicación gestionada y despliegue escalonado por porcentaje",
+      "name": "Liberar en Play: al aprobarse o con publicación gestionada",
       "platform": "android",
       "owner": "A14",
       "inputs": "Aprobación, F22",
@@ -1278,7 +1279,8 @@
       ],
       "variants": [
         "V10"
-      ]
+      ],
+      "note": "La primera versión se publica apenas Google la aprueba y sale al 100 %: la publicación gestionada y el despliegue escalonado solo existen en actualizaciones. En una actualización, la publicación gestionada retiene los cambios aprobados hasta que se publican, y el despliegue por porcentaje se decide en cada versión (control c24)."
     },
     {
       "id": "S15.3",
@@ -1292,7 +1294,8 @@
         "S15.1",
         "S15.2"
       ],
-      "variants": []
+      "variants": [],
+      "note": "Buscar la app por nombre y por enlace en cada país previsto, instalarla en los dispositivos objetivo y guardar capturas como evidencia."
     },
     {
       "id": "S16.1",

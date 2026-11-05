@@ -515,12 +515,12 @@
       "platform": "both",
       "joint": false,
       "milestone": {
-        "name": "Despliegue completo",
+        "name": "Disponible para todos",
         "type": "achievement"
       },
       "lines": [
-        "Libera y despliega",
-        "por fases"
+        "Libera la versión",
+        "a los usuarios"
       ],
       "phases": [
         "S15"

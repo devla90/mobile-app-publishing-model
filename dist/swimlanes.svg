@@ -234,8 +234,8 @@
 <g opacity="1">
 <rect x="141.0" y="1126" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>
 <circle cx="156.0" cy="1142" r="10" fill="#1F6FEB"/><text x="156.0" y="1146" text-anchor="middle" font-size="11.5" font-weight="700" fill="#FFFFFF">23</text>
-<text x="173.0" y="1147" font-size="13" fill="#1D2433">Libera y despliega</text>
-<text x="173.0" y="1163" font-size="13" fill="#1D2433">por fases</text>
+<text x="173.0" y="1147" font-size="13" fill="#1D2433">Libera la versión</text>
+<text x="173.0" y="1163" font-size="13" fill="#1D2433">a los usuarios</text>
 </g>
 <g opacity="1">
 <rect x="141.0" y="1214" width="158" height="56" rx="9" fill="#EAF2FE" stroke="#1F6FEB" stroke-width="1.4"/>

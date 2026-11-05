@@ -29,6 +29,7 @@ Status: `OK` confirmed at the source · `CORRECTED` the model said otherwise and
 | 17 | Certificado intermedio WWDR G6 vence 2030-02-20 | C05 | OK | https://developer.apple.com/support/expiration/ |
 | 18 | Certificado de Apple Pay (Payment Processing): vigencia 25 meses | C14, R06 | OK | https://developer.apple.com/help/account/certificates/create-apple-pay-payment-processing-certificates/ |
 | 19 | Tiempo de revisión de App Store: Apple no publica un SLA; "90 % en 24 horas" | S14 tiempos | NO SOURCE (practice figure, removed from the official page) | https://developer.apple.com/app-store/review/ |
+| 37 | Liberación por fases: 7 días, para usuarios con actualizaciones automáticas; disponible solo al enviar una actualización de versión, no la primera versión | S15.1, V10 | OK | https://developer.apple.com/help/app-store-connect/update-your-app/release-a-version-update-in-phases |
 
 ## Google
 
@@ -44,6 +45,8 @@ Status: `OK` confirmed at the source · `CORRECTED` the model said otherwise and
 | 27 | Pistas de prueba: interna hasta 100 testers; cerrada por listas de correo hasta 2 000 (o grupos de Google); abierta sin límite | S10, S11 | OK | https://support.google.com/googleplay/android-developer/answer/9845334 |
 | 28 | Requisito de 12 testers durante 14 días en prueba cerrada aplica solo a cuentas personales creadas desde 2023-11-13, no a organizaciones | S11 nota | OK | https://support.google.com/googleplay/android-developer/answer/14151465 |
 | 29 | Target API: apps nuevas y actualizaciones deben apuntar a API 36 desde 2026-08-31; extensión hasta 2026-11-01 | S8, R21 | OK | https://support.google.com/googleplay/android-developer/answer/11926878 |
+| 38 | Despliegue escalonado por porcentaje: solo para actualizaciones, no al publicar una app por primera vez | S15.2, V10 | OK | https://support.google.com/googleplay/android-developer/answer/6346149 |
+| 39 | Publicación gestionada: retiene los cambios aprobados hasta publicarlos; solo para actualizaciones, no al publicar una app por primera vez | S15.2, V10 | OK | https://support.google.com/googleplay/android-developer/answer/9859654 |
 | 30 | Sign-in details para revisores: hasta 5 juegos de credenciales en App content | S12, S14 | OK | https://support.google.com/googleplay/android-developer/answer/9859455 |
 | 31 | Declaración de funciones financieras (Financial features) obligatoria para toda app publicada en Play, aunque no ofrezca funciones financieras; exentos los servicios del sistema y las apps privadas | S12.7 | CORRECTED (2026-10-22: previously "obligatoria para apps de banca, préstamos y pagos", used in S12.4; source moved from answer/13516546) | https://support.google.com/googleplay/android-developer/answer/13849271 |
 | 32 | Verificación de desarrolladores Android fuera de Play: obligatoria desde 2026-09 en Brasil, Indonesia, Singapur y Tailandia; global en 2027 | V13 nota | OK | https://developer.android.com/developer-verification |
