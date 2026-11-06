@@ -11,6 +11,7 @@ jobs:
   # Required status check for main: model and instances valid, page and diagrams build.
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,9 +23,10 @@ jobs:
         run: python3 generator/build.py --no-png
       # The page and the plan it computes, in a browser: styles, UI strings, every page opening, and the plan tests
       # on clients/example (forecast, platforms, postponements, CSV export) with a fixed clock.
-      - name: Install playwright and Chromium
-        run: |
-          python3 -m pip install --quiet playwright==1.64.1
-          python3 -m playwright install --with-deps chromium
+      # They run on the Google Chrome that ships with the runner image: no browser download and no apt packages.
+      - name: Install playwright
+        run: python3 -m pip install --quiet playwright==1.64.1
       - name: Check pages and plan
+        env:
+          CHECK_PAGE_BROWSER: chrome
         run: python3 generator/check_page.py --require-browser
