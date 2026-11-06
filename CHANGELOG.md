@@ -4,6 +4,9 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+- An instance can rename the milestone of a model activity with `plan.<key>.milestone` (`{ "name", "type" }`), or remove it with `null`, when its own plan moves that milestone elsewhere. The roadmap, the CSV and `diff.md` use it; `validate.py` checks it.
+
 ## [5.2.0] - 2026-11-06
 
 ### Changed

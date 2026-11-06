@@ -160,7 +160,7 @@ async function savePlan(start,plan){const c=cur();if(c){const n={...c,plan};if(s
 function planActs(src,ignoreDone,ignoreEnd){
   const base=ACT.map((r,i)=>({id:r[0],num:String(i+1),name:r[1],lane:r[2],days:r[3],after:r[4],cont:r[5],ver:r[6],plat:r[7],joint:r[8],steps:r[9],ms:r[10],cal:r[11],extra:false,i}));
   const ext=src.extra.map((x,j)=>({id:String(x.id),num:String(x.id),name:x.name,lane:x.lane,days:x.days,after:(x.after||[]).map(String),cont:false,ver:false,plat:x.platform||"both",joint:x.joint??true,steps:[],ms:x.milestone||null,cal:x.calendar||"work",extra:true,i:ACT.length+j}));
-  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),start:ignoreEnd?null:(o.start??null),end:ignoreEnd?null:(o.end??null),reason:ignoreEnd?null:(o.reason??null),plats:o.platforms||{}}});
+  return base.concat(ext).map(a=>{const o=src.plan[a.id]||{};return{...a,days:o.days??a.days,after:o.after?o.after.map(String):a.after,done:ignoreDone?null:(o.done??null),start:ignoreEnd?null:(o.start??null),end:ignoreEnd?null:(o.end??null),reason:ignoreEnd?null:(o.reason??null),ms:"milestone" in o?o.milestone:a.ms,plats:o.platforms||{}}});
 }
 // Why an end date was moved: one category and an optional note, stored next to that end.
 const REASONS=["external","dependency","decision","team","scope","other"];
