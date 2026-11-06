@@ -143,6 +143,7 @@ for m in files["milestones"]["milestones"]:
 n_stages = len(phases["stages"])
 base_plan = {a["key"]: (a.get("duration", {}).get("days"), a.get("after", []), a.get("continuous", False))
              for a in files["diagram"]["activities"]}
+base_ms = {a["key"]: a.get("milestone") for a in files["diagram"]["activities"]}
 keys = [a["key"] for a in files["diagram"]["activities"]]
 for k in {x for x in keys if keys.count(x) > 1}: say(f"diagram: duplicate activity key {k}")
 for k in keys:
@@ -228,6 +229,10 @@ for f in sorted(clients.glob("*/instance.json")) if clients.exists() else []:
         days, after, cont = acts[k]
         acts[k] = (o.get("days", days), [str(a) for a in o.get("after", after)], cont)
         check_dates(f"{rel}: plan {k}", o)
+        # A client renames the milestone of an activity, or removes it with null (docs/conventions.md#milestones).
+        if "milestone" in o:
+            check_milestone(f"{rel}: plan {k}", o)
+            if o["milestone"] is None and k in base_ms and not base_ms[k]: say(f"{rel}: plan {k} removes a milestone the activity does not have")
         for pl, q in o.get("platforms", {}).items():
             if pl not in targets: say(f"{rel}: plan {k} names platform '{pl}', which is not a target")
             check_dates(f"{rel}: plan {k} {pl}", q)

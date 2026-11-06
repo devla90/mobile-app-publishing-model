@@ -488,6 +488,8 @@
   "diff_h_act": "Actividad",
   "diff_h_days": "Días",
   "diff_end": "fin:",
+  "diff_ms": "hito:",
+  "diff_ms_none": "sin hito",
   "diff_h_after": "Espera a",
   "diff_h_done": "Hecha",
   "diff_was": "base",

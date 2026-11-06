@@ -469,6 +469,7 @@ def diff_md(m, t, inst):
             parts = [f'{t["plat_" + p]}: {t["diff_yes"] if q["done"] is True else q["done"]}' for p, q in o.get("platforms", {}).items() if q.get("done")]
             parts += [f'{t["plat_" + p]}: {t["rm_blocked"].lower()} ({q["blocked"]})' for p, q in o.get("platforms", {}).items() if q.get("blocked")]
             parts += [f'{t["diff_end"]} {x}' for x in [o.get("end")] + [q.get("end") for q in o.get("platforms", {}).values()] if x]
+            if "milestone" in o: parts.append(f'{t["diff_ms"]} {o["milestone"]["name"]}' if o["milestone"] else t["diff_ms_none"])
             done = "; ".join(([str(done)] if done else []) + parts)
             out.append(f'| {shown(k)} {a[1]} | {days} | {", ".join(map(shown, o.get("after", a[4])))} | {done} |')
         for x in extra:

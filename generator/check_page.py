@@ -124,6 +124,16 @@ def plan_tests(browser):
     c = page.evaluate(crit_js)
     check(not c["wrong"] and not c["broken"], f"order: a client activity of 0 days should be listed before the one that waits for it ({c})")
     page.evaluate("""was=>{const c=cur();c.extra=was.extra;c.plan=was.plan;renderTimeline()}""", saved)
+    # A client renames the milestone of a model activity, or removes it with null.
+    ms_js = """()=>{const a=planActs(planSrc(),false,false);return{qa:(a.find(x=>x.id==="upload-and-test").ms||{}).name||null,
+      build:(a.find(x=>x.id==="build-and-sign").ms||{}).name||null}}"""
+    saved = page.evaluate("""()=>{const c=cur();const was=c.plan;c.plan={...c.plan,"upload-and-test":{...(c.plan["upload-and-test"]||{}),milestone:{name:"Hito renombrado",type:"achievement"}},
+      "build-and-sign":{...(c.plan["build-and-sign"]||{}),milestone:null}};return was}""")
+    ms = page.evaluate(ms_js)
+    page.evaluate("()=>renderRoadmap()"); rm = page.evaluate("()=>document.getElementById('roadmap').innerText")
+    check(ms == {"qa": "Hito renombrado", "build": None} and "Hito renombrado" in rm and "Primer build firmado" not in rm, f"milestones: plan.<key>.milestone should rename or remove a model milestone ({ms})")
+    page.evaluate("""was=>{const c=cur();c.plan=was;renderTimeline();renderRoadmap()}""", saved)
+    check(page.evaluate(ms_js) == {"qa": "Conformidad de QA", "build": "Primer build firmado"}, "milestones: without an override the model milestones stay")
     page.click("#tabRm"); check("Atrasado" in page.inner_text(".rmsum"), "roadmap: an overdue plan should read as late")
     # An end date before the predecessors is refused; a later one is stored as a postponement.
     page.evaluate("""()=>onPlanChange({target:{dataset:{act:"define-identifiers",f:"endPlat",plat:"android"},value:"2026-11-03"}})""")
