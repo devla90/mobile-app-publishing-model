@@ -4,6 +4,8 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-11-06
+
 ### Changed
 - Activity 23 is "Libera la versión a los usuarios" and its milestone "Disponible para todos" (they were "Libera y despliega por fases" and "Despliegue completo"). Whether a version goes out in phases is chosen per release (S15.1, S15.2, V10, check c24).
 - S15.1 and S15.2 note that a phased release (App Store) or staged rollout (Play) only applies to updates; the first version of an app goes out to every user. Sources in `docs/validation.md`, rows 37 and 38.
