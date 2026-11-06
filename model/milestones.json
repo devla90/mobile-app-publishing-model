@@ -208,7 +208,7 @@
       "checks": [
         {
           "id": "c24",
-          "text": "Plan de liberación definido: manual, automática o programada; porcentaje inicial",
+          "text": "Plan de liberación definido: manual, automática o programada; completa o por fases (solo en actualizaciones) y porcentaje inicial",
           "step": "S15.1"
         },
         {

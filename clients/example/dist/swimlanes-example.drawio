@@ -61,7 +61,7 @@
         <mxCell id="act-21-n" value="21" style="ellipse;html=1;fillColor=#1F6FEB;strokeColor=none;fontColor=#FFFFFF;fontSize=11.5;fontStyle=1;movable=0;resizable=0;fontFamily=Calibri;" parent="act-21" vertex="1">
           <mxGeometry x="5" y="6" width="20" height="20" as="geometry" />
         </mxCell>
-        <object id="act-23" label="Libera y despliega&lt;br&gt;por fases" n="23" lane="L1" stage="Revisión y publicación" phases="S15">
+        <object id="act-23" label="Libera la versión&lt;br&gt;a los usuarios" n="23" lane="L1" stage="Revisión y publicación" phases="S15">
           <mxCell style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EAF2FE;strokeColor=#1F6FEB;strokeWidth=1.4;align=left;verticalAlign=top;spacingLeft=30;spacingTop=7;fontSize=13;fontColor=#1D2433;fontFamily=Calibri;" parent="lane-L1" vertex="1">
             <mxGeometry x="3" y="1030" width="158" height="56" as="geometry" />
           </mxCell>

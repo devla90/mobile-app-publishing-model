@@ -4,6 +4,12 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+- Activity 23 is "Libera la versión a los usuarios" and its milestone "Disponible para todos" (they were "Libera y despliega por fases" and "Despliegue completo"). Whether a version goes out in phases is chosen per release (S15.1, S15.2, V10, check c24).
+- S15.1 and S15.2 note that a phased release (App Store) or staged rollout (Play) only applies to updates; the first version of an app goes out to every user. Sources in `docs/validation.md`, rows 37 and 38.
+- S15.1 is "Liberar en App Store: manual, automática o programada" and S15.2 "Liberar en Play: al aprobarse o con publicación gestionada"; S15.1, S15.2 and S15.3 have notes on what each one does. In Play the first version goes live as soon as it is approved, since managed publishing only exists for updates (`docs/validation.md`, row 39).
+- Option c of V10 is "Programado": phases are no longer mixed with when a version is released. Check c24 asks whether an update goes out complete or in phases.
+
 ## [5.1.0] - 2026-11-04
 
 ### Added
