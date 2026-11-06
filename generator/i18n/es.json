@@ -219,7 +219,7 @@
   "rm_leg_two": "En Conjunto, cada barra doble muestra iOS arriba y Android abajo",
   "rm_joint_note": "Una actividad cuenta como hecha solo cuando la terminan todas las plataformas a las que aplica.",
   "tl_title": "Plan y fechas",
-  "tl_intro": "Días calendario por actividad. Cada actividad empieza cuando terminan las que la preceden; las que no dependen entre sí avanzan en paralelo. Si una actividad se aplaza, cambia su fecha de fin: las siguientes se mueven solas y el roadmap lo muestra.",
+  "tl_intro": "Días laborables por actividad, salvo las que cuentan días corridos. Cada actividad empieza cuando terminan las que la preceden; las que no dependen entre sí avanzan en paralelo. Si una actividad se aplaza, cambia su fecha de fin: las siguientes se mueven solas y el roadmap lo muestra.",
   "tl_start": "Fecha de inicio",
   "tl_days": "días",
   "tl_day_n": "día {n}",

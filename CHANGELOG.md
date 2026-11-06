@@ -9,6 +9,13 @@ All notable changes to the model and the generator. Format: [Keep a Changelog](h
 - S15.1 and S15.2 note that a phased release (App Store) or staged rollout (Play) only applies to updates; the first version of an app goes out to every user. Sources in `docs/validation.md`, rows 37 and 38.
 - S15.1 is "Liberar en App Store: manual, automática o programada" and S15.2 "Liberar en Play: al aprobarse o con publicación gestionada"; S15.1, S15.2 and S15.3 have notes on what each one does. In Play the first version goes live as soon as it is approved, since managed publishing only exists for updates (`docs/validation.md`, row 39).
 - Option c of V10 is "Programado": phases are no longer mixed with when a version is released. Check c24 asks whether an update goes out complete or in phases.
+- The pull request check runs the page tests on the Google Chrome of the runner image instead of downloading Chromium and its system packages, and stops after 10 minutes. A slow package mirror had taken one run to 11 minutes.
+
+### Fixed
+- The critical path and the slack are counted from the successors of each activity. Before, an activity of 0 days or two activities ending the same day could leave the slack undefined and cut the critical path short, and a weekend between a calendar-day activity and the next one counted as slack.
+- The critical path summary lists the activities by the dates of the platform that is critical.
+- Within a stage, an activity that starts the same day as another one goes first if it ends first, so a decision of 0 days is listed before the activity that waits for it.
+- "Plan y fechas" says durations are working days, except the ones that count calendar days (it said "Días calendario").
 
 ## [5.1.0] - 2026-11-04
 

@@ -98,6 +98,32 @@ def plan_tests(browser):
     page.evaluate("()=>{st.tlEdit='prepare-listing';renderTimeline()}")
     check("Días laborables" in (page.text_content("#timeline .pedit") or ""), "calendar: the edit row should say the days are working days")
     check(all(sl == 0 for c, sl in v["slack"] if c) and any(sl > 0 for c, sl in v["slack"] if not c), f"slack: critical activities should have 0 and some others more ({v['slack']})")
+    # The critical path is a chain to the end of the plan, also with activities of 0 days, and the list never shows an
+    # activity before one it waits for in the same stage.
+    crit_js = """()=>{const s=planSrc();const v=planView(s,s.start);const by=Object.fromEntries(v.nodes.map(n=>[n.id,n]));
+      const open=v.nodes.filter(n=>!n.cont&&!n.done);const q=n=>v.raw[n.id];const end=Math.max(...open.map(n=>q(n).e));
+      const broken=open.filter(n=>q(n).crit&&n.after.some(x=>by[x]&&!by[x].done&&!by[x].cont)&&!n.after.some(x=>by[x]&&q(by[x]).crit)).map(n=>n.id);
+      renderTimeline();const order=[...document.querySelectorAll("#timeline .prow .pname b")].map(b=>b.textContent);
+      const sg=stagesOf(v.list);const wrong=v.list.flatMap(a=>a.after.map(p=>v.list.find(x=>x.id===p)).filter(p=>p&&sg[p.id]===sg[a.id]&&order.indexOf(p.num)>order.indexOf(a.num)).map(p=>p.num+">"+a.num));
+      return{nan:open.filter(n=>!(q(n).slack>=0)).map(n=>n.id),broken,endCrit:open.some(n=>q(n).crit&&q(n).e===end),
+        crit:["go-no-go","store-review@ios","release@ios"].map(id=>v.raw[id].crit),wrong}}"""
+    page.evaluate("()=>document.querySelectorAll('#timeline details').forEach(d=>d.open=true)")
+    c = page.evaluate(crit_js)
+    check(not c["nan"] and not c["broken"] and c["endCrit"], f"critical path: every slack should be a number and the path a chain to the end ({c})")
+    check(c["crit"] == [True, True, True], f"critical path: Go / No-Go, the store review and the release should be critical ({c['crit']})")
+    keep = page.evaluate("""()=>{const was=Object.fromEntries(["X1","security-approval"].map(k=>[k,planActs(planSrc(),false,false).find(a=>a.id===k).days]));
+      for(const k in was)onPlanChange({target:{dataset:{act:k,f:"days"},value:"0"}});return was}""")
+    page.evaluate("()=>document.querySelectorAll('#timeline details').forEach(d=>d.open=true)")
+    c = page.evaluate(crit_js)
+    check(not c["nan"] and not c["broken"] and c["endCrit"], f"critical path: activities of 0 days should not break the chain ({c})")
+    check(not c["wrong"], f"order: an activity should never be listed before one it waits for ({c['wrong']})")
+    page.evaluate("""was=>{for(const k in was)onPlanChange({target:{dataset:{act:k,f:"days"},value:String(was[k])}})}""", keep)
+    # A client activity of 0 days that the release waits for starts the same day as the release: it goes first.
+    saved = page.evaluate("""()=>{const c=cur();const was={extra:c.extra,plan:c.plan};c.extra=[...(c.extra||[]),{id:"ZZ",name:"Decisión",lane:"L1",days:0,after:["store-review"]}];
+      c.plan={...c.plan,release:{...(c.plan.release||{}),after:["store-review","ZZ"]}};document.querySelectorAll('#timeline details').forEach(d=>d.open=true);return was}""")
+    c = page.evaluate(crit_js)
+    check(not c["wrong"] and not c["broken"], f"order: a client activity of 0 days should be listed before the one that waits for it ({c})")
+    page.evaluate("""was=>{const c=cur();c.extra=was.extra;c.plan=was.plan;renderTimeline()}""", saved)
     page.click("#tabRm"); check("Atrasado" in page.inner_text(".rmsum"), "roadmap: an overdue plan should read as late")
     # An end date before the predecessors is refused; a later one is stored as a postponement.
     page.evaluate("""()=>onPlanChange({target:{dataset:{act:"define-identifiers",f:"endPlat",plat:"android"},value:"2026-11-03"}})""")

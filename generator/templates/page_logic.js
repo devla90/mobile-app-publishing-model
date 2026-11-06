@@ -203,9 +203,15 @@ function planCalc(list,start,noForecast){
     if(a.end&&start){const e=dayOf(start,a.end);return r[id]=fin(Math.min(fs,e),e,s0)}
     const wk=W&&a.cal!=="calendar";const s=wk?W.next(fs):fs;return r[id]=fin(s,wk?W.add(s,a.days):s+a.days,s0)};
   list.forEach(a=>go(a.id,new Set()));
-  // Critical path: no slack between an activity and the latest finish it can have.
+  // Critical path: no slack between an activity and the latest finish it can have. The latest finish comes from the
+  // successors, whatever their order, so activities of 0 days or ending the same day do not break the chain. A
+  // successor that cannot start on a non-working day leaves no slack: that gap belongs to the calendar.
   const work=list.filter(a=>!a.cont&&!a.done);const end=Math.max(0,...work.map(a=>r[a.id].e));const lf={};
-  [...work].sort((x,y)=>r[y.id].e-r[x.id].e).forEach(a=>{const succ=work.filter(b=>b.after.includes(a.id));lf[a.id]=succ.length?Math.min(...succ.map(b=>lf[b.id]-(r[b.id].e-r[b.id].s))):end});
+  const gap=b=>{const q=r[b.id];return W&&b.cal!=="calendar"&&q.s0!==undefined?W.next(q.s0)-q.s0:0};
+  const late=(a,seen)=>{if(lf[a.id]!==undefined)return lf[a.id];if(seen.has(a.id))return end;seen.add(a.id);
+    const succ=work.filter(b=>b.after.includes(a.id));
+    return lf[a.id]=succ.length?Math.min(...succ.map(b=>late(b,seen)-(r[b.id].e-r[b.id].s)-gap(b))):end};
+  work.forEach(a=>late(a,new Set()));
   // Slack: days an activity can slip before the end of the plan moves.
   work.forEach(a=>{const sl=lf[a.id]-r[a.id].e;r[a.id].crit=sl===0;r[a.id].slack=Math.max(0,sl)});
   return{r,end};
@@ -275,7 +281,7 @@ function renderTimeline(){
     const n=a.steps.filter(id=>byId[id]&&inScope(byId[id].plat)).length;
     const edit=open&&!a.cont?`<div class="pedit">${a.done?"":`<label class="pdays">${a.cal==="calendar"?T.tl_h_days_cal:T.tl_h_days_work} <input type="number" min="0" step="1" value="${a.days}" data-act="${esc(a.id)}" data-f="days"></label>`}${parts?parts.map(x=>cell(x,PLAT_LABEL[x.track],raw[x.id],x.track)).join(""):cell(a,T.tl_h_done,q,"")}${blocks(a).map(b=>`<small class="pblk">${esc(b)}</small>`).join("")}</div>`:"";
     return`<div class="prow${q.crit?" crit":""}${a.done?" done":""}${open?" open":""}"><div class="pname"><b style="background:var(${LC[a.lane]||"--muted"})">${esc(a.num)}</b><span>${esc(a.name)}<small>${meta} · <button class="plink" type="button" data-openact="${esc(a.id)}">${n?tf("act_open",{n}):T.act_view}</button></small></span></div><div class="pst">${chips}</div><div class="pwhen">${dates}</div><div class="pact">${a.cont?"":`<button class="btn" type="button" data-tledit="${esc(a.id)}" aria-expanded="${open}">${open?T.tl_close:T.tl_edit}</button>`}</div>${edit}</div>`};
-  const groups=STAGES.map((g,i)=>({i,name:g[0],acts:list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i)})).filter(g=>g.acts.length);
+  const groups=STAGES.map((g,i)=>({i,name:g[0],acts:list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||r[x.id].e-r[y.id].e||x.i-y.i)})).filter(g=>g.acts.length);
   // On load only the first stage with open work is unfolded; the reader's own choice wins after that.
   const firstOpen=(groups.find(g=>g.acts.some(a=>!a.done&&!a.cont))||groups[0]||{}).i;
   const body=groups.map(g=>{const shown=g.acts.filter(F[f]);if(!shown.length)return"";const work=g.acts.filter(a=>!a.cont);const dn=work.filter(a=>a.done).length;
@@ -284,7 +290,9 @@ function renderTimeline(){
   const counts=Object.fromEntries(Object.entries(F).map(([k,fn])=>[k,list.filter(fn).length]));
   const filters=`<div class="seg ptfilter" role="group" aria-label="${T.tl_filter}">${["all","open","week","late","blocked"].map(k=>`<button type="button" data-tlf="${k}" aria-pressed="${f===k}">${T["tl_f_"+k]} <small>${counts[k]}</small></button>`).join("")}</div>`;
   const ver=planActs(src,true,true).filter(a=>a.ver&&!a.cont&&inScope(a.plat));const vids=new Set(ver.map(a=>a.id));const vc=planCalc(ver.map(a=>({...a,after:a.after.filter(x=>vids.has(x))})),"");
-  const crit=[...list].filter(a=>r[a.id].crit).sort((x,y)=>r[x.id].s-r[y.id].s).map(a=>a.num).join(" → ");
+  // The critical path in its order: by the dates of the platform that is critical, not of the earliest one.
+  const cq=a=>{const qs=(a.nodes||[a]).map(n=>raw[n.id]||r[a.id]).filter(q=>q.crit);return qs.length?qs:[r[a.id]]};
+  const crit=[...list].filter(a=>r[a.id].crit).map(a=>({a,s:Math.min(...cq(a).map(q=>q.s)),e:Math.min(...cq(a).map(q=>q.e))})).sort((x,y)=>x.s-y.s||x.e-y.e||x.a.i-y.a.i).map(x=>x.a.num).join(" → ");
   el.innerHTML=`<h3>${T.tl_title}</h3><div class="plain">${T.tl_intro}</div>${localBanner()}<div class="ptools"><label class="tlstart">${T.tl_start} <input type="date" id="tlStart" value="${esc(s0)}"></label><button class="btn" type="button" id="tlReset">${T.tl_reset}</button><button class="btn" type="button" data-csv="start">${T.csv_export}</button>${cur()?"":`<span class="plain">${T.tl_noclient}</span>`}</div>
   ${filters}${body}
   <div class="tlsum"><span><b>${T.tl_end}:</b> <b>${fd(end)}</b>${s0?"":` (${end} ${T.tl_days})`}</span><span><b>${vc.end} ${T.tl_days}</b> ${T.tl_each}</span><span class="plain">${T.tl_critical} ${esc(crit)}</span></div>`;
@@ -409,7 +417,7 @@ function renderRoadmap(){
   const msDates=pts=>pts.length===1||sameAll(pts)?`<span>${short(pts[0].q.e)}${devTxt(pts[0])}</span>`:pts.map(p=>`<span><em>${PLAT_LABEL[p.n.track]}</em>${short(p.q.e)}${devTxt(p)}</span>`).join("");
   mls.forEach(({a,pts})=>{msRows+=`<div class="grow msrow"><div class="gl" data-gomsact="${esc(a.id)}" role="button" tabindex="0" title="${esc(a.ms.name+" · "+T["rm_ms_"+a.ms.type]+" · "+a.num+" "+a.name)}"><b>◆</b>${esc(a.ms.name)} <small>${esc(tf("rm_ms_from",{n:a.num})+" · "+a.name)}</small></div><div class="gt">${ticks}${pts.map(p=>{const cm=committed(p);return cm===null?"":`<span class="gbase${pts.length>1&&!sameAll(pts)?(p.n.track==="ios"?" up":" down"):""}" style="left:${pct(cm)}%" title="${esc(msLab(a,p)+" · "+T.rm_base_mark+": "+fd(cm))}"></span>`}).join("")}${diamonds(a,pts)}${todayLine}</div><div class="gd">${msDates(pts)}</div></div>`});
   let rows="";
-  STAGES.forEach((g,i)=>{const acts=list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||x.i-y.i);if(!acts.length)return;
+  STAGES.forEach((g,i)=>{const acts=list.filter(a=>stageOf[a.id]===i).sort((x,y)=>r[x.id].s-r[y.id].s||r[x.id].e-r[y.id].e||x.i-y.i);if(!acts.length)return;
     rows+=`<div class="grow stg"><div class="gl">${esc(g[0])}</div><div class="gt">${ticks}${todayLine}</div></div>`;
     acts.forEach(a=>{const tipOf=(x,q)=>x.done?tf("rm_done_on",{d:fd(q.e)}):a.cont?tf("tl_continuous",{d:fd(q.s)}):tf("rm_until",{a:fd(q.s),b:fd(q.e)});
       const why=x=>{const t=reasonTxt(x.nodes?x.reasons:x.end&&!x.done?[x.reason]:[]);return t?` · ${T.tl_reason}: ${t}`:""};
